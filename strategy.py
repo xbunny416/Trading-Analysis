@@ -3,7 +3,7 @@ strategy.py - long/short hourly trend following for a major FX pair (default EUR
 
 Rules (identical in both implementations below)
 -----------------------------------------------
-Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, hold_n, risk_pct.
+Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, stop_mult, risk_pct.
 
     TR_t   = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|)
     ATR_t  = mean(TR_{t-n+1..t})                                    n = atr_n
@@ -12,10 +12,9 @@ Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, hold_n, risk_pct.
 
     at the close of bar t-1 (decision), executed at the OPEN of bar t:
         entry        : direction of Shock_{t-1}  (momentum after an information shock)
-        renewal      : a same-direction shock while in the trade restarts the holding clock
-        exit         : after hold_n completed bars without renewal, or C_{t-1} beyond entry C -/+ k*ATR (stop);
-                       reverse on an opposite shock
-        size (units) : NAV_{t-1} * risk_pct / (k * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
+        exit         : chandelier trailing stop  stop_long = max_{since entry}(C - m*ATR),  exit if C_{t-1} < stop
+                       (mirror for shorts); reverse on an opposite shock.               m = stop_mult
+        size (units) : NAV_{t-1} * risk_pct / (m * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
 
 Friction: 0.5 pip half-spread + 0.5 pip slippage on every fill (2.0 pips per round trip).
 Circuit breakers (checked on each bar close, applied from the next open):
@@ -37,10 +36,10 @@ import pandas as pd
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "T4 shock momentum: an hourly bar whose true range exceeds shock_k x ATR(atr_n) of the prior bars "
-    "marks information arrival; trade its direction at the next open, hold hold_n bars (renewed by "
-    "same-direction shocks), stop at shock_k x ATR, reverse on an opposite shock. Motivation: T1-T3 "
-    "channel signals had ~zero gross edge at >100 trades/yr; test whether large-range bars continue."
+    "T5 shock entry + trend-following exit: enter in the direction of a bar whose true range exceeds "
+    "shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier trailing stop; reverse on an opposite "
+    "shock. Motivation: T4 in-sample showed post-shock continuation but its fixed holding clock capped "
+    "winners, and later IS windows favoured longer holds."
 )
 INDICATORS = ("ATR",)
 
@@ -50,27 +49,21 @@ class StrategyParams:
     """The only tunable numbers in the strategy (4)."""
 
     atr_n: int = 24          # ATR lookback, bars
-    shock_k: float = 2.0     # shock threshold in ATRs; also the stop distance and sizing unit
-    hold_n: int = 12         # bars to hold after the last same-direction shock
-    risk_pct: float = 0.0025  # fraction of NAV lost if price moves shock_k*ATR against the position
-
-    @property
-    def stop_mult(self) -> float:
-        return self.shock_k
+    shock_k: float = 2.5     # shock threshold, in ATRs of the prior atr_n bars
+    stop_mult: float = 3.0   # chandelier trailing-stop distance and sizing unit, in ATRs
+    risk_pct: float = 0.0025  # fraction of NAV lost if price moves stop_mult*ATR against the position
 
     def validate(self) -> "StrategyParams":
-        for name in ("atr_n", "hold_n"):
-            v = getattr(self, name)
-            if not (isinstance(v, (int, np.integer)) and v >= 1):
-                raise ValueError(f"{name} must be an int >= 1, got {v}")
-        if not (self.shock_k > 0 and 0 < self.risk_pct < 0.05):
-            raise ValueError("shock_k must be > 0 and risk_pct in (0, 0.05)")
+        if not (isinstance(self.atr_n, (int, np.integer)) and self.atr_n >= 1):
+            raise ValueError(f"atr_n must be an int >= 1, got {self.atr_n}")
+        if not (self.shock_k > 0 and self.stop_mult > 0 and 0 < self.risk_pct < 0.05):
+            raise ValueError("shock_k and stop_mult must be > 0 and risk_pct in (0, 0.05)")
         return self
 
 
 DEFAULT_PARAMS = StrategyParams()
 # walk-forward search space (the other parameters stay at their defaults)
-PARAM_GRID = {"shock_k": [1.5, 2.0, 2.5, 3.0], "hold_n": [3, 6, 12, 24]}
+PARAM_GRID = {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}
 # parameters that change the signal frame (lets the harness cache it)
 FEATURE_PARAMS = ("atr_n", "shock_k")
 
@@ -210,8 +203,8 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     st = fresh_state(cfg) if state is None else dict(state)
     nav_prev, peak, killed = st["nav"], st["peak"], st["killed"]
     halt_until, cur_day, day_start = st["halt_until"], st["day"], st["day_start_nav"]
-    cash, units, d, stop, held = nav_prev, 0.0, 0, math.nan, 0
-    cost, k, hold_n, pip = cfg.cost_per_fill, p.stop_mult, p.hold_n, cfg.pip
+    cash, units, d, stop = nav_prev, 0.0, 0, math.nan
+    cost, k, pip = cfg.cost_per_fill, p.stop_mult, cfg.pip
     dl_floor, dd_floor = 1.0 - cfg.daily_loss_limit, 1.0 - cfg.max_drawdown_limit
     halt_ns = int(cfg.halt_hours * 3_600_000_000_000)
     L = end - start
@@ -226,13 +219,12 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
         if d == 0:
             tgt = sh
         else:
-            held += 1
-            if sh == d:
-                held = 0  # renewed momentum restarts the clock
             if d * (cp - stop) < 0:
                 why = "stop"
-            elif held >= hold_n:
-                why = "time"
+            else:  # ratchet the chandelier towards the trade
+                s2 = cp - d * k * a
+                if d * (s2 - stop) > 0:
+                    stop = s2
             tgt = -d if sh == -d else (0 if why else d)
         gated = killed or TS[i] <= halt_until
         if gated:
@@ -251,7 +243,7 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
                     fill = O[i] + tgt * cost
                     units = tgt * size
                     cash -= units * fill
-                    d, held = tgt, 0
+                    d = tgt
                     stop = cp - tgt * k * a
                     entry = (TS[i], d, units, fill, i)
         # (d) mark at the close of bar t and apply the circuit breakers (effective next open)
@@ -349,13 +341,12 @@ class SignalEngine:
 
 
 class TrendStrategy:
-    """Position state machine: shock entries, holding clock, stop, reverse on opposite shock."""
+    """Position state machine: shock entries, chandelier trailing stop, reverse on opposite shock."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
         self.direction = 0
         self.stop = math.nan
-        self.held = 0
         self.exit_reason = ""
 
     def on_bar_close(self, snap: SignalSnapshot) -> int:
@@ -364,17 +355,16 @@ class TrendStrategy:
         self.exit_reason = ""
         if d == 0:
             return sh
-        self.held += 1
-        if sh == d:
-            self.held = 0
         if d * (snap.close - self.stop) < 0:
             self.exit_reason = "stop"
-        elif self.held >= self.p.hold_n:
-            self.exit_reason = "time"
+        else:
+            s2 = snap.close - d * self.p.stop_mult * snap.atr
+            if d * (s2 - self.stop) > 0:
+                self.stop = s2
         return -d if sh == -d else (0 if self.exit_reason else d)
 
     def on_entry(self, direction: int, snap: SignalSnapshot) -> None:
-        self.direction, self.held = direction, 0
+        self.direction = direction
         self.stop = snap.close - direction * self.p.stop_mult * snap.atr
 
     def on_exit(self) -> None:

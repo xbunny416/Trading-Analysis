@@ -50,3 +50,16 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'hold_n': 24} IS
 failure    : (b) OOS Sharpe -0.6646 < 1.5
 failure    : (d) WFE -1.0921 < 0.6 (OOS Sharpe -0.6646 / IS Sharpe 0.6086)
 
+=== TRIAL 5 | 2026-09-26T08:49:21Z | code b60b1dd9e47a | FAIL ===
+hypothesis : T5 shock entry + trend-following exit: enter in the direction of a bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier trailing stop; reverse on an opposite shock. Motivation: T4 in-sample showed post-shock continuation but its fixed holding clock capped winners, and later IS windows favoured longer holds.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=0.3224 is_sharpe_mean=0.5964 wfe=0.5406 oos_max_dd=0.07828 oos_trades_per_year=167.05 oos_total_return=0.04976 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.5003 OOS_sh=-0.7257 OOS_dd=0.0395 OOS_tr/yr=200.1
+split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.6228 OOS_sh=0.6865 OOS_dd=0.05034 OOS_tr/yr=141.1
+split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.9349 OOS_sh=0.3972 OOS_dd=0.03601 OOS_tr/yr=157.29
+split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.5, 'stop_mult': 5.0} IS_sh=0.0496 OOS_sh=0.2379 OOS_dd=0.02416 OOS_tr/yr=125.76
+split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.8743 OOS_sh=0.6922 OOS_dd=0.02181 OOS_tr/yr=213.27
+failure    : (b) OOS Sharpe 0.3224 < 1.5
+failure    : (d) WFE 0.5406 < 0.6 (OOS Sharpe 0.3224 / IS Sharpe 0.5964)
+

@@ -1,0 +1,13 @@
+=== TRIAL 1 | 2026-09-26T08:41:21Z | code 455c6033ce69 | FAIL ===
+hypothesis : T1 Donchian breakout: enter at next open when the hourly close breaks the prior entry_n-bar high/low; exit on an atr_mult x ATR chandelier stop or reverse on the opposite breakout; size = NAV*risk_pct/(atr_mult*ATR).
+grid       : {"entry_n": [24, 48, 72, 96, 120], "atr_mult": [2.0, 3.0, 4.0, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=-0.102 is_sharpe_mean=-0.4243 wfe=None oos_max_dd=0.08679 oos_trades_per_year=117.56 oos_total_return=-0.01636 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'entry_n': 48, 'atr_mult': 2.0} IS_sh=-0.1811 OOS_sh=-1.2592 OOS_dd=0.07362 OOS_tr/yr=132.94
+split 2    : OOS 2017-06-11..2018-03-02 params={'entry_n': 24, 'atr_mult': 5.0} IS_sh=-1.0073 OOS_sh=0.5834 OOS_dd=0.01404 OOS_tr/yr=114.81
+split 3    : OOS 2018-03-04..2018-11-26 params={'entry_n': 24, 'atr_mult': 5.0} IS_sh=-0.8707 OOS_sh=0.2324 OOS_dd=0.02314 OOS_tr/yr=116.26
+split 4    : OOS 2018-11-26..2019-08-21 params={'entry_n': 24, 'atr_mult': 4.0} IS_sh=0.1079 OOS_sh=-0.9535 OOS_dd=0.05382 OOS_tr/yr=120.29
+split 5    : OOS 2019-08-21..2020-05-14 params={'entry_n': 24, 'atr_mult': 4.0} IS_sh=-0.1701 OOS_sh=1.5509 OOS_dd=0.02456 OOS_tr/yr=105.27
+failure    : (b) OOS Sharpe -0.102 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.4243 <= 0
+

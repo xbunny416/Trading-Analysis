@@ -90,3 +90,16 @@ failure    : (a) OOS trades/year 91.04 <= 100
 failure    : (b) OOS Sharpe -0.3842 < 1.5
 failure    : (d) WFE -5.1612 < 0.6 (OOS Sharpe -0.3842 / IS Sharpe 0.0744)
 
+=== TRIAL 8 | 2026-09-26T08:53:10Z | code 9efcaa39498f | FAIL ===
+hypothesis : T8 parsimonious shock momentum: T5 structure with one degree of freedom removed - the chandelier stop distance is tied to the shock threshold (shock_k x ATR) - and the WFA searches the volatility baseline atr_n that defines an unusual range. Motivation: T5 was the best OOS (0.32, WFE 0.54) but its stop_mult choice jumped 1.5 <-> 5.0 between splits (noise-fitting); T7 alignment cut edge.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "atr_n": [6, 12, 24, 48]}  fixed: {"risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=0.1991 is_sharpe_mean=0.9348 wfe=0.213 oos_max_dd=0.05946 oos_trades_per_year=136.7 oos_total_return=0.0302 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=1.2225 OOS_sh=1.1085 OOS_dd=0.03594 OOS_tr/yr=124.72
+split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=1.0059 OOS_sh=0.5192 OOS_dd=0.03137 OOS_tr/yr=125.88
+split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=0.882 OOS_sh=0.5416 OOS_dd=0.03255 OOS_tr/yr=132.67
+split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 3.0, 'atr_n': 12} IS_sh=1.4551 OOS_sh=-0.6187 OOS_dd=0.05169 OOS_tr/yr=135.32
+split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'atr_n': 24} IS_sh=0.1084 OOS_sh=-0.8321 OOS_dd=0.04772 OOS_tr/yr=166.79
+failure    : (b) OOS Sharpe 0.1991 < 1.5
+failure    : (d) WFE 0.213 < 0.6 (OOS Sharpe 0.1991 / IS Sharpe 0.9348)
+

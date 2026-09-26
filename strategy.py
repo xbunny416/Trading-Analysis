@@ -3,19 +3,19 @@ strategy.py - long/short hourly trend following for a major FX pair (default EUR
 
 Rules (identical in both implementations below)
 -----------------------------------------------
-Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, stop_mult, risk_pct.
+Indicators (2): ATR, Donchian channel.  Tunable parameters (4): atr_n, shock_k, trend_n, risk_pct.
 
-    TR_t   = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|)
-    ATR_t  = mean(TR_{t-n+1..t})                                    n = atr_n
-    Shock_t = +1 if TR_t > k * ATR_{t-1} and C_t > C_{t-1} and C_t - L_t > H_t - C_t     k = shock_k
-              -1 if TR_t > k * ATR_{t-1} and C_t < C_{t-1} and H_t - C_t > C_t - L_t
-              (range expansion vs. the prior n bars, closing in the half of the bar the move points to)
+    TR_t    = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|)
+    ATR_t   = mean(TR_{t-n+1..t})                                   n = atr_n
+    Shock_t = +1 if TR_t > k * ATR_{t-1} and C_t > C_{t-1}          k = shock_k
+              -1 if TR_t > k * ATR_{t-1} and C_t < C_{t-1}          (range expansion vs. the prior n bars)
+    Trend_t = +1 if C_t > max(High_{t-N..t-1}), -1 if C_t < min(Low_{t-N..t-1}), else Trend_{t-1}   N = trend_n
 
     at the close of bar t-1 (decision), executed at the OPEN of bar t:
-        entry        : direction of Shock_{t-1}  (momentum after an information shock)
-        exit         : chandelier trailing stop  stop_long = max_{since entry}(C - m*ATR),  exit if C_{t-1} < stop
-                       (mirror for shorts); reverse on an opposite shock.               m = stop_mult
-        size (units) : NAV_{t-1} * risk_pct / (m * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
+        entry        : Shock_{t-1} = Trend_{t-1} != 0   (information shock in the direction of the slow regime)
+        exit         : chandelier trailing stop  stop_long = max_{since entry}(C - k*ATR),  exit if C_{t-1} < stop
+                       (mirror for shorts), or Trend != position; reverse on an opposite aligned shock
+        size (units) : NAV_{t-1} * risk_pct / (k * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
 
 Friction: 0.5 pip half-spread + 0.5 pip slippage on every fill (2.0 pips per round trip).
 Circuit breakers (checked on each bar close, applied from the next open):
@@ -37,12 +37,12 @@ import pandas as pd
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "T6 confirmed shock + trend-following exit: as T5, but a shock only counts if the bar also closes in "
-    "the half of its range that the move points to (absorbed order flow, not a rejection wick). No new "
-    "tunable parameter. Motivation: T5 OOS Sharpe 0.32 / IS 0.60 with a 40% win rate; wide bars that "
-    "reject their extreme should not be read as continuation."
+    "T7 regime-aligned shocks: T5 shock entries (no close-location filter; T6 showed it did not carry "
+    "OOS) taken only in the direction of a slow trend_n-bar Donchian regime; chandelier stop at shock_k x "
+    "ATR; exit on regime flip. Motivation: T5 shocks and T3 regime alignment each had partial in-sample "
+    "edge; alignment should drop counter-trend shocks and let lower thresholds keep >100 trades/yr."
 )
-INDICATORS = ("ATR",)
+INDICATORS = ("ATR", "Donchian channel")
 
 
 @dataclass(frozen=True)
@@ -50,23 +50,29 @@ class StrategyParams:
     """The only tunable numbers in the strategy (4)."""
 
     atr_n: int = 24          # ATR lookback, bars
-    shock_k: float = 2.5     # shock threshold, in ATRs of the prior atr_n bars
-    stop_mult: float = 3.0   # chandelier trailing-stop distance and sizing unit, in ATRs
-    risk_pct: float = 0.0025  # fraction of NAV lost if price moves stop_mult*ATR against the position
+    shock_k: float = 2.0     # shock threshold in ATRs of the prior atr_n bars; also the trailing-stop distance
+    trend_n: int = 240       # slow Donchian lookback defining the trend regime, bars
+    risk_pct: float = 0.0025  # fraction of NAV lost if price moves shock_k*ATR against the position
+
+    @property
+    def stop_mult(self) -> float:
+        return self.shock_k
 
     def validate(self) -> "StrategyParams":
-        if not (isinstance(self.atr_n, (int, np.integer)) and self.atr_n >= 1):
-            raise ValueError(f"atr_n must be an int >= 1, got {self.atr_n}")
-        if not (self.shock_k > 0 and self.stop_mult > 0 and 0 < self.risk_pct < 0.05):
-            raise ValueError("shock_k and stop_mult must be > 0 and risk_pct in (0, 0.05)")
+        for name in ("atr_n", "trend_n"):
+            v = getattr(self, name)
+            if not (isinstance(v, (int, np.integer)) and v >= 2):
+                raise ValueError(f"{name} must be an int >= 2, got {v}")
+        if not (self.shock_k > 0 and 0 < self.risk_pct < 0.05):
+            raise ValueError("shock_k must be > 0 and risk_pct in (0, 0.05)")
         return self
 
 
 DEFAULT_PARAMS = StrategyParams()
 # walk-forward search space (the other parameters stay at their defaults)
-PARAM_GRID = {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}
+PARAM_GRID = {"shock_k": [1.5, 2.0, 2.5, 3.0], "trend_n": [120, 240, 480, 960]}
 # parameters that change the signal frame (lets the harness cache it)
-FEATURE_PARAMS = ("atr_n", "shock_k")
+FEATURE_PARAMS = ("atr_n", "shock_k", "trend_n")
 
 
 @dataclass(frozen=True)
@@ -88,7 +94,7 @@ class ExecutionConfig:
 
 
 def warmup_bars(p: StrategyParams) -> int:
-    return p.atr_n + 3
+    return max(p.atr_n, p.trend_n) + 3
 
 
 # ============================================================================= data helpers
@@ -129,15 +135,20 @@ def compute_features(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     tr = np.fmax(h - l, np.fmax((h - pc).abs(), (l - pc).abs()))
     atr = tr.rolling(p.atr_n).mean()
     big = tr > p.shock_k * atr.shift(1)  # range expansion vs. the n bars before this one
-    strong_up, strong_dn = (c - l) > (h - c), (h - c) > (c - l)  # closed in the upper / lower half
-    shock = np.where(big & (c > pc) & strong_up, 1.0, np.where(big & (c < pc) & strong_dn, -1.0, 0.0))
-    return pd.DataFrame({"close": c, "atr": atr, "shock": shock}, index=df.index)
+    shock = np.where(big & (c > pc), 1.0, np.where(big & (c < pc), -1.0, 0.0))
+    slow_hi = h.rolling(p.trend_n).max().shift(1)  # channel of the N bars *before* bar t
+    slow_lo = l.rolling(p.trend_n).min().shift(1)
+    breakout = np.where(c > slow_hi, 1.0, np.where(c < slow_lo, -1.0, np.nan))
+    trend = pd.Series(breakout, index=df.index).ffill().fillna(0.0)
+    return pd.DataFrame({"close": c, "atr": atr, "shock": shock, "trend": trend}, index=df.index)
 
 
 def signal_frame(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     """Row t = everything known at the OPEN of bar t, i.e. computed from bars <= t-1."""
     s = compute_features(df, p).shift(1)  # <- look-ahead guard
     s["shock"] = s["shock"].fillna(0.0)
+    s["trend"] = s["trend"].fillna(0.0)
+    s["setup"] = np.where((s["shock"] != 0) & (s["shock"] == s["trend"]), s["shock"], 0.0)
     return s
 
 
@@ -197,7 +208,8 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     C = df["close"].to_numpy()[w].tolist()
     CP = sig["close"].to_numpy()[w].tolist()
     A = sig["atr"].to_numpy()[w].tolist()
-    SH = sig["shock"].to_numpy()[w].astype(int).tolist()
+    SU = sig["setup"].to_numpy()[w].astype(int).tolist()
+    RG = sig["trend"].to_numpy()[w].astype(int).tolist()
     idx = df.index[w]
     TS = idx.as_unit("ns").asi8.tolist()
     DAY = trading_day_ids(idx).tolist()
@@ -217,17 +229,19 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     for i in range(L):
         cp, a = CP[i], A[i]
         # (a) fold in the close of bar t-1 and choose the target direction for this bar
-        sh, why = SH[i], ""
+        su, why = SU[i], ""
         if d == 0:
-            tgt = sh
+            tgt = su
         else:
             if d * (cp - stop) < 0:
                 why = "stop"
+            elif RG[i] != d:
+                why = "regime"
             else:  # ratchet the chandelier towards the trade
                 s2 = cp - d * k * a
                 if d * (s2 - stop) > 0:
                     stop = s2
-            tgt = -d if sh == -d else (0 if why else d)
+            tgt = -d if su == -d else (0 if why else d)
         gated = killed or TS[i] <= halt_until
         if gated:
             tgt = 0
@@ -319,16 +333,21 @@ class SignalSnapshot:
     close: float
     atr: float
     shock: int
+    trend: int
+    setup: int
 
 
 class SignalEngine:
-    """Incremental ATR and confirmed range-expansion shock detector over completed bars."""
+    """Incremental ATR, range-expansion shock detector and sticky slow-channel regime."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
         self._tr: deque[float] = deque(maxlen=p.atr_n)
+        self._hi: deque[float] = deque(maxlen=p.trend_n)
+        self._lo: deque[float] = deque(maxlen=p.trend_n)
         self._prev_close: float | None = None
         self._prev_atr = math.nan
+        self.trend = 0
 
     def update(self, bar: Bar) -> SignalSnapshot:
         h, l, c, pc = bar.high, bar.low, bar.close, self._prev_close
@@ -337,16 +356,21 @@ class SignalEngine:
         atr = math.fsum(self._tr) / self.p.atr_n if len(self._tr) == self.p.atr_n else math.nan
         shock = 0
         if pc is not None and tr > self.p.shock_k * self._prev_atr:
-            if c > pc and c - l > h - c:
-                shock = 1
-            elif c < pc and h - c > c - l:
-                shock = -1
+            shock = 1 if c > pc else (-1 if c < pc else 0)
+        if len(self._hi) == self.p.trend_n:  # channel excludes the bar being closed
+            if c > max(self._hi):
+                self.trend = 1
+            elif c < min(self._lo):
+                self.trend = -1
+        self._hi.append(h)
+        self._lo.append(l)
         self._prev_close, self._prev_atr = c, atr
-        return SignalSnapshot(c, atr, shock)
+        setup = shock if shock != 0 and shock == self.trend else 0
+        return SignalSnapshot(c, atr, shock, self.trend, setup)
 
 
 class TrendStrategy:
-    """Position state machine: shock entries, chandelier trailing stop, reverse on opposite shock."""
+    """Position state machine: aligned shock entries, chandelier stop, regime exit, reverse."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
@@ -356,17 +380,19 @@ class TrendStrategy:
 
     def on_bar_close(self, snap: SignalSnapshot) -> int:
         """Fold in a completed bar; return the desired direction for the next open."""
-        d, sh = self.direction, snap.shock
+        d, su = self.direction, snap.setup
         self.exit_reason = ""
         if d == 0:
-            return sh
+            return su
         if d * (snap.close - self.stop) < 0:
             self.exit_reason = "stop"
+        elif snap.trend != d:
+            self.exit_reason = "regime"
         else:
             s2 = snap.close - d * self.p.stop_mult * snap.atr
             if d * (s2 - self.stop) > 0:
                 self.stop = s2
-        return -d if sh == -d else (0 if self.exit_reason else d)
+        return -d if su == -d else (0 if self.exit_reason else d)
 
     def on_entry(self, direction: int, snap: SignalSnapshot) -> None:
         self.direction = direction

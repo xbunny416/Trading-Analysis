@@ -76,3 +76,17 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'stop_mult': 5.0
 failure    : (b) OOS Sharpe 0.2548 < 1.5
 failure    : (d) WFE 0.3966 < 0.6 (OOS Sharpe 0.2548 / IS Sharpe 0.6424)
 
+=== TRIAL 7 | 2026-09-26T08:51:59Z | code 12252581ae26 | FAIL ===
+hypothesis : T7 regime-aligned shocks: T5 shock entries (no close-location filter; T6 showed it did not carry OOS) taken only in the direction of a slow trend_n-bar Donchian regime; chandelier stop at shock_k x ATR; exit on regime flip. Motivation: T5 shocks and T3 regime alignment each had partial in-sample edge; alignment should drop counter-trend shocks and let lower thresholds keep >100 trades/yr.
+grid       : {"shock_k": [1.5, 2.0, 2.5, 3.0], "trend_n": [120, 240, 480, 960]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=-0.3842 is_sharpe_mean=0.0744 wfe=-5.1612 oos_max_dd=0.10093 oos_trades_per_year=91.04 oos_total_return=-0.06374 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'trend_n': 120} IS_sh=0.8733 OOS_sh=-0.9936 OOS_dd=0.04998 OOS_tr/yr=124.72
+split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.0, 'trend_n': 120} IS_sh=-0.2963 OOS_sh=0.9869 OOS_dd=0.03259 OOS_tr/yr=113.43
+split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.0, 'trend_n': 480} IS_sh=0.1563 OOS_sh=0.7637 OOS_dd=0.02289 OOS_tr/yr=116.26
+split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.0, 'trend_n': 960} IS_sh=0.4972 OOS_sh=-2.9935 OOS_dd=0.09465 OOS_tr/yr=102.52
+split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.0, 'trend_n': 960} IS_sh=-0.8583 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (a) OOS trades/year 91.04 <= 100
+failure    : (b) OOS Sharpe -0.3842 < 1.5
+failure    : (d) WFE -5.1612 < 0.6 (OOS Sharpe -0.3842 / IS Sharpe 0.0744)
+

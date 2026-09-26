@@ -1,106 +1,15 @@
-=== TRIAL 1 | 2026-09-26T08:41:21Z | code 455c6033ce69 | FAIL ===
-hypothesis : T1 Donchian breakout: enter at next open when the hourly close breaks the prior entry_n-bar high/low; exit on an atr_mult x ATR chandelier stop or reverse on the opposite breakout; size = NAV*risk_pct/(atr_mult*ATR).
-grid       : {"entry_n": [24, 48, 72, 96, 120], "atr_mult": [2.0, 3.0, 4.0, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=-0.102 is_sharpe_mean=-0.4243 wfe=None oos_max_dd=0.08679 oos_trades_per_year=117.56 oos_total_return=-0.01636 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'entry_n': 48, 'atr_mult': 2.0} IS_sh=-0.1811 OOS_sh=-1.2592 OOS_dd=0.07362 OOS_tr/yr=132.94
-split 2    : OOS 2017-06-11..2018-03-02 params={'entry_n': 24, 'atr_mult': 5.0} IS_sh=-1.0073 OOS_sh=0.5834 OOS_dd=0.01404 OOS_tr/yr=114.81
-split 3    : OOS 2018-03-04..2018-11-26 params={'entry_n': 24, 'atr_mult': 5.0} IS_sh=-0.8707 OOS_sh=0.2324 OOS_dd=0.02314 OOS_tr/yr=116.26
-split 4    : OOS 2018-11-26..2019-08-21 params={'entry_n': 24, 'atr_mult': 4.0} IS_sh=0.1079 OOS_sh=-0.9535 OOS_dd=0.05382 OOS_tr/yr=120.29
-split 5    : OOS 2019-08-21..2020-05-14 params={'entry_n': 24, 'atr_mult': 4.0} IS_sh=-0.1701 OOS_sh=1.5509 OOS_dd=0.02456 OOS_tr/yr=105.27
-failure    : (b) OOS Sharpe -0.102 < 1.5
-failure    : (d) WFE undefined: mean IS Sharpe -0.4243 <= 0
+# trials.log - cycle 2 (NautilusTrader engine, user's MT5 M15 data, 5-pair portfolio). Budget: 8 trials.
+# Cycle 1 (custom engine, OANDA EURUSD 2015-2020, 8/8 failed) is archived in research/cycle1/trials.log.
 
-=== TRIAL 2 | 2026-09-26T08:44:34Z | code 81baa73b081c | FAIL ===
-hypothesis : T2 trend-regime pullback: slow trend_n-bar Donchian breakout sets the regime; inside it, enter on a pull_n-bar counter-move (buy the fast-channel low in an up-trend, sell the high in a down-trend); exit at the opposite fast-channel extreme, an atr_mult x ATR stop, or a regime flip. Motivation: T1 in-sample grids showed hourly breakouts mean-revert while multi-day trends persist.
-grid       : {"trend_n": [120, 240, 480, 960], "pull_n": [6, 12, 24, 48]}  fixed: {"atr_mult": 3.0, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=-0.601 is_sharpe_mean=-0.7602 wfe=None oos_max_dd=0.09805 oos_trades_per_year=180.99 oos_total_return=-0.07624 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'trend_n': 120, 'pull_n': 12} IS_sh=-0.9728 OOS_sh=-0.9613 OOS_dd=0.04194 OOS_tr/yr=160.35
-split 2    : OOS 2017-06-11..2018-03-02 params={'trend_n': 120, 'pull_n': 12} IS_sh=-1.4505 OOS_sh=-1.4806 OOS_dd=0.05007 OOS_tr/yr=142.48
-split 3    : OOS 2018-03-04..2018-11-26 params={'trend_n': 480, 'pull_n': 12} IS_sh=-0.851 OOS_sh=0.2358 OOS_dd=0.02765 OOS_tr/yr=170.97
-split 4    : OOS 2018-11-26..2019-08-21 params={'trend_n': 960, 'pull_n': 12} IS_sh=-0.1758 OOS_sh=0.327 OOS_dd=0.03015 OOS_tr/yr=183.17
-split 5    : OOS 2019-08-21..2020-05-14 params={'trend_n': 960, 'pull_n': 6} IS_sh=-0.3508 OOS_sh=-1.3393 OOS_dd=0.05899 OOS_tr/yr=250.18
-failure    : (b) OOS Sharpe -0.601 < 1.5
-failure    : (d) WFE undefined: mean IS Sharpe -0.7602 <= 0
+=== TRIAL 1 | 2026-09-26T15:41:19Z | code 21e10d4348ba | FAIL ===
+hypothesis : C2-T1 replicate cycle 1's best out-of-sample idea on unseen data: enter in the direction of an hourly bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier stop; reverse on an opposite shock. Same rules and parameters on all 5 pairs, one USD account.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : EURUSD 00c09292328a2e92, GBPUSD c072eb08c817f874, USDJPY 1d6626fdcc462684, USDCAD 18161822de0c924c, EURJPY ef413efd2c22fe3c
+metrics    : oos_sharpe=0.6608 is_sharpe_mean=0.7109 wfe=0.9296 oos_max_dd=0.02746 oos_trades_per_year=590.46 oos_total_return=0.02968 leak_test=PASS
+split 1    : OOS 2021-07-30..2021-11-11 params={'shock_k': 3.5, 'stop_mult': 1.5} IS_sh=0.7869 OOS_sh=1.5752 OOS_dd=0.00974 OOS_tr/yr=235.97
+split 2    : OOS 2021-11-11..2022-02-22 params={'shock_k': 3.5, 'stop_mult': 2.5} IS_sh=0.9585 OOS_sh=0.244 OOS_dd=0.01869 OOS_tr/yr=250.16
+split 3    : OOS 2022-02-22..2022-06-06 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=1.316 OOS_sh=-0.3176 OOS_dd=0.01324 OOS_tr/yr=930.15
+split 4    : OOS 2022-06-06..2022-09-18 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=-0.0627 OOS_sh=1.0111 OOS_dd=0.0143 OOS_tr/yr=952.6
+split 5    : OOS 2022-09-18..2022-12-30 params={'shock_k': 2.5, 'stop_mult': 5.0} IS_sh=0.5557 OOS_sh=0.9441 OOS_dd=0.01092 OOS_tr/yr=581.33
+failure    : (b) OOS Sharpe 0.6608 < 1.5
 
-=== TRIAL 3 | 2026-09-26T08:46:25Z | code 4cf743e0b65a | FAIL ===
-hypothesis : T3 regime-aligned fast breakout: slow trend_n-bar Donchian breakout sets the regime; enter only on a pull_n-bar breakout in the regime's direction; exit on the opposite pull_n-bar channel break, an atr_mult x ATR stop, or a regime flip. Motivation: T2 in-sample showed fading short-term moves inside the trend loses (counter-moves persist), T1 showed unfiltered short breakouts lose; test alignment.
-grid       : {"trend_n": [120, 240, 480, 960], "pull_n": [6, 12, 24, 48]}  fixed: {"atr_mult": 3.0, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=-0.4629 is_sharpe_mean=0.0016 wfe=-285.7407 oos_max_dd=0.1002 oos_trades_per_year=115.1 oos_total_return=-0.06668 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'trend_n': 120, 'pull_n': 12} IS_sh=0.5517 OOS_sh=-0.5304 OOS_dd=0.04326 OOS_tr/yr=139.8
-split 2    : OOS 2017-06-11..2018-03-02 params={'trend_n': 120, 'pull_n': 6} IS_sh=-0.5767 OOS_sh=1.111 OOS_dd=0.03294 OOS_tr/yr=193.66
-split 3    : OOS 2018-03-04..2018-11-26 params={'trend_n': 960, 'pull_n': 6} IS_sh=0.1526 OOS_sh=-1.5586 OOS_dd=0.05775 OOS_tr/yr=212.0
-split 4    : OOS 2018-11-26..2019-08-21 params={'trend_n': 960, 'pull_n': 12} IS_sh=0.5857 OOS_sh=-3.1736 OOS_dd=0.04512 OOS_tr/yr=32.81
-split 5    : OOS 2019-08-21..2020-05-14 params={'trend_n': 480, 'pull_n': 12} IS_sh=-0.7052 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
-failure    : (b) OOS Sharpe -0.4629 < 1.5
-failure    : (d) WFE -285.7407 < 0.6 (OOS Sharpe -0.4629 / IS Sharpe 0.0016)
-
-=== TRIAL 4 | 2026-09-26T08:48:20Z | code aeff095587b4 | FAIL ===
-hypothesis : T4 shock momentum: an hourly bar whose true range exceeds shock_k x ATR(atr_n) of the prior bars marks information arrival; trade its direction at the next open, hold hold_n bars (renewed by same-direction shocks), stop at shock_k x ATR, reverse on an opposite shock. Motivation: T1-T3 channel signals had ~zero gross edge at >100 trades/yr; test whether large-range bars continue.
-grid       : {"shock_k": [1.5, 2.0, 2.5, 3.0], "hold_n": [3, 6, 12, 24]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=-0.6646 is_sharpe_mean=0.6086 wfe=-1.0921 oos_max_dd=0.09042 oos_trades_per_year=132.05 oos_total_return=-0.06573 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 3.0, 'hold_n': 3} IS_sh=0.7323 OOS_sh=1.1862 OOS_dd=0.01063 OOS_tr/yr=91.83
-split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 3.0, 'hold_n': 3} IS_sh=0.9135 OOS_sh=-0.5657 OOS_dd=0.01985 OOS_tr/yr=103.75
-split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 3.0, 'hold_n': 6} IS_sh=0.9447 OOS_sh=-0.3151 OOS_dd=0.0218 OOS_tr/yr=91.64
-split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.5, 'hold_n': 12} IS_sh=0.276 OOS_sh=-1.7944 OOS_dd=0.05652 OOS_tr/yr=200.94
-split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'hold_n': 24} IS_sh=0.1763 OOS_sh=-0.7172 OOS_dd=0.04608 OOS_tr/yr=173.62
-failure    : (b) OOS Sharpe -0.6646 < 1.5
-failure    : (d) WFE -1.0921 < 0.6 (OOS Sharpe -0.6646 / IS Sharpe 0.6086)
-
-=== TRIAL 5 | 2026-09-26T08:49:21Z | code b60b1dd9e47a | FAIL ===
-hypothesis : T5 shock entry + trend-following exit: enter in the direction of a bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier trailing stop; reverse on an opposite shock. Motivation: T4 in-sample showed post-shock continuation but its fixed holding clock capped winners, and later IS windows favoured longer holds.
-grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=0.3224 is_sharpe_mean=0.5964 wfe=0.5406 oos_max_dd=0.07828 oos_trades_per_year=167.05 oos_total_return=0.04976 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.5003 OOS_sh=-0.7257 OOS_dd=0.0395 OOS_tr/yr=200.1
-split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.6228 OOS_sh=0.6865 OOS_dd=0.05034 OOS_tr/yr=141.1
-split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.9349 OOS_sh=0.3972 OOS_dd=0.03601 OOS_tr/yr=157.29
-split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.5, 'stop_mult': 5.0} IS_sh=0.0496 OOS_sh=0.2379 OOS_dd=0.02416 OOS_tr/yr=125.76
-split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.8743 OOS_sh=0.6922 OOS_dd=0.02181 OOS_tr/yr=213.27
-failure    : (b) OOS Sharpe 0.3224 < 1.5
-failure    : (d) WFE 0.5406 < 0.6 (OOS Sharpe 0.3224 / IS Sharpe 0.5964)
-
-=== TRIAL 6 | 2026-09-26T08:50:30Z | code 2339ad0f2572 | FAIL ===
-hypothesis : T6 confirmed shock + trend-following exit: as T5, but a shock only counts if the bar also closes in the half of its range that the move points to (absorbed order flow, not a rejection wick). No new tunable parameter. Motivation: T5 OOS Sharpe 0.32 / IS 0.60 with a 40% win rate; wide bars that reject their extreme should not be read as continuation.
-grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=0.2548 is_sharpe_mean=0.6424 wfe=0.3966 oos_max_dd=0.07894 oos_trades_per_year=147.09 oos_total_return=0.03927 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.54 OOS_sh=-0.7921 OOS_dd=0.04025 OOS_tr/yr=191.88
-split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.8596 OOS_sh=0.902 OOS_dd=0.05087 OOS_tr/yr=130.03
-split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=1.1463 OOS_sh=0.8151 OOS_dd=0.02963 OOS_tr/yr=146.35
-split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.5, 'stop_mult': 2.5} IS_sh=0.2928 OOS_sh=-0.5623 OOS_dd=0.04638 OOS_tr/yr=150.36
-split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'stop_mult': 5.0} IS_sh=0.3735 OOS_sh=0.4625 OOS_dd=0.02295 OOS_tr/yr=118.94
-failure    : (b) OOS Sharpe 0.2548 < 1.5
-failure    : (d) WFE 0.3966 < 0.6 (OOS Sharpe 0.2548 / IS Sharpe 0.6424)
-
-=== TRIAL 7 | 2026-09-26T08:51:59Z | code 12252581ae26 | FAIL ===
-hypothesis : T7 regime-aligned shocks: T5 shock entries (no close-location filter; T6 showed it did not carry OOS) taken only in the direction of a slow trend_n-bar Donchian regime; chandelier stop at shock_k x ATR; exit on regime flip. Motivation: T5 shocks and T3 regime alignment each had partial in-sample edge; alignment should drop counter-trend shocks and let lower thresholds keep >100 trades/yr.
-grid       : {"shock_k": [1.5, 2.0, 2.5, 3.0], "trend_n": [120, 240, 480, 960]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=-0.3842 is_sharpe_mean=0.0744 wfe=-5.1612 oos_max_dd=0.10093 oos_trades_per_year=91.04 oos_total_return=-0.06374 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'trend_n': 120} IS_sh=0.8733 OOS_sh=-0.9936 OOS_dd=0.04998 OOS_tr/yr=124.72
-split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.0, 'trend_n': 120} IS_sh=-0.2963 OOS_sh=0.9869 OOS_dd=0.03259 OOS_tr/yr=113.43
-split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.0, 'trend_n': 480} IS_sh=0.1563 OOS_sh=0.7637 OOS_dd=0.02289 OOS_tr/yr=116.26
-split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.0, 'trend_n': 960} IS_sh=0.4972 OOS_sh=-2.9935 OOS_dd=0.09465 OOS_tr/yr=102.52
-split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.0, 'trend_n': 960} IS_sh=-0.8583 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
-failure    : (a) OOS trades/year 91.04 <= 100
-failure    : (b) OOS Sharpe -0.3842 < 1.5
-failure    : (d) WFE -5.1612 < 0.6 (OOS Sharpe -0.3842 / IS Sharpe 0.0744)
-
-=== TRIAL 8 | 2026-09-26T08:53:10Z | code 9efcaa39498f | FAIL ===
-hypothesis : T8 parsimonious shock momentum: T5 structure with one degree of freedom removed - the chandelier stop distance is tied to the shock threshold (shock_k x ATR) - and the WFA searches the volatility baseline atr_n that defines an unusual range. Motivation: T5 was the best OOS (0.32, WFE 0.54) but its stop_mult choice jumped 1.5 <-> 5.0 between splits (noise-fitting); T7 alignment cut edge.
-grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "atr_n": [6, 12, 24, 48]}  fixed: {"risk_pct": 0.0025}
-data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
-metrics    : oos_sharpe=0.1991 is_sharpe_mean=0.9348 wfe=0.213 oos_max_dd=0.05946 oos_trades_per_year=136.7 oos_total_return=0.0302 leak_test=PASS
-split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=1.2225 OOS_sh=1.1085 OOS_dd=0.03594 OOS_tr/yr=124.72
-split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=1.0059 OOS_sh=0.5192 OOS_dd=0.03137 OOS_tr/yr=125.88
-split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'atr_n': 48} IS_sh=0.882 OOS_sh=0.5416 OOS_dd=0.03255 OOS_tr/yr=132.67
-split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 3.0, 'atr_n': 12} IS_sh=1.4551 OOS_sh=-0.6187 OOS_dd=0.05169 OOS_tr/yr=135.32
-split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'atr_n': 24} IS_sh=0.1084 OOS_sh=-0.8321 OOS_dd=0.04772 OOS_tr/yr=166.79
-failure    : (b) OOS Sharpe 0.1991 < 1.5
-failure    : (d) WFE 0.213 < 0.6 (OOS Sharpe 0.1991 / IS Sharpe 0.9348)
-
-# Budget exhausted: 8/8 trials used, none passed. harness.py refuses changed code until a fresh trials.log.

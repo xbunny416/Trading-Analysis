@@ -1,0 +1,966 @@
+{
+  "status": "FAIL",
+  "failures": [
+    "(b) OOS Sharpe 0.1991 < 1.5",
+    "(d) WFE 0.213 < 0.6 (OOS Sharpe 0.1991 / IS Sharpe 0.9348)"
+  ],
+  "trial": {
+    "code_fingerprint": "9efcaa39498f",
+    "rerun_of_trial": null,
+    "trial_number": 8,
+    "budget": 8
+  },
+  "hypothesis": "T8 parsimonious shock momentum: T5 structure with one degree of freedom removed - the chandelier stop distance is tied to the shock threshold (shock_k x ATR) - and the WFA searches the volatility baseline atr_n that defines an unusual range. Motivation: T5 was the best OOS (0.32, WFE 0.54) but its stop_mult choice jumped 1.5 <-> 5.0 between splits (noise-fitting); T7 alignment cut edge.",
+  "provenance": {
+    "source": "OANDA mid candles, 1-minute, resampled to 1-hour (UTC)",
+    "repository": "https://github.com/FutureSharks/financial-data",
+    "commit": "7ba1d404aa8b0e1c0f71321acebadcbfb9bcca8d",
+    "instrument": "EUR_USD",
+    "cache": "data/EURUSD_H1_oanda_2015_2020.csv.gz",
+    "sha256": "4a5f8acce6cbc3c612b49e6dfe374d631cc180c82f42ec4c1bcc6dafd7feeda5"
+  },
+  "data": {
+    "first_bar": "2015-01-01 22:00:00+00:00",
+    "last_bar": "2020-05-14 07:00:00+00:00",
+    "bars": 33340,
+    "years": 5.364,
+    "bars_per_year": 6215.0,
+    "gaps_over_1h_excl_weekends": 4,
+    "max_gap_hours": 76.0
+  },
+  "config": {
+    "execution": {
+      "pip": 0.0001,
+      "spread_pips": 1.0,
+      "slippage_pips": 0.5,
+      "daily_loss_limit": 0.025,
+      "halt_hours": 24.0,
+      "max_drawdown_limit": 0.1,
+      "max_leverage": 10.0,
+      "initial_nav": 1000000.0
+    },
+    "cost_per_fill_pips": 1.0,
+    "param_grid": {
+      "shock_k": [
+        2.0,
+        2.5,
+        3.0,
+        3.5
+      ],
+      "atr_n": [
+        6,
+        12,
+        24,
+        48
+      ]
+    },
+    "defaults": {
+      "atr_n": 24,
+      "shock_k": 2.5,
+      "risk_pct": 0.0025
+    },
+    "n_splits": 5,
+    "is_fraction": 0.7
+  },
+  "metrics": {
+    "oos_sharpe": 0.1991,
+    "is_sharpe_mean": 0.9348,
+    "wfe": 0.213,
+    "oos_max_drawdown": 0.05946,
+    "oos_trades_per_year": 136.7,
+    "oos_total_return": 0.0302,
+    "oos_cagr": 0.00817,
+    "oos_ann_vol": 0.04463,
+    "oos_win_rate": 0.378,
+    "oos_profit_factor": 0.994,
+    "oos_avg_trade_pips_net": -0.118,
+    "oos_years": 3.658,
+    "oos_halts_daily_loss": 0,
+    "oos_killed_max_dd": false,
+    "leak_test_passed": true
+  },
+  "splits": [
+    {
+      "split": 1,
+      "is_period": [
+        "2015-01-01 22:00:00+00:00",
+        "2016-09-16 08:00:00+00:00"
+      ],
+      "oos_period": [
+        "2016-09-16 09:00:00+00:00",
+        "2017-06-09 20:00:00+00:00"
+      ],
+      "chosen_params": {
+        "atr_n": 48,
+        "shock_k": 2.5,
+        "risk_pct": 0.0025
+      },
+      "is_plateau_score": 0.8559,
+      "is": {
+        "sharpe": 1.2225,
+        "total_return": 0.11082,
+        "cagr": 0.06351,
+        "ann_vol": 0.0497,
+        "max_drawdown": 0.02753,
+        "years": 1.707,
+        "trades": 250,
+        "trades_per_year": 146.46,
+        "exposure": 0.5875,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.428,
+        "avg_trade_pips_net": 6.68,
+        "profit_factor": 1.268,
+        "avg_bars_held": 25.0
+      },
+      "oos": {
+        "sharpe": 1.1085,
+        "total_return": 0.04494,
+        "cagr": 0.0621,
+        "ann_vol": 0.05419,
+        "max_drawdown": 0.03594,
+        "years": 0.73,
+        "trades": 91,
+        "trades_per_year": 124.72,
+        "exposure": 0.5624,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.4066,
+        "avg_trade_pips_net": 7.582,
+        "profit_factor": 1.395,
+        "avg_bars_held": 27.9
+      },
+      "wfe": 0.9067,
+      "is_grid": [
+        {
+          "shock_k": 2.0,
+          "atr_n": 6,
+          "sharpe": -1.2423,
+          "trades_per_year": 134.16
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 12,
+          "sharpe": -0.3758,
+          "trades_per_year": 211.49
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 24,
+          "sharpe": 0.1803,
+          "trades_per_year": 267.73
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 48,
+          "sharpe": 0.855,
+          "trades_per_year": 255.43
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 6,
+          "sharpe": 0.5271,
+          "trades_per_year": 178.1
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 12,
+          "sharpe": -0.4093,
+          "trades_per_year": 192.74
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 24,
+          "sharpe": 1.1433,
+          "trades_per_year": 147.63
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 48,
+          "sharpe": 1.2225,
+          "trades_per_year": 146.46
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 6,
+          "sharpe": 0.5986,
+          "trades_per_year": 104.87
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 12,
+          "sharpe": 0.2745,
+          "trades_per_year": 128.3
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 24,
+          "sharpe": 0.7395,
+          "trades_per_year": 93.15
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 48,
+          "sharpe": 0.9951,
+          "trades_per_year": 94.32
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 6,
+          "sharpe": 0.0086,
+          "trades_per_year": 73.23
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 12,
+          "sharpe": 0.1641,
+          "trades_per_year": 83.19
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 24,
+          "sharpe": 0.0832,
+          "trades_per_year": 68.54
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 48,
+          "sharpe": 0.6463,
+          "trades_per_year": 60.93
+        }
+      ]
+    },
+    {
+      "split": 2,
+      "is_period": [
+        "2015-09-27 21:00:00+00:00",
+        "2017-06-09 20:00:00+00:00"
+      ],
+      "oos_period": [
+        "2017-06-11 21:00:00+00:00",
+        "2018-03-02 21:00:00+00:00"
+      ],
+      "chosen_params": {
+        "atr_n": 48,
+        "shock_k": 2.5,
+        "risk_pct": 0.0025
+      },
+      "is_plateau_score": 0.5362,
+      "is": {
+        "sharpe": 1.0059,
+        "total_return": 0.08944,
+        "cagr": 0.05167,
+        "ann_vol": 0.0499,
+        "max_drawdown": 0.03594,
+        "years": 1.7,
+        "trades": 227,
+        "trades_per_year": 133.51,
+        "exposure": 0.5779,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.4229,
+        "avg_trade_pips_net": 5.573,
+        "profit_factor": 1.27,
+        "avg_bars_held": 26.9
+      },
+      "oos": {
+        "sharpe": 0.5192,
+        "total_return": 0.01641,
+        "cagr": 0.02277,
+        "ann_vol": 0.04338,
+        "max_drawdown": 0.03137,
+        "years": 0.723,
+        "trades": 91,
+        "trades_per_year": 125.88,
+        "exposure": 0.5288,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.3956,
+        "avg_trade_pips_net": 3.338,
+        "profit_factor": 1.15,
+        "avg_bars_held": 26.2
+      },
+      "wfe": 0.5162,
+      "is_grid": [
+        {
+          "shock_k": 2.0,
+          "atr_n": 6,
+          "sharpe": -0.4072,
+          "trades_per_year": 276.44
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 12,
+          "sharpe": -0.6845,
+          "trades_per_year": 307.61
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 24,
+          "sharpe": -0.1065,
+          "trades_per_year": 251.73
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 48,
+          "sharpe": 0.3393,
+          "trades_per_year": 245.26
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 6,
+          "sharpe": 0.2351,
+          "trades_per_year": 160.57
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 12,
+          "sharpe": -0.3738,
+          "trades_per_year": 184.68
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 24,
+          "sharpe": 0.711,
+          "trades_per_year": 138.22
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 48,
+          "sharpe": 1.0059,
+          "trades_per_year": 133.51
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 6,
+          "sharpe": 0.5209,
+          "trades_per_year": 94.69
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 12,
+          "sharpe": -0.1425,
+          "trades_per_year": 109.4
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 24,
+          "sharpe": 0.3101,
+          "trades_per_year": 86.46
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 48,
+          "sharpe": 0.9576,
+          "trades_per_year": 87.05
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 6,
+          "sharpe": 0.2161,
+          "trades_per_year": 65.29
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 12,
+          "sharpe": 0.2276,
+          "trades_per_year": 74.7
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 24,
+          "sharpe": 0.1556,
+          "trades_per_year": 62.35
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 48,
+          "sharpe": 0.7145,
+          "trades_per_year": 57.05
+        }
+      ]
+    },
+    {
+      "split": 3,
+      "is_period": [
+        "2016-06-19 21:00:00+00:00",
+        "2018-03-02 21:00:00+00:00"
+      ],
+      "oos_period": [
+        "2018-03-04 22:00:00+00:00",
+        "2018-11-26 22:00:00+00:00"
+      ],
+      "chosen_params": {
+        "atr_n": 48,
+        "shock_k": 2.5,
+        "risk_pct": 0.0025
+      },
+      "is_plateau_score": 0.5509,
+      "is": {
+        "sharpe": 0.882,
+        "total_return": 0.07546,
+        "cagr": 0.04371,
+        "ann_vol": 0.04823,
+        "max_drawdown": 0.05279,
+        "years": 1.7,
+        "trades": 218,
+        "trades_per_year": 128.21,
+        "exposure": 0.5594,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.4037,
+        "avg_trade_pips_net": 5.26,
+        "profit_factor": 1.259,
+        "avg_bars_held": 27.2
+      },
+      "oos": {
+        "sharpe": 0.5416,
+        "total_return": 0.01638,
+        "cagr": 0.02248,
+        "ann_vol": 0.04091,
+        "max_drawdown": 0.03255,
+        "years": 0.731,
+        "trades": 97,
+        "trades_per_year": 132.67,
+        "exposure": 0.5599,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.3814,
+        "avg_trade_pips_net": 1.689,
+        "profit_factor": 1.091,
+        "avg_bars_held": 26.5
+      },
+      "wfe": 0.6141,
+      "is_grid": [
+        {
+          "shock_k": 2.0,
+          "atr_n": 6,
+          "sharpe": -1.0263,
+          "trades_per_year": 154.09
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 12,
+          "sharpe": -0.8609,
+          "trades_per_year": 172.32
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 24,
+          "sharpe": -0.0055,
+          "trades_per_year": 241.72
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 48,
+          "sharpe": -0.3589,
+          "trades_per_year": 232.9
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 6,
+          "sharpe": -0.2688,
+          "trades_per_year": 169.38
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 12,
+          "sharpe": 0.2513,
+          "trades_per_year": 180.55
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 24,
+          "sharpe": 0.6106,
+          "trades_per_year": 131.74
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 48,
+          "sharpe": 0.882,
+          "trades_per_year": 128.21
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 6,
+          "sharpe": 0.0173,
+          "trades_per_year": 99.39
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 12,
+          "sharpe": 0.5946,
+          "trades_per_year": 109.39
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 24,
+          "sharpe": 1.1898,
+          "trades_per_year": 84.69
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 48,
+          "sharpe": 0.9872,
+          "trades_per_year": 84.1
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 6,
+          "sharpe": -0.3234,
+          "trades_per_year": 65.28
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 12,
+          "sharpe": 0.8808,
+          "trades_per_year": 66.46
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 24,
+          "sharpe": 1.0645,
+          "trades_per_year": 58.22
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 48,
+          "sharpe": 0.9151,
+          "trades_per_year": 56.46
+        }
+      ]
+    },
+    {
+      "split": 4,
+      "is_period": [
+        "2017-03-13 12:00:00+00:00",
+        "2018-11-26 22:00:00+00:00"
+      ],
+      "oos_period": [
+        "2018-11-26 23:00:00+00:00",
+        "2019-08-21 03:00:00+00:00"
+      ],
+      "chosen_params": {
+        "atr_n": 12,
+        "shock_k": 3.0,
+        "risk_pct": 0.0025
+      },
+      "is_plateau_score": 0.2708,
+      "is": {
+        "sharpe": 1.4551,
+        "total_return": 0.10982,
+        "cagr": 0.06294,
+        "ann_vol": 0.04095,
+        "max_drawdown": 0.03607,
+        "years": 1.707,
+        "trades": 202,
+        "trades_per_year": 118.34,
+        "exposure": 0.6048,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.4455,
+        "avg_trade_pips_net": 7.626,
+        "profit_factor": 1.387,
+        "avg_bars_held": 31.9
+      },
+      "oos": {
+        "sharpe": -0.6187,
+        "total_return": -0.02064,
+        "cagr": -0.0281,
+        "ann_vol": 0.0432,
+        "max_drawdown": 0.05169,
+        "years": 0.732,
+        "trades": 99,
+        "trades_per_year": 135.32,
+        "exposure": 0.5916,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.3838,
+        "avg_trade_pips_net": -5.937,
+        "profit_factor": 0.666,
+        "avg_bars_held": 27.1
+      },
+      "wfe": -0.4252,
+      "is_grid": [
+        {
+          "shock_k": 2.0,
+          "atr_n": 6,
+          "sharpe": -1.1603,
+          "trades_per_year": 105.45
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 12,
+          "sharpe": -1.2989,
+          "trades_per_year": 63.86
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 24,
+          "sharpe": 0.1462,
+          "trades_per_year": 244.3
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 48,
+          "sharpe": -1.2065,
+          "trades_per_year": 131.23
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 6,
+          "sharpe": -0.8677,
+          "trades_per_year": 176.34
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 12,
+          "sharpe": -0.2923,
+          "trades_per_year": 200.36
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 24,
+          "sharpe": 0.2063,
+          "trades_per_year": 132.99
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 48,
+          "sharpe": 0.3128,
+          "trades_per_year": 128.89
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 6,
+          "sharpe": -0.7963,
+          "trades_per_year": 110.72
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 12,
+          "sharpe": 1.4551,
+          "trades_per_year": 118.34
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 24,
+          "sharpe": 0.7766,
+          "trades_per_year": 79.09
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 48,
+          "sharpe": -0.0548,
+          "trades_per_year": 81.43
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 6,
+          "sharpe": -0.0762,
+          "trades_per_year": 66.79
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 12,
+          "sharpe": 1.1382,
+          "trades_per_year": 73.82
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 24,
+          "sharpe": 0.8936,
+          "trades_per_year": 52.73
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 48,
+          "sharpe": 0.4686,
+          "trades_per_year": 50.38
+        }
+      ]
+    },
+    {
+      "split": 5,
+      "is_period": [
+        "2017-12-05 17:00:00+00:00",
+        "2019-08-21 03:00:00+00:00"
+      ],
+      "oos_period": [
+        "2019-08-21 04:00:00+00:00",
+        "2020-05-14 07:00:00+00:00"
+      ],
+      "chosen_params": {
+        "atr_n": 24,
+        "shock_k": 2.5,
+        "risk_pct": 0.0025
+      },
+      "is_plateau_score": -0.1677,
+      "is": {
+        "sharpe": 0.1084,
+        "total_return": 0.00666,
+        "cagr": 0.0039,
+        "ann_vol": 0.04359,
+        "max_drawdown": 0.05548,
+        "years": 1.707,
+        "trades": 244,
+        "trades_per_year": 142.95,
+        "exposure": 0.6064,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.3607,
+        "avg_trade_pips_net": 0.869,
+        "profit_factor": 1.052,
+        "avg_bars_held": 26.3
+      },
+      "oos": {
+        "sharpe": -0.8321,
+        "total_return": -0.02555,
+        "cagr": -0.03476,
+        "ann_vol": 0.04007,
+        "max_drawdown": 0.04772,
+        "years": 0.731,
+        "trades": 122,
+        "trades_per_year": 166.79,
+        "exposure": 0.5987,
+        "halts_daily_loss": 0,
+        "killed_max_dd": false,
+        "win_rate": 0.3361,
+        "avg_trade_pips_net": -5.156,
+        "profit_factor": 0.683,
+        "avg_bars_held": 22.3
+      },
+      "wfe": -7.6762,
+      "is_grid": [
+        {
+          "shock_k": 2.0,
+          "atr_n": 6,
+          "sharpe": -0.6436,
+          "trades_per_year": 149.39
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 12,
+          "sharpe": -0.6443,
+          "trades_per_year": 169.31
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 24,
+          "sharpe": -0.2224,
+          "trades_per_year": 198.6
+        },
+        {
+          "shock_k": 2.0,
+          "atr_n": 48,
+          "sharpe": -0.7065,
+          "trades_per_year": 212.08
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 6,
+          "sharpe": -0.8262,
+          "trades_per_year": 107.21
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 12,
+          "sharpe": -0.2166,
+          "trades_per_year": 124.79
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 24,
+          "sharpe": 0.1084,
+          "trades_per_year": 142.95
+        },
+        {
+          "shock_k": 2.5,
+          "atr_n": 48,
+          "sharpe": 0.1389,
+          "trades_per_year": 137.09
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 6,
+          "sharpe": -1.606,
+          "trades_per_year": 96.66
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 12,
+          "sharpe": 0.6529,
+          "trades_per_year": 125.37
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 24,
+          "sharpe": -0.2959,
+          "trades_per_year": 84.95
+        },
+        {
+          "shock_k": 3.0,
+          "atr_n": 48,
+          "sharpe": -0.3242,
+          "trades_per_year": 84.36
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 6,
+          "sharpe": 0.1552,
+          "trades_per_year": 65.03
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 12,
+          "sharpe": -0.4305,
+          "trades_per_year": 85.53
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 24,
+          "sharpe": 0.4497,
+          "trades_per_year": 55.66
+        },
+        {
+          "shock_k": 3.5,
+          "atr_n": 48,
+          "sharpe": -0.2265,
+          "trades_per_year": 55.07
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "complexity": {
+      "passed": true,
+      "tunable_parameters": [
+        "atr_n",
+        "shock_k",
+        "risk_pct"
+      ],
+      "indicators": [
+        "ATR"
+      ],
+      "optimised_in_wfa": [
+        "shock_k",
+        "atr_n"
+      ],
+      "calendar_filter_hits": []
+    },
+    "edge_cases": {
+      "zero_division_sizing": {
+        "passed": true,
+        "sizes": [
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          9090909.09090909
+        ],
+        "leverage_at_tiny_atr": 10.0
+      },
+      "flat_prices_zero_atr": {
+        "passed": true
+      },
+      "missing_and_corrupt_bars": {
+        "passed": true,
+        "rows_in": 8658,
+        "rows_clean": 8610,
+        "parity": {
+          "passed": true,
+          "bars": 8610,
+          "trades_vectorized": 93,
+          "trades_event": 93,
+          "max_nav_rel_diff": 0.0,
+          "direction_match": true
+        }
+      },
+      "volatility_spike": {
+        "passed": true,
+        "max_leverage_seen": 1.225,
+        "parity": {
+          "passed": true,
+          "bars": 9405,
+          "trades_vectorized": 72,
+          "trades_event": 72,
+          "max_nav_rel_diff": 0.0,
+          "direction_match": true
+        }
+      },
+      "circuit_breakers": {
+        "passed": true,
+        "leverage_before_gap": 1.024,
+        "daily_halt_ok": true,
+        "max_dd_kill_ok": true
+      },
+      "friction_round_trip": {
+        "passed": true,
+        "cost": -20.0,
+        "expected": -20.0
+      },
+      "parity_segmented": {
+        "passed": true,
+        "bars": 10032,
+        "trades_vectorized": 160,
+        "trades_event": 160,
+        "max_nav_rel_diff": 0.0,
+        "direction_match": true
+      }
+    },
+    "leak_synthetic": {
+      "points": [
+        173,
+        2954,
+        3244,
+        4213,
+        5049,
+        5067
+      ],
+      "signals_perturb_t+1": [],
+      "signals_perturb_t": [],
+      "vectorized_positions_perturb_t+1": [],
+      "vectorized_positions_perturb_t": [],
+      "event_positions_perturb_t+1": [],
+      "event_positions_perturb_t": [],
+      "canary_future_detected": true,
+      "canary_same_bar_detected": true,
+      "passed": true
+    },
+    "leak": {
+      "points": [
+        201,
+        1896,
+        3074,
+        3374,
+        4114,
+        4375,
+        5239,
+        5258
+      ],
+      "signals_perturb_t+1": [],
+      "signals_perturb_t": [],
+      "vectorized_positions_perturb_t+1": [],
+      "vectorized_positions_perturb_t": [],
+      "event_positions_perturb_t+1": [],
+      "event_positions_perturb_t": [],
+      "canary_future_detected": true,
+      "canary_same_bar_detected": true,
+      "passed": true
+    },
+    "parity_real_oos": {
+      "passed": true,
+      "bars": 22701,
+      "trades_vectorized": 500,
+      "trades_event": 500,
+      "max_nav_rel_diff": 0.0,
+      "direction_match": true
+    }
+  },
+  "runtime_seconds": 3.2
+}

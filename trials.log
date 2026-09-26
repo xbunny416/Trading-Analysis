@@ -103,3 +103,4 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'atr_n': 24} IS_
 failure    : (b) OOS Sharpe 0.1991 < 1.5
 failure    : (d) WFE 0.213 < 0.6 (OOS Sharpe 0.1991 / IS Sharpe 0.9348)
 
+# Budget exhausted: 8/8 trials used, none passed. harness.py refuses changed code until a fresh trials.log.

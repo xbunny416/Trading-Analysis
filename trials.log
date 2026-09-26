@@ -26,3 +26,16 @@ split 5    : OOS 2022-09-18..2022-12-30 params={'shock_k': 4.0, 'stop_mult': 2.5
 failure    : (b) OOS Sharpe 0.1189 < 1.5
 failure    : (d) WFE 0.2198 < 0.6 (OOS Sharpe 0.1189 / IS Sharpe 0.5409)
 
+=== TRIAL 3 | 2026-09-26T15:47:00Z | code 99eff8e6c272 | FAIL ===
+hypothesis : C2-T3 classic multi-day Donchian breakout: stop-and-reverse on an entry_n-bar (5-30 trading days) channel break with an atr_mult x ATR chandelier stop, all 5 pairs. Motivation: in cycle 1 breakout in-sample Sharpe rose with lookback but the single-pair 100 trades/yr floor blocked long lookbacks; the 5-pair book lifts that constraint. Chosen as the textbook rule to limit hindsight bias.
+grid       : {"entry_n": [120, 240, 480, 720], "atr_mult": [3.0, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : EURUSD 00c09292328a2e92, GBPUSD c072eb08c817f874, USDJPY 1d6626fdcc462684, USDCAD 18161822de0c924c, EURJPY ef413efd2c22fe3c
+metrics    : oos_sharpe=0.023 is_sharpe_mean=0.6872 wfe=0.0335 oos_max_dd=0.02619 oos_trades_per_year=161.35 oos_total_return=0.00038 leak_test=PASS
+split 1    : OOS 2021-07-30..2021-11-11 params={'entry_n': 720, 'atr_mult': 3.0} IS_sh=-0.0683 OOS_sh=0.9699 OOS_dd=0.00659 OOS_tr/yr=84.53
+split 2    : OOS 2021-11-11..2022-02-22 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=0.9211 OOS_sh=-0.1955 OOS_dd=0.00715 OOS_tr/yr=140.93
+split 3    : OOS 2022-02-22..2022-06-06 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=0.4917 OOS_sh=1.6173 OOS_dd=0.00763 OOS_tr/yr=155.03
+split 4    : OOS 2022-06-06..2022-09-18 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=1.2816 OOS_sh=0.397 OOS_dd=0.01139 OOS_tr/yr=154.1
+split 5    : OOS 2022-09-18..2022-12-30 params={'entry_n': 120, 'atr_mult': 5.0} IS_sh=0.8097 OOS_sh=-1.5095 OOS_dd=0.02619 OOS_tr/yr=272.94
+failure    : (b) OOS Sharpe 0.023 < 1.5
+failure    : (d) WFE 0.0335 < 0.6 (OOS Sharpe 0.023 / IS Sharpe 0.6872)
+

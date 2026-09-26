@@ -78,3 +78,18 @@ split 5    : OOS 2022-09-18..2022-12-30 params={'mom_n': 168, 'z_entry': 0.5} IS
 failure    : (b) OOS Sharpe -0.6676 < 1.5
 failure    : (d) WFE -1.8591 < 0.6 (OOS Sharpe -0.6676 / IS Sharpe 0.3591)
 
+=== TRIAL 7 | 2026-09-26T16:03:21Z | code 143196d37ac6 | FAIL ===
+hypothesis : C2-T7 parsimonious shock momentum (robustness test of T1): T1 rules with the chandelier-stop distance tied to the shock threshold (stop = shock_k x ATR), and the WFA searching the volatility baseline atr_n instead. Motivation: T1 is the only positive OOS result but T4 showed it is selection-fragile; removing the stop degree of freedom tests whether its edge survives a less flexible search.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "atr_n": [12, 24, 48, 96]}  fixed: {"risk_pct": 0.001}
+data       : EURUSD 00c09292328a2e92, GBPUSD c072eb08c817f874, USDJPY 1d6626fdcc462684, USDCAD 18161822de0c924c, EURJPY ef413efd2c22fe3c
+metrics    : oos_sharpe=-0.6415 is_sharpe_mean=0.7426 wfe=-0.8639 oos_max_dd=0.06364 oos_trades_per_year=468.56 oos_total_return=-0.03949 leak_test=PASS
+split 1    : OOS 2021-07-30..2021-11-11 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=0.6741 OOS_sh=3.1142 OOS_dd=0.00718 OOS_tr/yr=165.53
+split 2    : OOS 2021-11-11..2022-02-22 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=1.6505 OOS_sh=-1.1921 OOS_dd=0.01539 OOS_tr/yr=204.35
+split 3    : OOS 2022-02-22..2022-06-06 params={'shock_k': 3.0, 'atr_n': 96} IS_sh=1.2875 OOS_sh=-1.2226 OOS_dd=0.01664 OOS_tr/yr=306.53
+split 4    : OOS 2022-06-06..2022-09-18 params={'shock_k': 3.0, 'atr_n': 96} IS_sh=0.1346 OOS_sh=0.6355 OOS_dd=0.02038 OOS_tr/yr=374.74
+split 5    : OOS 2022-09-18..2022-12-30 params={'shock_k': 2.0, 'atr_n': 96} IS_sh=-0.0339 OOS_sh=-2.0133 OOS_dd=0.05111 OOS_tr/yr=1297.35
+failure    : (b) OOS Sharpe -0.6415 < 1.5
+failure    : (d) WFE -0.8639 < 0.6 (OOS Sharpe -0.6415 / IS Sharpe 0.7426)
+
+# Stopped after 7 of 8 trials: the only positive OOS result (T1, 0.66) collapsed under two robustness variants (T4, T7)
+# and no untried hypothesis has in-sample support; spending the last slot would add selection bias. 1 slot remains.

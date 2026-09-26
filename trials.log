@@ -39,3 +39,16 @@ split 5    : OOS 2022-09-18..2022-12-30 params={'entry_n': 120, 'atr_mult': 5.0}
 failure    : (b) OOS Sharpe 0.023 < 1.5
 failure    : (d) WFE 0.0335 < 0.6 (OOS Sharpe 0.023 / IS Sharpe 0.6872)
 
+=== TRIAL 4 | 2026-09-26T15:50:36Z | code 7fc934d4c913 | FAIL ===
+hypothesis : C2-T4 shock entries with room to run: T1 rules and shock_k range (T1 generalised, WFE 0.93), stop grid moved out to 3.5-10 ATR. Motivation: T1 picked the widest stop tested (5 ATR) in 3 of 5 in-sample windows - a boundary optimum - and its OOS profit came from multi-day follow-through.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [3.5, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : EURUSD 00c09292328a2e92, GBPUSD c072eb08c817f874, USDJPY 1d6626fdcc462684, USDCAD 18161822de0c924c, EURJPY ef413efd2c22fe3c
+metrics    : oos_sharpe=0.1965 is_sharpe_mean=0.5455 wfe=0.3602 oos_max_dd=0.02646 oos_trades_per_year=669.38 oos_total_return=0.00745 leak_test=PASS
+split 1    : OOS 2021-07-30..2021-11-11 params={'shock_k': 3.5, 'stop_mult': 3.5} IS_sh=0.4127 OOS_sh=1.1091 OOS_dd=0.01225 OOS_tr/yr=214.84
+split 2    : OOS 2021-11-11..2022-02-22 params={'shock_k': 3.5, 'stop_mult': 3.5} IS_sh=0.8445 OOS_sh=-1.4005 OOS_dd=0.01798 OOS_tr/yr=243.11
+split 3    : OOS 2022-02-22..2022-06-06 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=1.316 OOS_sh=-0.3195 OOS_dd=0.01324 OOS_tr/yr=930.15
+split 4    : OOS 2022-06-06..2022-09-18 params={'shock_k': 2.0, 'stop_mult': 3.5} IS_sh=-0.0817 OOS_sh=0.7333 OOS_dd=0.02075 OOS_tr/yr=1026.14
+split 5    : OOS 2022-09-18..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 10.0} IS_sh=0.2358 OOS_sh=1.0657 OOS_dd=0.00545 OOS_tr/yr=932.25
+failure    : (b) OOS Sharpe 0.1965 < 1.5
+failure    : (d) WFE 0.3602 < 0.6 (OOS Sharpe 0.1965 / IS Sharpe 0.5455)
+

@@ -3,18 +3,18 @@ strategy.py - long/short hourly trend following for a major FX pair (default EUR
 
 Rules (identical in both implementations below)
 -----------------------------------------------
-Indicators (2): Donchian channel (slow + fast lookback), ATR.
-Tunable parameters (4): trend_n, pull_n, atr_mult, risk_pct.
+Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, hold_n, risk_pct.
 
-    Hi^N_t = max(High_{t-N..t-1}),  Lo^N_t = min(Low_{t-N..t-1})            (channel of the N prior bars)
-    ATR_t  = mean(TR_{t-n+1..t}),   TR_t = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|),   n = pull_n
-    Trend_t = +1 if C_t > Hi^{trend_n}_t, -1 if C_t < Lo^{trend_n}_t, else Trend_{t-1}   (slow regime)
+    TR_t   = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|)
+    ATR_t  = mean(TR_{t-n+1..t})                                    n = atr_n
+    Shock_t = +1 if TR_t > k * ATR_{t-1} and C_t > C_{t-1}          k = shock_k
+              -1 if TR_t > k * ATR_{t-1} and C_t < C_{t-1}          (range expansion vs. the prior n bars)
 
     at the close of bar t-1 (decision), executed at the OPEN of bar t:
-        long  entry  : Trend = +1 and C_{t-1} > Hi^{pull_n}_{t-1}     (fast breakout aligned with the regime)
-        short entry  : Trend = -1 and C_{t-1} < Lo^{pull_n}_{t-1}
-        long  exit   : C_{t-1} < Lo^{pull_n}_{t-1} (fast channel exit), or C_{t-1} < entry C - k*ATR (stop),
-                       or Trend != +1; reverse instead when a short entry fires.      k = atr_mult
+        entry        : direction of Shock_{t-1}  (momentum after an information shock)
+        renewal      : a same-direction shock while in the trade restarts the holding clock
+        exit         : after hold_n completed bars without renewal, or C_{t-1} beyond entry C -/+ k*ATR (stop);
+                       reverse on an opposite shock
         size (units) : NAV_{t-1} * risk_pct / (k * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
 
 Friction: 0.5 pip half-spread + 0.5 pip slippage on every fill (2.0 pips per round trip).
@@ -37,38 +37,42 @@ import pandas as pd
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "T3 regime-aligned fast breakout: slow trend_n-bar Donchian breakout sets the regime; enter only on a "
-    "pull_n-bar breakout in the regime's direction; exit on the opposite pull_n-bar channel break, an "
-    "atr_mult x ATR stop, or a regime flip. Motivation: T2 in-sample showed fading short-term moves inside "
-    "the trend loses (counter-moves persist), T1 showed unfiltered short breakouts lose; test alignment."
+    "T4 shock momentum: an hourly bar whose true range exceeds shock_k x ATR(atr_n) of the prior bars "
+    "marks information arrival; trade its direction at the next open, hold hold_n bars (renewed by "
+    "same-direction shocks), stop at shock_k x ATR, reverse on an opposite shock. Motivation: T1-T3 "
+    "channel signals had ~zero gross edge at >100 trades/yr; test whether large-range bars continue."
 )
-INDICATORS = ("Donchian channel", "ATR")
+INDICATORS = ("ATR",)
 
 
 @dataclass(frozen=True)
 class StrategyParams:
     """The only tunable numbers in the strategy (4)."""
 
-    trend_n: int = 240       # slow Donchian lookback defining the trend regime, bars
-    pull_n: int = 24         # fast Donchian lookback for entries / exits; also the ATR lookback
-    atr_mult: float = 3.0    # stop distance and sizing unit, in ATRs
-    risk_pct: float = 0.0025  # fraction of NAV lost if price moves atr_mult*ATR against the position
+    atr_n: int = 24          # ATR lookback, bars
+    shock_k: float = 2.0     # shock threshold in ATRs; also the stop distance and sizing unit
+    hold_n: int = 12         # bars to hold after the last same-direction shock
+    risk_pct: float = 0.0025  # fraction of NAV lost if price moves shock_k*ATR against the position
+
+    @property
+    def stop_mult(self) -> float:
+        return self.shock_k
 
     def validate(self) -> "StrategyParams":
-        for name in ("trend_n", "pull_n"):
+        for name in ("atr_n", "hold_n"):
             v = getattr(self, name)
-            if not (isinstance(v, (int, np.integer)) and v >= 2):
-                raise ValueError(f"{name} must be an int >= 2, got {v}")
-        if not (self.atr_mult > 0 and 0 < self.risk_pct < 0.05):
-            raise ValueError("atr_mult must be > 0 and risk_pct in (0, 0.05)")
+            if not (isinstance(v, (int, np.integer)) and v >= 1):
+                raise ValueError(f"{name} must be an int >= 1, got {v}")
+        if not (self.shock_k > 0 and 0 < self.risk_pct < 0.05):
+            raise ValueError("shock_k must be > 0 and risk_pct in (0, 0.05)")
         return self
 
 
 DEFAULT_PARAMS = StrategyParams()
 # walk-forward search space (the other parameters stay at their defaults)
-PARAM_GRID = {"trend_n": [120, 240, 480, 960], "pull_n": [6, 12, 24, 48]}
+PARAM_GRID = {"shock_k": [1.5, 2.0, 2.5, 3.0], "hold_n": [3, 6, 12, 24]}
 # parameters that change the signal frame (lets the harness cache it)
-FEATURE_PARAMS = ("trend_n", "pull_n")
+FEATURE_PARAMS = ("atr_n", "shock_k")
 
 
 @dataclass(frozen=True)
@@ -90,8 +94,7 @@ class ExecutionConfig:
 
 
 def warmup_bars(p: StrategyParams) -> int:
-    """Bars before the first fully-formed signal (the sticky trend regime still needs a first breakout)."""
-    return max(p.trend_n, p.pull_n) + 2
+    return p.atr_n + 3
 
 
 # ============================================================================= data helpers
@@ -130,30 +133,16 @@ def compute_features(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     h, l, c = df["high"], df["low"], df["close"]
     pc = c.shift(1)
     tr = np.fmax(h - l, np.fmax((h - pc).abs(), (l - pc).abs()))
-    slow_hi = h.rolling(p.trend_n).max().shift(1)  # channels of the N bars *before* bar t
-    slow_lo = l.rolling(p.trend_n).min().shift(1)
-    breakout = np.where(c > slow_hi, 1.0, np.where(c < slow_lo, -1.0, np.nan))
-    return pd.DataFrame(
-        {
-            "close": c,
-            "atr": tr.rolling(p.pull_n).mean(),
-            "trend": pd.Series(breakout, index=df.index).ffill().fillna(0.0),
-            "fast_hi": h.rolling(p.pull_n).max().shift(1),
-            "fast_lo": l.rolling(p.pull_n).min().shift(1),
-        },
-        index=df.index,
-    )
+    atr = tr.rolling(p.atr_n).mean()
+    big = tr > p.shock_k * atr.shift(1)  # range expansion vs. the n bars before this one
+    shock = np.where(big & (c > pc), 1.0, np.where(big & (c < pc), -1.0, 0.0))
+    return pd.DataFrame({"close": c, "atr": atr, "shock": shock}, index=df.index)
 
 
 def signal_frame(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     """Row t = everything known at the OPEN of bar t, i.e. computed from bars <= t-1."""
     s = compute_features(df, p).shift(1)  # <- look-ahead guard
-    up = s["close"] > s["fast_hi"]
-    dn = s["close"] < s["fast_lo"]
-    s["fast_up"] = up.astype(float)
-    s["fast_dn"] = dn.astype(float)
-    s["long_setup"] = ((s["trend"] == 1.0) & up).astype(float)
-    s["short_setup"] = ((s["trend"] == -1.0) & dn).astype(float)
+    s["shock"] = s["shock"].fillna(0.0)
     return s
 
 
@@ -213,11 +202,7 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     C = df["close"].to_numpy()[w].tolist()
     CP = sig["close"].to_numpy()[w].tolist()
     A = sig["atr"].to_numpy()[w].tolist()
-    TR = sig["trend"].to_numpy()[w].tolist()
-    LS = (sig["long_setup"].to_numpy()[w] > 0).tolist()
-    SS = (sig["short_setup"].to_numpy()[w] > 0).tolist()
-    FU = (sig["fast_up"].to_numpy()[w] > 0).tolist()
-    FD = (sig["fast_dn"].to_numpy()[w] > 0).tolist()
+    SH = sig["shock"].to_numpy()[w].astype(int).tolist()
     idx = df.index[w]
     TS = idx.as_unit("ns").asi8.tolist()
     DAY = trading_day_ids(idx).tolist()
@@ -225,8 +210,8 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     st = fresh_state(cfg) if state is None else dict(state)
     nav_prev, peak, killed = st["nav"], st["peak"], st["killed"]
     halt_until, cur_day, day_start = st["halt_until"], st["day"], st["day_start_nav"]
-    cash, units, d, stop = nav_prev, 0.0, 0, math.nan
-    cost, k, pip = cfg.cost_per_fill, p.atr_mult, cfg.pip
+    cash, units, d, stop, held = nav_prev, 0.0, 0, math.nan, 0
+    cost, k, hold_n, pip = cfg.cost_per_fill, p.stop_mult, p.hold_n, cfg.pip
     dl_floor, dd_floor = 1.0 - cfg.daily_loss_limit, 1.0 - cfg.max_drawdown_limit
     halt_ns = int(cfg.halt_hours * 3_600_000_000_000)
     L = end - start
@@ -237,15 +222,18 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
     for i in range(L):
         cp, a = CP[i], A[i]
         # (a) fold in the close of bar t-1 and choose the target direction for this bar
+        sh, why = SH[i], ""
         if d == 0:
-            tgt = 1 if LS[i] else (-1 if SS[i] else 0)
-            why = ""
-        elif d == 1:
-            why = "stop" if cp < stop else ("channel_exit" if FD[i] else ("regime" if TR[i] != 1.0 else ""))
-            tgt = -1 if SS[i] else (0 if why else 1)
+            tgt = sh
         else:
-            why = "stop" if cp > stop else ("channel_exit" if FU[i] else ("regime" if TR[i] != -1.0 else ""))
-            tgt = 1 if LS[i] else (0 if why else -1)
+            held += 1
+            if sh == d:
+                held = 0  # renewed momentum restarts the clock
+            if d * (cp - stop) < 0:
+                why = "stop"
+            elif held >= hold_n:
+                why = "time"
+            tgt = -d if sh == -d else (0 if why else d)
         gated = killed or TS[i] <= halt_until
         if gated:
             tgt = 0
@@ -263,7 +251,7 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
                     fill = O[i] + tgt * cost
                     units = tgt * size
                     cash -= units * fill
-                    d = tgt
+                    d, held = tgt, 0
                     stop = cp - tgt * k * a
                     entry = (TS[i], d, units, fill, i)
         # (d) mark at the close of bar t and apply the circuit breakers (effective next open)
@@ -336,85 +324,58 @@ class MarketData:
 class SignalSnapshot:
     close: float
     atr: float
-    trend: int
-    fast_up: bool
-    fast_dn: bool
-    long_setup: bool
-    short_setup: bool
-
-
-class _Channel:
-    """Max/min of the last n completed values (NaN until n values have been seen)."""
-
-    def __init__(self, n: int):
-        self.n = n
-        self.hi: deque[float] = deque(maxlen=n)
-        self.lo: deque[float] = deque(maxlen=n)
-
-    def levels(self) -> tuple[float, float]:
-        if len(self.hi) < self.n:
-            return math.nan, math.nan
-        return max(self.hi), min(self.lo)
-
-    def push(self, high: float, low: float) -> None:
-        self.hi.append(high)
-        self.lo.append(low)
+    shock: int
 
 
 class SignalEngine:
-    """Incremental slow/fast Donchian channels, sticky trend regime and ATR over completed bars."""
+    """Incremental ATR and range-expansion shock detector over completed bars."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
-        self._slow, self._fast = _Channel(p.trend_n), _Channel(p.pull_n)
-        self._tr: deque[float] = deque(maxlen=p.pull_n)
+        self._tr: deque[float] = deque(maxlen=p.atr_n)
         self._prev_close: float | None = None
-        self.trend = 0
+        self._prev_atr = math.nan
 
     def update(self, bar: Bar) -> SignalSnapshot:
-        slow_hi, slow_lo = self._slow.levels()  # channels exclude the bar being closed
-        fast_hi, fast_lo = self._fast.levels()
         h, l, c, pc = bar.high, bar.low, bar.close, self._prev_close
         tr = h - l if pc is None else max(h - l, abs(h - pc), abs(l - pc))
         self._tr.append(tr)
-        atr = math.fsum(self._tr) / self.p.pull_n if len(self._tr) == self.p.pull_n else math.nan
-        if c > slow_hi:
-            self.trend = 1
-        elif c < slow_lo:
-            self.trend = -1
-        self._slow.push(h, l)
-        self._fast.push(h, l)
-        self._prev_close = c
-        up, dn = c > fast_hi, c < fast_lo
-        return SignalSnapshot(c, atr, self.trend, up, dn, self.trend == 1 and up, self.trend == -1 and dn)
+        atr = math.fsum(self._tr) / self.p.atr_n if len(self._tr) == self.p.atr_n else math.nan
+        shock = 0
+        if pc is not None and tr > self.p.shock_k * self._prev_atr:
+            shock = 1 if c > pc else (-1 if c < pc else 0)
+        self._prev_close, self._prev_atr = c, atr
+        return SignalSnapshot(c, atr, shock)
 
 
 class TrendStrategy:
-    """Position state machine: regime-aligned breakout entries, channel / stop / regime exits."""
+    """Position state machine: shock entries, holding clock, stop, reverse on opposite shock."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
         self.direction = 0
         self.stop = math.nan
+        self.held = 0
         self.exit_reason = ""
 
     def on_bar_close(self, snap: SignalSnapshot) -> int:
         """Fold in a completed bar; return the desired direction for the next open."""
-        d = self.direction
+        d, sh = self.direction, snap.shock
+        self.exit_reason = ""
         if d == 0:
-            self.exit_reason = ""
-            return 1 if snap.long_setup else (-1 if snap.short_setup else 0)
-        if d == 1:
-            self.exit_reason = ("stop" if snap.close < self.stop else
-                                ("channel_exit" if snap.fast_dn else ("regime" if snap.trend != 1 else "")))
-            return -1 if snap.short_setup else (0 if self.exit_reason else 1)
-        self.exit_reason = ("stop" if snap.close > self.stop else
-                            ("channel_exit" if snap.fast_up else ("regime" if snap.trend != -1 else "")))
-        return 1 if snap.long_setup else (0 if self.exit_reason else -1)
+            return sh
+        self.held += 1
+        if sh == d:
+            self.held = 0
+        if d * (snap.close - self.stop) < 0:
+            self.exit_reason = "stop"
+        elif self.held >= self.p.hold_n:
+            self.exit_reason = "time"
+        return -d if sh == -d else (0 if self.exit_reason else d)
 
     def on_entry(self, direction: int, snap: SignalSnapshot) -> None:
-        self.direction = direction
-        self.stop = snap.close - direction * self.p.atr_mult * snap.atr
+        self.direction, self.held = direction, 0
+        self.stop = snap.close - direction * self.p.stop_mult * snap.atr
 
     def on_exit(self) -> None:
         self.direction, self.stop = 0, math.nan
@@ -438,7 +399,7 @@ class RiskManager:
             return 0.0
         if not (math.isfinite(nav) and math.isfinite(atr) and math.isfinite(price)):
             return 0.0
-        denom = p.atr_mult * atr
+        denom = p.stop_mult * atr
         if not denom > 0:
             return 0.0
         return min(nav * p.risk_pct / denom, cfg.max_leverage * nav / price)

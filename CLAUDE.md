@@ -4,20 +4,24 @@ Guidance for Claude Code when working in this repository.
 
 ## Project
 
-Personal workspace for writing and backtesting trading strategies. The repository
-is at an early stage: it holds Claude Code configuration (`.claude/skills/`) and
-no strategy code yet.
+Personal workspace for writing and backtesting trading strategies. It holds a
+NautilusTrader walk-forward harness for FX trend-following research (see
+`README.md`) plus Claude Code configuration (`.claude/skills/`).
 
 ## Commands
 
-No dependency file or test runner is checked in yet. The project skills expect
-this layout once code lands:
-
 | Purpose | Command or file |
 |---|---|
-| Walk-forward evaluation | `python scripts/eval_wfa.py` |
-| Test harness (written first) | `harness.py` |
+| Install | `pip install -r requirements.txt` (NautilusTrader 1.221, Python 3.11+) |
+| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --selftest` |
+| Walk-forward evaluation (logs a trial) | `python harness.py` or `python scripts/eval_wfa.py` |
+| Evaluate other data (never logged) | `python harness.py --data-dir <folder of <PAIR>.csv>` |
+| Nautilus data / engine plumbing | `backtest.py` |
 | Strategy logic | `strategy.py` |
+
+Real-data runs need the MT5 exports in `data/mt5/<PAIR>.csv` (git-ignored). Every
+completed real-data run with changed code counts against the 8-trial budget in
+`trials.log`; iterate with `--selftest` first.
 
 When you add a dependency file or test runner, record the exact install and test
 commands here, so that "run the tests" works on the first try.

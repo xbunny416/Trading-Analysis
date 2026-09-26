@@ -42,9 +42,10 @@ import backtest as B
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "C2-T1 replicate cycle 1's best out-of-sample idea on unseen data: enter in the direction of an hourly "
-    "bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier stop; "
-    "reverse on an opposite shock. Same rules and parameters on all 5 pairs, one USD account."
+    "C2-T2 high-conviction shocks: T1 rules, but search only large shocks (shock_k 3-5) with wider stops. "
+    "Motivation: T1 in-sample Sharpe rose with shock_k (best row k=3.5 in 3 of 5 splits, as in cycle 1) and "
+    "costs ate half the ~5.6-pip gross edge per trade; the 5-pair book (590 trades/yr) no longer needs "
+    "small shocks to clear 100 trades/yr."
 )
 INDICATORS = ("ATR",)
 
@@ -68,7 +69,7 @@ class StrategyParams:
 
 DEFAULT_PARAMS = StrategyParams()
 # walk-forward search space (the other parameters stay at their defaults)
-PARAM_GRID = {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}
+PARAM_GRID = {"shock_k": [3.0, 3.5, 4.0, 5.0], "stop_mult": [2.5, 3.5, 5.0, 7.0]}
 # parameters that change the signal frame
 FEATURE_PARAMS = ("atr_n", "shock_k")
 

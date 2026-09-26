@@ -600,10 +600,13 @@ def _circuit_breaker_test(cfg: S.ExecutionConfig) -> dict:
         return d
 
     halt = S.backtest_vectorized(gapped(0.05), p, cfg)          # ~5% day loss -> 24h halt
-    hu = halt.units.to_numpy()
+    hu, hn = halt.units.to_numpy(), halt.nav.to_numpy()
     ev = S.EventDrivenBacktester(gapped(0.05), p, cfg).run()
-    halt_ok = (halt.n_halts >= 1 and not halt.killed and np.all(hu[k + 1: k + 25] == 0)
-               and np.any(hu[k + 25:] != 0) and np.array_equal(hu, ev.units.to_numpy()))
+    dd_at_gap = hn[k] / max(cfg.initial_nav, hn[: k + 1].max()) - 1.0
+    halt_ok = (halt.n_halts >= 1 and dd_at_gap > -cfg.max_drawdown_limit   # halt, not the kill switch
+               and np.all(hu[k + 1: k + 25] == 0)                           # flat for 24 hourly bars
+               and np.any(hu[k + 25:] != 0)                                 # ...then allowed to trade again
+               and np.array_equal(hu, ev.units.to_numpy()))
     kill = S.backtest_vectorized(gapped(0.15), p, cfg)          # ~15% loss -> permanent stop
     kill_ok = kill.killed and np.all(kill.units.to_numpy()[k + 1:] == 0)
     return {"passed": bool(halt_ok and kill_ok), "leverage_before_gap": round(float(lev), 3),

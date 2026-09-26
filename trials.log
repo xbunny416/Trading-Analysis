@@ -24,3 +24,16 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'trend_n': 960, 'pull_n': 6} IS_
 failure    : (b) OOS Sharpe -0.601 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.7602 <= 0
 
+=== TRIAL 3 | 2026-09-26T08:46:25Z | code 4cf743e0b65a | FAIL ===
+hypothesis : T3 regime-aligned fast breakout: slow trend_n-bar Donchian breakout sets the regime; enter only on a pull_n-bar breakout in the regime's direction; exit on the opposite pull_n-bar channel break, an atr_mult x ATR stop, or a regime flip. Motivation: T2 in-sample showed fading short-term moves inside the trend loses (counter-moves persist), T1 showed unfiltered short breakouts lose; test alignment.
+grid       : {"trend_n": [120, 240, 480, 960], "pull_n": [6, 12, 24, 48]}  fixed: {"atr_mult": 3.0, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=-0.4629 is_sharpe_mean=0.0016 wfe=-285.7407 oos_max_dd=0.1002 oos_trades_per_year=115.1 oos_total_return=-0.06668 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'trend_n': 120, 'pull_n': 12} IS_sh=0.5517 OOS_sh=-0.5304 OOS_dd=0.04326 OOS_tr/yr=139.8
+split 2    : OOS 2017-06-11..2018-03-02 params={'trend_n': 120, 'pull_n': 6} IS_sh=-0.5767 OOS_sh=1.111 OOS_dd=0.03294 OOS_tr/yr=193.66
+split 3    : OOS 2018-03-04..2018-11-26 params={'trend_n': 960, 'pull_n': 6} IS_sh=0.1526 OOS_sh=-1.5586 OOS_dd=0.05775 OOS_tr/yr=212.0
+split 4    : OOS 2018-11-26..2019-08-21 params={'trend_n': 960, 'pull_n': 12} IS_sh=0.5857 OOS_sh=-3.1736 OOS_dd=0.04512 OOS_tr/yr=32.81
+split 5    : OOS 2019-08-21..2020-05-14 params={'trend_n': 480, 'pull_n': 12} IS_sh=-0.7052 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -0.4629 < 1.5
+failure    : (d) WFE -285.7407 < 0.6 (OOS Sharpe -0.4629 / IS Sharpe 0.0016)
+

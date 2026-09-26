@@ -11,9 +11,9 @@ Tunable parameters (4): trend_n, pull_n, atr_mult, risk_pct.
     Trend_t = +1 if C_t > Hi^{trend_n}_t, -1 if C_t < Lo^{trend_n}_t, else Trend_{t-1}   (slow regime)
 
     at the close of bar t-1 (decision), executed at the OPEN of bar t:
-        long  entry  : Trend = +1 and C_{t-1} < Lo^{pull_n}_{t-1}     (buy a pullback inside an up-trend)
-        short entry  : Trend = -1 and C_{t-1} > Hi^{pull_n}_{t-1}     (sell a rally inside a down-trend)
-        long  exit   : C_{t-1} > Hi^{pull_n}_{t-1} (rebound complete), or C_{t-1} < entry C - k*ATR (stop),
+        long  entry  : Trend = +1 and C_{t-1} > Hi^{pull_n}_{t-1}     (fast breakout aligned with the regime)
+        short entry  : Trend = -1 and C_{t-1} < Lo^{pull_n}_{t-1}
+        long  exit   : C_{t-1} < Lo^{pull_n}_{t-1} (fast channel exit), or C_{t-1} < entry C - k*ATR (stop),
                        or Trend != +1; reverse instead when a short entry fires.      k = atr_mult
         size (units) : NAV_{t-1} * risk_pct / (k * ATR_{t-1}),  capped at max_leverage * NAV / C_{t-1}
 
@@ -37,10 +37,10 @@ import pandas as pd
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "T2 trend-regime pullback: slow trend_n-bar Donchian breakout sets the regime; inside it, enter on "
-    "a pull_n-bar counter-move (buy the fast-channel low in an up-trend, sell the high in a down-trend); "
-    "exit at the opposite fast-channel extreme, an atr_mult x ATR stop, or a regime flip. Motivation: T1 "
-    "in-sample grids showed hourly breakouts mean-revert while multi-day trends persist."
+    "T3 regime-aligned fast breakout: slow trend_n-bar Donchian breakout sets the regime; enter only on a "
+    "pull_n-bar breakout in the regime's direction; exit on the opposite pull_n-bar channel break, an "
+    "atr_mult x ATR stop, or a regime flip. Motivation: T2 in-sample showed fading short-term moves inside "
+    "the trend loses (counter-moves persist), T1 showed unfiltered short breakouts lose; test alignment."
 )
 INDICATORS = ("Donchian channel", "ATR")
 
@@ -50,7 +50,7 @@ class StrategyParams:
     """The only tunable numbers in the strategy (4)."""
 
     trend_n: int = 240       # slow Donchian lookback defining the trend regime, bars
-    pull_n: int = 24         # fast Donchian lookback for pullback entries / exits; also the ATR lookback
+    pull_n: int = 24         # fast Donchian lookback for entries / exits; also the ATR lookback
     atr_mult: float = 3.0    # stop distance and sizing unit, in ATRs
     risk_pct: float = 0.0025  # fraction of NAV lost if price moves atr_mult*ATR against the position
 
@@ -152,8 +152,8 @@ def signal_frame(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     dn = s["close"] < s["fast_lo"]
     s["fast_up"] = up.astype(float)
     s["fast_dn"] = dn.astype(float)
-    s["long_setup"] = ((s["trend"] == 1.0) & dn).astype(float)
-    s["short_setup"] = ((s["trend"] == -1.0) & up).astype(float)
+    s["long_setup"] = ((s["trend"] == 1.0) & up).astype(float)
+    s["short_setup"] = ((s["trend"] == -1.0) & dn).astype(float)
     return s
 
 
@@ -241,10 +241,10 @@ def backtest_vectorized(df: pd.DataFrame, p: StrategyParams, cfg: ExecutionConfi
             tgt = 1 if LS[i] else (-1 if SS[i] else 0)
             why = ""
         elif d == 1:
-            why = "stop" if cp < stop else ("take_profit" if FU[i] else ("regime" if TR[i] != 1.0 else ""))
+            why = "stop" if cp < stop else ("channel_exit" if FD[i] else ("regime" if TR[i] != 1.0 else ""))
             tgt = -1 if SS[i] else (0 if why else 1)
         else:
-            why = "stop" if cp > stop else ("take_profit" if FD[i] else ("regime" if TR[i] != -1.0 else ""))
+            why = "stop" if cp > stop else ("channel_exit" if FU[i] else ("regime" if TR[i] != -1.0 else ""))
             tgt = 1 if LS[i] else (0 if why else -1)
         gated = killed or TS[i] <= halt_until
         if gated:
@@ -386,11 +386,11 @@ class SignalEngine:
         self._fast.push(h, l)
         self._prev_close = c
         up, dn = c > fast_hi, c < fast_lo
-        return SignalSnapshot(c, atr, self.trend, up, dn, self.trend == 1 and dn, self.trend == -1 and up)
+        return SignalSnapshot(c, atr, self.trend, up, dn, self.trend == 1 and up, self.trend == -1 and dn)
 
 
 class TrendStrategy:
-    """Position state machine: pullback entries inside the regime, take-profit / stop / regime exits."""
+    """Position state machine: regime-aligned breakout entries, channel / stop / regime exits."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
@@ -406,10 +406,10 @@ class TrendStrategy:
             return 1 if snap.long_setup else (-1 if snap.short_setup else 0)
         if d == 1:
             self.exit_reason = ("stop" if snap.close < self.stop else
-                                ("take_profit" if snap.fast_up else ("regime" if snap.trend != 1 else "")))
+                                ("channel_exit" if snap.fast_dn else ("regime" if snap.trend != 1 else "")))
             return -1 if snap.short_setup else (0 if self.exit_reason else 1)
         self.exit_reason = ("stop" if snap.close > self.stop else
-                            ("take_profit" if snap.fast_dn else ("regime" if snap.trend != -1 else "")))
+                            ("channel_exit" if snap.fast_up else ("regime" if snap.trend != -1 else "")))
         return 1 if snap.long_setup else (0 if self.exit_reason else -1)
 
     def on_entry(self, direction: int, snap: SignalSnapshot) -> None:

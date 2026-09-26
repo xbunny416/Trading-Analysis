@@ -63,3 +63,16 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.0, 'stop_mult': 5.0
 failure    : (b) OOS Sharpe 0.3224 < 1.5
 failure    : (d) WFE 0.5406 < 0.6 (OOS Sharpe 0.3224 / IS Sharpe 0.5964)
 
+=== TRIAL 6 | 2026-09-26T08:50:30Z | code 2339ad0f2572 | FAIL ===
+hypothesis : T6 confirmed shock + trend-following exit: as T5, but a shock only counts if the bar also closes in the half of its range that the move points to (absorbed order flow, not a rejection wick). No new tunable parameter. Motivation: T5 OOS Sharpe 0.32 / IS 0.60 with a 40% win rate; wide bars that reject their extreme should not be read as continuation.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=0.2548 is_sharpe_mean=0.6424 wfe=0.3966 oos_max_dd=0.07894 oos_trades_per_year=147.09 oos_total_return=0.03927 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.54 OOS_sh=-0.7921 OOS_dd=0.04025 OOS_tr/yr=191.88
+split 2    : OOS 2017-06-11..2018-03-02 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=0.8596 OOS_sh=0.902 OOS_dd=0.05087 OOS_tr/yr=130.03
+split 3    : OOS 2018-03-04..2018-11-26 params={'shock_k': 2.5, 'stop_mult': 1.5} IS_sh=1.1463 OOS_sh=0.8151 OOS_dd=0.02963 OOS_tr/yr=146.35
+split 4    : OOS 2018-11-26..2019-08-21 params={'shock_k': 2.5, 'stop_mult': 2.5} IS_sh=0.2928 OOS_sh=-0.5623 OOS_dd=0.04638 OOS_tr/yr=150.36
+split 5    : OOS 2019-08-21..2020-05-14 params={'shock_k': 2.5, 'stop_mult': 5.0} IS_sh=0.3735 OOS_sh=0.4625 OOS_dd=0.02295 OOS_tr/yr=118.94
+failure    : (b) OOS Sharpe 0.2548 < 1.5
+failure    : (d) WFE 0.3966 < 0.6 (OOS Sharpe 0.2548 / IS Sharpe 0.6424)
+

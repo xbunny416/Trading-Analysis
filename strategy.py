@@ -7,8 +7,9 @@ Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, stop_mult, risk_pct
 
     TR_t   = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|)
     ATR_t  = mean(TR_{t-n+1..t})                                    n = atr_n
-    Shock_t = +1 if TR_t > k * ATR_{t-1} and C_t > C_{t-1}          k = shock_k
-              -1 if TR_t > k * ATR_{t-1} and C_t < C_{t-1}          (range expansion vs. the prior n bars)
+    Shock_t = +1 if TR_t > k * ATR_{t-1} and C_t > C_{t-1} and C_t - L_t > H_t - C_t     k = shock_k
+              -1 if TR_t > k * ATR_{t-1} and C_t < C_{t-1} and H_t - C_t > C_t - L_t
+              (range expansion vs. the prior n bars, closing in the half of the bar the move points to)
 
     at the close of bar t-1 (decision), executed at the OPEN of bar t:
         entry        : direction of Shock_{t-1}  (momentum after an information shock)
@@ -36,10 +37,10 @@ import pandas as pd
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "T5 shock entry + trend-following exit: enter in the direction of a bar whose true range exceeds "
-    "shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier trailing stop; reverse on an opposite "
-    "shock. Motivation: T4 in-sample showed post-shock continuation but its fixed holding clock capped "
-    "winners, and later IS windows favoured longer holds."
+    "T6 confirmed shock + trend-following exit: as T5, but a shock only counts if the bar also closes in "
+    "the half of its range that the move points to (absorbed order flow, not a rejection wick). No new "
+    "tunable parameter. Motivation: T5 OOS Sharpe 0.32 / IS 0.60 with a 40% win rate; wide bars that "
+    "reject their extreme should not be read as continuation."
 )
 INDICATORS = ("ATR",)
 
@@ -128,7 +129,8 @@ def compute_features(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
     tr = np.fmax(h - l, np.fmax((h - pc).abs(), (l - pc).abs()))
     atr = tr.rolling(p.atr_n).mean()
     big = tr > p.shock_k * atr.shift(1)  # range expansion vs. the n bars before this one
-    shock = np.where(big & (c > pc), 1.0, np.where(big & (c < pc), -1.0, 0.0))
+    strong_up, strong_dn = (c - l) > (h - c), (h - c) > (c - l)  # closed in the upper / lower half
+    shock = np.where(big & (c > pc) & strong_up, 1.0, np.where(big & (c < pc) & strong_dn, -1.0, 0.0))
     return pd.DataFrame({"close": c, "atr": atr, "shock": shock}, index=df.index)
 
 
@@ -320,7 +322,7 @@ class SignalSnapshot:
 
 
 class SignalEngine:
-    """Incremental ATR and range-expansion shock detector over completed bars."""
+    """Incremental ATR and confirmed range-expansion shock detector over completed bars."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
@@ -335,7 +337,10 @@ class SignalEngine:
         atr = math.fsum(self._tr) / self.p.atr_n if len(self._tr) == self.p.atr_n else math.nan
         shock = 0
         if pc is not None and tr > self.p.shock_k * self._prev_atr:
-            shock = 1 if c > pc else (-1 if c < pc else 0)
+            if c > pc and c - l > h - c:
+                shock = 1
+            elif c < pc and h - c > c - l:
+                shock = -1
         self._prev_close, self._prev_atr = c, atr
         return SignalSnapshot(c, atr, shock)
 

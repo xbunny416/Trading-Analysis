@@ -11,3 +11,16 @@ split 5    : OOS 2019-08-21..2020-05-14 params={'entry_n': 24, 'atr_mult': 4.0} 
 failure    : (b) OOS Sharpe -0.102 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.4243 <= 0
 
+=== TRIAL 2 | 2026-09-26T08:44:34Z | code 81baa73b081c | FAIL ===
+hypothesis : T2 trend-regime pullback: slow trend_n-bar Donchian breakout sets the regime; inside it, enter on a pull_n-bar counter-move (buy the fast-channel low in an up-trend, sell the high in a down-trend); exit at the opposite fast-channel extreme, an atr_mult x ATR stop, or a regime flip. Motivation: T1 in-sample grids showed hourly breakouts mean-revert while multi-day trends persist.
+grid       : {"trend_n": [120, 240, 480, 960], "pull_n": [6, 12, 24, 48]}  fixed: {"atr_mult": 3.0, "risk_pct": 0.0025}
+data       : 2015-01-01 22:00:00+00:00 -> 2020-05-14 07:00:00+00:00 (33340 bars, sha256 4a5f8acce6cb)
+metrics    : oos_sharpe=-0.601 is_sharpe_mean=-0.7602 wfe=None oos_max_dd=0.09805 oos_trades_per_year=180.99 oos_total_return=-0.07624 leak_test=PASS
+split 1    : OOS 2016-09-16..2017-06-09 params={'trend_n': 120, 'pull_n': 12} IS_sh=-0.9728 OOS_sh=-0.9613 OOS_dd=0.04194 OOS_tr/yr=160.35
+split 2    : OOS 2017-06-11..2018-03-02 params={'trend_n': 120, 'pull_n': 12} IS_sh=-1.4505 OOS_sh=-1.4806 OOS_dd=0.05007 OOS_tr/yr=142.48
+split 3    : OOS 2018-03-04..2018-11-26 params={'trend_n': 480, 'pull_n': 12} IS_sh=-0.851 OOS_sh=0.2358 OOS_dd=0.02765 OOS_tr/yr=170.97
+split 4    : OOS 2018-11-26..2019-08-21 params={'trend_n': 960, 'pull_n': 12} IS_sh=-0.1758 OOS_sh=0.327 OOS_dd=0.03015 OOS_tr/yr=183.17
+split 5    : OOS 2019-08-21..2020-05-14 params={'trend_n': 960, 'pull_n': 6} IS_sh=-0.3508 OOS_sh=-1.3393 OOS_dd=0.05899 OOS_tr/yr=250.18
+failure    : (b) OOS Sharpe -0.601 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.7602 <= 0
+

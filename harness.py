@@ -571,19 +571,26 @@ def edge_case_tests(cfg: S.ExecutionConfig) -> dict:
 
 
 def _circuit_breaker_test(cfg: S.ExecutionConfig) -> dict:
+    """Oscillating up-trend; gap the market down right after a bar in which the strategy is long.
+
+    The gap is sized off the leverage the strategy actually holds, which is legitimate only because
+    positions are causal: re-pricing bars >= k cannot change the position held in bar k-1.
+    """
     p = S.DEFAULT_PARAMS
-    n, k = 1500, 900
+    n = 2400
     idx = pd.date_range("2019-03-04", periods=n, freq="1h", tz="UTC")
     t = np.arange(n, dtype=float)
-    close = 1.10 * np.exp(0.00012 * t + 0.0008 * np.sin(t / 5.0))
+    close = 1.10 * np.exp(0.0001 * t + 0.004 * np.sin(2 * np.pi * t / 40.0))
     open_ = np.concatenate([[close[0]], close[:-1]])
     base = pd.DataFrame({"open": open_, "high": np.maximum(open_, close) * 1.0002,
                          "low": np.minimum(open_, close) * 0.9998, "close": close}, index=idx)
     pre = S.backtest_vectorized(base, p, cfg)
-    u, nav = pre.units.iloc[k - 1], pre.nav.iloc[k - 1]
-    if u <= 0:
+    pu = pre.units.to_numpy()
+    longs = [j for j in range(S.warmup_bars(p) + 50, n - 600) if pu[j - 1] > 0]
+    if not longs:
         return {"passed": False, "reason": "scenario did not produce a long position before the gap"}
-    lev = u * close[k - 1] / nav
+    k = longs[0]
+    lev = pu[k - 1] * close[k - 1] / pre.nav.iloc[k - 1]
 
     def gapped(nav_loss: float) -> pd.DataFrame:
         d = base.copy()

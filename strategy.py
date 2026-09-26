@@ -1,19 +1,22 @@
 """
-strategy.py - cycle 2: long/short hourly trend following on a 5-pair FX portfolio, run in NautilusTrader.
+strategy.py - cycle 2: long/short hourly currency-strength trend following on a 5-pair FX portfolio,
+run in NautilusTrader.
 
 Rules (the same in the Nautilus strategy and the vectorised reference below)
 ----------------------------------------------------------------------------
-Indicator (1): ATR.  Tunable parameters (4): atr_n, shock_k, stop_mult, risk_pct.
-Signals use hourly MID bars; each pair is traded independently with shared parameters.
+Indicators (2): momentum (L-bar log return), ATR.  Tunable parameters (4): mom_n, atr_n, atr_mult, risk_pct.
+Signals use hourly MID bars of every pair at the same close (cross-sectional); parameters are shared.
 
-    TR_t    = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|),     ATR_t = mean(TR_{t-n+1..t})        n = atr_n
-    Shock_t = sign(C_t - C_{t-1}) * 1[TR_t > k * ATR_{t-1}]                                          k = shock_k
+    TR_t = max(H_t-L_t, |H_t-C_{t-1}|, |L_t-C_{t-1}|),  ATR_t = mean(TR_{t-n+1..t})                    n = atr_n
+    m_p  = ln(C_t / C_{t-L}) / (ATR_t / C_t * sqrt(L))        vol-normalised pair momentum            L = mom_n
+    S_c  = mean over pairs p containing currency c of (+m_p if c is p's base, -m_p if its quote)
+    z_p  = S_base(p) - S_quote(p)                              currency-strength score of pair p
 
     decided at the close of bar t-1, filled at the open quote of bar t:
-        entry  : direction of Shock_{t-1} (information shock -> continuation)
-        exit   : chandelier stop  S = max_d(S, C - d*m*ATR); exit when d*(C_{t-1} - S) < 0        m = stop_mult
-        flip   : reverse on an opposite shock
-        size   : units = NAV * risk_pct / (m * ATR * quote->USD), floored to 1,000-unit lots and capped
+        entry  : long when z_p crosses above 0, short when it crosses below 0
+        exit   : chandelier stop  S = max_d(S, C - d*k*ATR); exit when d*(C_{t-1} - S) < 0           k = atr_mult
+        flip   : reverse on the opposite cross
+        size   : units = NAV * risk_pct / (k * ATR * quote->USD), floored to 1,000-unit lots and capped
                  at max_leverage * NAV in USD notional; 0 for any degenerate input
 
 Risk limits (portfolio level, checked at every hourly close, acted on at the next open):
@@ -42,35 +45,42 @@ import backtest as B
 
 # ============================================================================= configuration
 HYPOTHESIS = (
-    "C2-T4 shock entries with room to run: T1 rules and shock_k range (T1 generalised, WFE 0.93), stop grid "
-    "moved out to 3.5-10 ATR. Motivation: T1 picked the widest stop tested (5 ATR) in 3 of 5 in-sample "
-    "windows - a boundary optimum - and its OOS profit came from multi-day follow-through."
+    "C2-T5 currency-strength trend: score each currency by averaging its vol-normalised mom_n-bar momentum "
+    "across every pair that contains it, trade each pair on crosses of (base strength - quote strength), "
+    "atr_mult x ATR chandelier stop. Motivation: T1-T4 single-pair signals were weak/fragile; currency-level "
+    "averaging cancels pair-specific noise (currency momentum, Menkhoff et al. 2012)."
 )
-INDICATORS = ("ATR",)
+INDICATORS = ("momentum", "ATR")
 
 
 @dataclass(frozen=True)
 class StrategyParams:
     """The only tunable numbers in the strategy (4)."""
 
+    mom_n: int = 168          # momentum lookback L, hourly bars
     atr_n: int = 24           # ATR lookback, hourly bars
-    shock_k: float = 2.5      # shock threshold, in ATRs of the prior atr_n bars
-    stop_mult: float = 3.0    # chandelier-stop distance and sizing unit, in ATRs
-    risk_pct: float = 0.001   # per pair: fraction of NAV lost if price moves stop_mult*ATR against it
+    atr_mult: float = 5.0     # chandelier-stop distance and sizing unit, in ATRs
+    risk_pct: float = 0.001   # per pair: fraction of NAV lost if price moves atr_mult*ATR against it
+
+    @property
+    def stop_mult(self) -> float:
+        return self.atr_mult
 
     def validate(self) -> "StrategyParams":
-        if not (isinstance(self.atr_n, (int, np.integer)) and self.atr_n >= 2):
-            raise ValueError(f"atr_n must be an int >= 2, got {self.atr_n}")
-        if not (self.shock_k > 0 and self.stop_mult > 0 and 0 < self.risk_pct < 0.05):
-            raise ValueError("shock_k and stop_mult must be > 0 and risk_pct in (0, 0.05)")
+        for name in ("mom_n", "atr_n"):
+            v = getattr(self, name)
+            if not (isinstance(v, (int, np.integer)) and v >= 2):
+                raise ValueError(f"{name} must be an int >= 2, got {v}")
+        if not (self.atr_mult > 0 and 0 < self.risk_pct < 0.05):
+            raise ValueError("atr_mult must be > 0 and risk_pct in (0, 0.05)")
         return self
 
 
 DEFAULT_PARAMS = StrategyParams()
 # walk-forward search space (the other parameters stay at their defaults)
-PARAM_GRID = {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [3.5, 5.0, 7.0, 10.0]}
+PARAM_GRID = {"mom_n": [24, 72, 168, 336], "atr_mult": [3.0, 5.0, 7.0, 10.0]}
 # parameters that change the signal frame
-FEATURE_PARAMS = ("atr_n", "shock_k")
+FEATURE_PARAMS = ("mom_n", "atr_n")
 
 
 @dataclass(frozen=True)
@@ -85,7 +95,11 @@ class RiskLimits:
 
 
 def warmup_bars(p: StrategyParams) -> int:
-    return p.atr_n + 3
+    return max(p.mom_n, p.atr_n) + 3
+
+
+def currencies(pair: str) -> tuple[str, str]:
+    return pair[:3], pair[3:]
 
 
 def trading_day_ids(index) -> np.ndarray:
@@ -101,22 +115,45 @@ def trading_day(ts_ns: int) -> int:
 
 
 # ============================================================================= research path (vectorised)
-def compute_features(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
-    """Indicator values known at the CLOSE of each hourly bar (row t uses bars <= t). Not yet tradeable."""
-    h, l, c = df["high"], df["low"], df["close"]
-    pc = c.shift(1)
-    tr = np.fmax(h - l, np.fmax((h - pc).abs(), (l - pc).abs()))
-    atr = tr.rolling(p.atr_n).mean()
-    big = tr > p.shock_k * atr.shift(1)  # range expansion vs. the n bars before this one
-    shock = np.where(big & (c > pc), 1.0, np.where(big & (c < pc), -1.0, 0.0))
-    return pd.DataFrame({"close": c, "atr": atr, "shock": shock}, index=df.index)
+def compute_features(data, p: StrategyParams):
+    """Indicator values known at the CLOSE of each hourly bar (row t uses bars <= t). Not yet tradeable.
+
+    `data` is one pair's frame (treated as a one-pair universe) or a dict {pair: frame}; returns the same shape.
+    """
+    single = isinstance(data, pd.DataFrame)
+    frames = {"BASQUO": data} if single else data
+    index = pd.DatetimeIndex(sorted(set().union(*(f.index for f in frames.values()))))
+    feats, mom = {}, {}
+    for k, f in frames.items():
+        h, l, c = f["high"], f["low"], f["close"]
+        pc = c.shift(1)
+        tr = np.fmax(h - l, np.fmax((h - pc).abs(), (l - pc).abs()))
+        atr = tr.rolling(p.atr_n).mean()
+        m = (np.log(c / c.shift(p.mom_n)) / (atr / c * math.sqrt(p.mom_n))).where(atr > 0)
+        feats[k] = pd.DataFrame({"close": c, "atr": atr}, index=f.index)
+        mom[k] = m.reindex(index).ffill()
+    strength = {}
+    for ccy in sorted({x for k in frames for x in currencies(k)}):
+        cols = [mom[k] if currencies(k)[0] == ccy else -mom[k] for k in frames if ccy in currencies(k)]
+        strength[ccy] = pd.concat(cols, axis=1).mean(axis=1, skipna=False)
+    for k, f in feats.items():
+        base, quote = currencies(k)
+        f["score"] = (strength[base] - strength[quote]).reindex(f.index)
+    return feats["BASQUO"] if single else feats
 
 
-def signal_frame(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
-    """Row t = everything known when bar t opens, i.e. computed from bars <= t-1."""
-    s = compute_features(df, p).shift(1)  # <- look-ahead guard
-    s["shock"] = s["shock"].fillna(0.0)
-    return s
+def signal_frame(data, p: StrategyParams):
+    """Row t = everything known when bar t opens, i.e. computed from bars <= t-1 (same shape as `data`)."""
+    feats = compute_features(data, p)
+
+    def one(f: pd.DataFrame) -> pd.DataFrame:
+        s = f.shift(1)  # <- look-ahead guard
+        prev = s["score"].shift(1)
+        s["long_entry"] = ((s["score"] > 0) & (prev <= 0)).astype(float)
+        s["short_entry"] = ((s["score"] < 0) & (prev >= 0)).astype(float)
+        return s
+
+    return one(feats) if isinstance(feats, pd.DataFrame) else {k: one(f) for k, f in feats.items()}
 
 
 # ============================================================================= engine-agnostic components
@@ -124,37 +161,63 @@ def signal_frame(df: pd.DataFrame, p: StrategyParams) -> pd.DataFrame:
 class SignalSnapshot:
     close: float
     atr: float
-    shock: int
+    long_entry: bool
+    short_entry: bool
 
 
 def snapshot_from_row(row) -> SignalSnapshot:
     """The vectorised signal frame's row t as the snapshot the event-driven engine has at the same time."""
-    return SignalSnapshot(float(row["close"]), float(row["atr"]), int(row["shock"]))
+    return SignalSnapshot(float(row["close"]), float(row["atr"]), bool(row["long_entry"] > 0),
+                          bool(row["short_entry"] > 0))
 
 
-class SignalEngine:
-    """Incremental ATR and range-expansion shock detector over completed bars."""
+class UniverseSignalEngine:
+    """Incremental per-pair ATR / momentum and the cross-sectional currency-strength score."""
 
-    def __init__(self, p: StrategyParams):
-        self.p = p
-        self._tr: deque[float] = deque(maxlen=p.atr_n)
-        self._prev_close: float | None = None
-        self._prev_atr = math.nan
+    def __init__(self, p: StrategyParams, pairs: tuple[str, ...]):
+        self.p, self.pairs = p, tuple(pairs)
+        self._closes = {k: deque(maxlen=p.mom_n + 1) for k in self.pairs}
+        self._tr = {k: deque(maxlen=p.atr_n) for k in self.pairs}
+        self._atr = {k: math.nan for k in self.pairs}
+        self._z_prev = {k: math.nan for k in self.pairs}
+        self._ccys = sorted({x for k in self.pairs for x in currencies(k)})
 
-    def update(self, o: float, h: float, l: float, c: float) -> SignalSnapshot:
-        pc = self._prev_close
+    def update(self, pair: str, o: float, h: float, l: float, c: float) -> None:
+        """Fold in one completed bar of one pair."""
+        cl = self._closes[pair]
+        pc = cl[-1] if cl else None
         tr = h - l if pc is None else max(h - l, abs(h - pc), abs(l - pc))
-        self._tr.append(tr)
-        atr = math.fsum(self._tr) / self.p.atr_n if len(self._tr) == self.p.atr_n else math.nan
-        shock = 0
-        if pc is not None and tr > self.p.shock_k * self._prev_atr:
-            shock = 1 if c > pc else (-1 if c < pc else 0)
-        self._prev_close, self._prev_atr = c, atr
-        return SignalSnapshot(c, atr, shock)
+        trs = self._tr[pair]
+        trs.append(tr)
+        self._atr[pair] = math.fsum(trs) / self.p.atr_n if len(trs) == self.p.atr_n else math.nan
+        cl.append(c)
+
+    def _momentum(self, pair: str) -> float:
+        cl, atr, n = self._closes[pair], self._atr[pair], self.p.mom_n
+        if len(cl) < n + 1 or not atr > 0:
+            return math.nan
+        c = cl[-1]
+        return math.log(c / cl[0]) / (atr / c * math.sqrt(n))
+
+    def snapshots(self) -> dict[str, SignalSnapshot]:
+        """Call once per hourly close after every pair's bar is in; returns each pair's snapshot."""
+        m = {k: self._momentum(k) for k in self.pairs}
+        strength = {}
+        for ccy in self._ccys:
+            vals = [m[k] if currencies(k)[0] == ccy else -m[k] for k in self.pairs if ccy in currencies(k)]
+            strength[ccy] = math.nan if any(math.isnan(v) for v in vals) else sum(vals) / len(vals)
+        out = {}
+        for k in self.pairs:
+            base, quote = currencies(k)
+            z, zp = strength[base] - strength[quote], self._z_prev[k]
+            out[k] = SignalSnapshot(self._closes[k][-1] if self._closes[k] else math.nan, self._atr[k],
+                                    z > 0 and zp <= 0, z < 0 and zp >= 0)
+            self._z_prev[k] = z
+        return out
 
 
 class PositionLogic:
-    """Per-pair state machine: shock entries, chandelier trailing stop, reverse on opposite shock."""
+    """Per-pair state machine: breakout entries, chandelier trailing stop, stop-and-reverse."""
 
     def __init__(self, p: StrategyParams):
         self.p = p
@@ -164,17 +227,18 @@ class PositionLogic:
 
     def on_bar_close(self, snap: SignalSnapshot) -> int:
         """Fold in a completed bar; return the desired direction for the next open."""
-        d, sh = self.direction, snap.shock
+        d = self.direction
         self.exit_reason = ""
         if d == 0:
-            return sh
+            return 1 if snap.long_entry else (-1 if snap.short_entry else 0)
         if d * (snap.close - self.stop) < 0:
             self.exit_reason = "stop"
         else:
             s2 = snap.close - d * self.p.stop_mult * snap.atr
             if d * (s2 - self.stop) > 0:
                 self.stop = s2
-        return -d if sh == -d else (0 if self.exit_reason else d)
+        opposite = snap.short_entry if d == 1 else snap.long_entry
+        return -d if opposite else (0 if self.exit_reason else d)
 
     def on_entry(self, direction: int, snap: SignalSnapshot) -> None:
         self.direction = direction
@@ -257,7 +321,8 @@ class PortfolioTrendStrategy(Strategy):
         self.warmup_start_ns = warmup_start(plan)
         self._pair_of = {B.bar_type(p): p for p in self.pairs}
         uniq = list(dict.fromkeys(s.params for s in plan))
-        self._signals = {pair: {q: SignalEngine(q) for q in uniq} for pair in self.pairs}
+        self._signals = {q: UniverseSignalEngine(q, self.pairs) for q in uniq}
+        self._seen: set[str] = set()
         self._logic = {pair: PositionLogic(plan[0].params) for pair in self.pairs}
         self._units = {pair: 0 for pair in self.pairs}
         self._risk = RiskManager(limits, B.STARTING_NAV)
@@ -278,13 +343,27 @@ class PortfolioTrendStrategy(Strategy):
         ts = bar.ts_event
         pair = self._pair_of[bar.bar_type]
         if ts != self._ts:
+            if self._seen:  # the previous close never completed (a pair had no bar): decide with what came in
+                self._decide_all(self._ts)
             self._on_close_time(ts)
         o, h, l, c = bar.open.as_double(), bar.high.as_double(), bar.low.as_double(), bar.close.as_double()
-        snaps = {q: eng.update(o, h, l, c) for q, eng in self._signals[pair].items()}
+        for eng in self._signals.values():
+            eng.update(pair, o, h, l, c)
+        self._seen.add(pair)
+        if len(self._seen) == len(self.pairs):
+            self._decide_all(ts)
+
+    def _decide_all(self, ts: int) -> None:
+        seen, self._seen = self._seen, set()
+        snaps = {q: eng.snapshots() for q, eng in self._signals.items()}
         if self._seg < 0:
             return
         params = self.plan[self._seg].params
-        snap = snaps[params]
+        for pair in self.pairs:
+            if pair in seen:
+                self._decide(pair, snaps[params][pair], params, ts)
+
+    def _decide(self, pair: str, snap: SignalSnapshot, params: StrategyParams, ts: int) -> None:
         logic = self._logic[pair]
         target = logic.on_bar_close(snap)
         if not self._risk.allows_trading(ts):

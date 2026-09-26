@@ -407,11 +407,14 @@ def _positions_by_bar(res: B.RunResult, closes: np.ndarray) -> np.ndarray:
 
 
 def circuit_breaker_test() -> dict:
-    """Oscillating up-trend with periodic up-jumps; gap the market down right after a bar in which the
-    strategy is long, sized off the leverage it actually holds (legitimate because positions are causal)."""
-    n = 1200
+    """A down-trend turning into an oscillating up-trend with periodic up-jumps (so any trend rule goes long
+    at some point); gap the market down right after a bar in which the strategy is long, sized off the
+    leverage it actually holds (legitimate because positions are causal)."""
+    n, turn = 1600, 400
     t = np.arange(n, dtype=float)
-    close = 1.10 * np.exp(0.0001 * t + 0.004 * np.sin(2 * np.pi * t / 40.0) + 0.004 * np.floor(t / 97.0))
+    drift = np.cumsum(np.where(t < turn, -0.0001, 0.0001))
+    jumps = 0.004 * np.floor(np.maximum(t - turn, 0.0) / 97.0)
+    close = 1.10 * np.exp(drift + 0.004 * np.sin(2 * np.pi * t / 40.0) + jumps)
     base = m15_from_hourly_close(close, "2021-03-01")
     mk = _market({"EURUSD": base})
     closes = _decision_times(mk)
@@ -421,7 +424,7 @@ def circuit_breaker_test() -> dict:
     mk.dispose()
     held = _positions_by_bar(pre, closes)
     # long in bar k-1 and still holding the same position through the open of bar k (the gap bar)
-    longs = [j for j in range(120, len(closes) - 300) if held[j - 1] > 0 and held[j] == held[j - 1]]
+    longs = [j for j in range(turn, len(closes) - 300) if held[j - 1] > 0 and held[j] == held[j - 1]]
     if not longs:
         return {"passed": False, "reason": "scenario never went long"}
     k = longs[0]
@@ -540,18 +543,27 @@ def _frames_equal(a: pd.DataFrame, b: pd.DataFrame) -> bool:
         np.array_equal(a[c].to_numpy(dtype=float), b[c].to_numpy(dtype=float), equal_nan=True) for c in a.columns)
 
 
-def signal_leak_violations(frame_fn, h1: pd.DataFrame, p, points, strict: bool, seed: int = 11) -> list[int]:
+def signal_leak_violations(frame_fn, h1s: dict[str, pd.DataFrame], p, points, strict: bool,
+                           seed: int = 11) -> list[int]:
+    """Vectorised signal frames (one per pair, possibly cross-sectional) must not change up to bar t when
+    every pair's bars from t+1 (strict: from t) on are scrambled."""
     rng = np.random.default_rng(seed)
-    base = frame_fn(h1, p)
+    index = pd.DatetimeIndex(sorted(set().union(*(f.index for f in h1s.values()))))
+    base = frame_fn(h1s, p)
     bad = []
     for t in points:
-        d = h1.copy()
-        lo = t if strict else t + 1
-        n = len(d) - lo
-        fac = np.exp(np.cumsum(rng.normal(0, 0.004, n))) * rng.choice([0.9, 1.0, 1.1], n)
-        for c in ("open", "high", "low", "close"):
-            d.iloc[lo:, d.columns.get_loc(c)] = d[c].to_numpy()[lo:] * fac
-        if not _frames_equal(base.iloc[: t + 1], frame_fn(d, p).iloc[: t + 1]):
+        cut = index[t] if strict else index[t + 1]
+        alt_in = {}
+        for k, f in h1s.items():
+            d = f.copy()
+            rows = d.index >= cut
+            n = int(rows.sum())
+            fac = np.exp(np.cumsum(rng.normal(0, 0.004, n))) * rng.choice([0.9, 1.0, 1.1], n)
+            for c in ("open", "high", "low", "close"):
+                d.loc[rows, c] = d.loc[rows, c].to_numpy() * fac
+            alt_in[k] = d
+        alt = frame_fn(alt_in, p)
+        if not all(_frames_equal(base[k].loc[: index[t]], alt[k].loc[: index[t]]) for k in h1s):
             bad.append(int(t))
     return bad
 
@@ -590,22 +602,22 @@ def nautilus_leak_violations(frames: dict[str, pd.DataFrame], p: S.StrategyParam
 
 def run_leak_suite(frames: dict[str, pd.DataFrame], p: S.StrategyParams, n_points: int = 6, seed: int = 5) -> dict:
     mk = B.Market(frames)
-    h1 = mk.h1[mk.pairs[0]]
+    h1s = mk.h1
     n = len(mk.index)
     mk.dispose()
     rng = np.random.default_rng(seed)
     points = sorted(int(x) for x in rng.integers(max(130, S.warmup_bars(p) + 5), n - 5, n_points))
     out = {
         "points": points,
-        "signals_perturb_t+1": signal_leak_violations(S.signal_frame, h1, p, points, strict=False),
-        "signals_perturb_t": signal_leak_violations(S.signal_frame, h1, p, points, strict=True),
+        "signals_perturb_t+1": signal_leak_violations(S.signal_frame, h1s, p, points, strict=False),
+        "signals_perturb_t": signal_leak_violations(S.signal_frame, h1s, p, points, strict=True),
         "nautilus_perturb_from_bar_boundary": nautilus_leak_violations(frames, p, points, mid_bar=False),
         "nautilus_perturb_from_mid_bar": nautilus_leak_violations(frames, p, points, mid_bar=True),
     }
-    future_leak = lambda d, q: S.signal_frame(d, q).shift(-2)   # row t reads bar t+1
-    same_bar_leak = lambda d, q: S.compute_features(d, q)        # row t reads bar t's close
-    out["canary_future_detected"] = len(signal_leak_violations(future_leak, h1, p, points, strict=False)) > 0
-    out["canary_same_bar_detected"] = len(signal_leak_violations(same_bar_leak, h1, p, points, strict=True)) > 0
+    future_leak = lambda d, q: {k: v.shift(-2) for k, v in S.signal_frame(d, q).items()}  # row t reads t+1
+    same_bar_leak = lambda d, q: S.compute_features(d, q)                                 # row t reads bar t
+    out["canary_future_detected"] = len(signal_leak_violations(future_leak, h1s, p, points, strict=False)) > 0
+    out["canary_same_bar_detected"] = len(signal_leak_violations(same_bar_leak, h1s, p, points, strict=True)) > 0
     out["passed"] = (all(len(v) == 0 for k, v in out.items() if "perturb" in k)
                      and out["canary_future_detected"] and out["canary_same_bar_detected"])
     return out

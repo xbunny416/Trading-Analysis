@@ -26,3 +26,16 @@ split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 4.0, 'stop_mult': 2.5
 split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'stop_mult': 7.0} IS_sh=0.6441 OOS_sh=2.1361 OOS_dd=0.00667 OOS_tr/yr=326.71
 failure    : (b) OOS Sharpe 0.6257 < 1.5
 
+=== TRIAL 3 | 2026-09-27T04:42:26Z | hyp H3 | code 4f592bd2773c | FAIL ===
+hypothesis : C2-T3 classic multi-day Donchian breakout: stop-and-reverse on an entry_n-bar (5-30 trading days) channel break with an atr_mult x ATR chandelier stop, all 5 pairs. Motivation: in cycle 1 breakout in-sample Sharpe rose with lookback but the single-pair 100 trades/yr floor blocked long lookbacks; the 5-pair book lifts that constraint. Chosen as the textbook rule to limit hindsight bias.
+grid       : {"entry_n": [120, 240, 480, 720], "atr_mult": [3.0, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.4226 is_sharpe_mean=0.4085 wfe=-1.0346 oos_max_dd=0.02509 oos_trades_per_year=145.71 oos_total_return=-0.01614 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'entry_n': 480, 'atr_mult': 3.0} IS_sh=0.9246 OOS_sh=-1.2239 OOS_dd=0.02461 OOS_tr/yr=154.75
+split 2    : OOS 2021-04-26..2021-09-26 params={'entry_n': 720, 'atr_mult': 3.0} IS_sh=0.0554 OOS_sh=-1.1312 OOS_dd=0.01751 OOS_tr/yr=107.02
+split 3    : OOS 2021-09-26..2022-02-27 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=-0.931 OOS_sh=0.8225 OOS_dd=0.00733 OOS_tr/yr=132.78
+split 4    : OOS 2022-02-27..2022-07-31 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=0.7018 OOS_sh=2.0919 OOS_dd=0.0076 OOS_tr/yr=139.97
+split 5    : OOS 2022-07-31..2022-12-30 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=1.2915 OOS_sh=-2.0367 OOS_dd=0.02327 OOS_tr/yr=194.59
+failure    : (b) OOS Sharpe -0.4226 < 1.5
+failure    : (d) WFE -1.0346 < 0.6 (OOS Sharpe -0.4226 / IS Sharpe 0.4085)
+

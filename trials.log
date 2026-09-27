@@ -91,3 +91,5 @@ split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'atr_n': 96} IS_
 failure    : (b) OOS Sharpe -0.0605 < 1.5
 failure    : (d) WFE -0.1534 < 0.6 (OOS Sharpe -0.0605 / IS Sharpe 0.3945)
 
+# All 7 pre-registered hypotheses were run in order; none passed Stage 1, so no Stage-2 (holdout) run was made.
+# The 2023 holdout was never loaded. Slot 8 was not used, as pre-registered.

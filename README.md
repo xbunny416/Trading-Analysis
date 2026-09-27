@@ -2,232 +2,202 @@
 
 This repository just for my own coding trading workspace.
 
-## EURUSD H1 long/short trend-following — walk-forward research
+## FX factor research: cycle 4 (published strategies, pre-registered, 2005 → 2022, NautilusTrader)
 
-**Status: FAIL.** The full 8-trial budget was used and no configuration passed the
-walk-forward gates. `python harness.py` exits **1** on the final code. The mandate says to open
-a pull request only once the harness exits 0, so none was opened.
+**Verdict: no strategy passes.**
+- All six pre-registered strategies from the academic and institutional literature failed **Stage 1**, the
+  mandate's walk-forward gates on the development period.
+- None became eligible for **Stage 2**, so the **2023 holdout was never loaded**.
+- No pull request was opened; the protocol opens one only for a strategy that passes both stages.
 
-| Gate | Target | Best trial (T5) | Final trial (T8) |
-|---|---|---|---|
-| (a) OOS trades / year | > 100 | 167.1 ✅ | 136.7 ✅ |
-| (b) OOS Sharpe | ≥ 1.50 | 0.32 ❌ | 0.20 ❌ |
-| (c) OOS max drawdown | < 12 % | 7.8 % ✅ | 5.9 % ✅ |
-| (d) WFE = OOS Sharpe / IS Sharpe | ≥ 0.60 | 0.54 ❌ | 0.21 ❌ |
-| (e) Perturbation look-ahead test | pass | pass ✅ | pass ✅ |
+### How bias and data mining were ruled out
 
-Every number here comes from `harness.py` running on real data. None of it is estimated.
-The complete history is in [`trials.log`](trials.log), and each trial is its own git commit.
+Everything was fixed in [`PREREGISTRATION.md`](PREREGISTRATION.md) and pushed (`0e7822b`) **before any backtest on
+real data**:
+- the strategies and their order;
+- the signal parameters, taken from the papers;
+- the grids, restricted to values the papers report plus a cost band;
+- the data splice, costs, overnight financing and gates.
 
----
+Each run is logged in `trials.log` under a code fingerprint, and the harness refuses any other order. One bug fix
+after trial 1 is disclosed in **Addendum 1** (see below). The budget used was 7 of 8 trials.
 
-### Files
+### Stage 1 results (development data 2005-01 → 2022-12; stitched out-of-sample 2011-10-02 → 2022-12-30, 11.25 years)
 
-| File | Purpose |
-|---|---|
-| `strategy.py` | Strategy (final trial, T8). It has two independent implementations of the same rules: a **vectorised pandas research path** (`compute_features` → `signal_frame` with `.shift(1)` → `backtest_vectorized`) and an **event-driven OOP path** (`MarketData` → `SignalEngine` → `TrendStrategy` → `RiskManager` → `ExecutionHandler`, orchestrated by `EventDrivenBacktester`). |
-| `harness.py` | Loads the data, runs the 5-split rolling WFA, applies gates (a)–(e) and the integrity tests, prints the JSON report, and sets the exit code. It also appends to `trials.log` and enforces the 8-trial budget. |
-| `scripts/eval_wfa.py` | Entry point named in `.claude/skills/quant-wfa`. It forwards to `harness.main()` with the same flags and exit code. |
-| `trials.log` | One block per completed real-data evaluation: hypothesis, grid, data hash, metrics, per-split results, failure reasons. |
-| `results/wfa_latest.json` | Full report of the last run, including the in-sample grid of every split. |
+| ID | Strategy (paper) | OOS Sharpe | mean IS Sharpe | WFE | OOS max DD | fills/yr | Kill switch | Failed gates |
+|---|---|---|---|---|---|---|---|---|
+| A1 | time-series momentum (Moskowitz, Ooi & Pedersen 2012) | −0.03 | −0.12 | n/a | 10.0 % | 175 | 2016-08 | b, d |
+| A2 | 1/3/12-month trend blend (Hurst, Ooi & Pedersen 2017) | 0.05 | −0.07 | n/a | 10.0 % | 502 | 2017-05 | b, d |
+| A3 | multi-speed EWMA crossover (Baz et al. 2015, Man AHL) | **0.25** | 0.32 | **0.79** | **8.9 %** | 483 | — | **b only** |
+| A4 | carry (Koijen, Moskowitz, Pedersen & Vrugt 2018) | −0.72 | −0.37 | n/a | 10.0 % | 2.4 | 2015-03 | a, b, d |
+| A5 | cross-sectional momentum (Menkhoff, Sarno, Schmeling & Schrimpf 2012) | −0.23 | −0.11 | n/a | 10.0 % | 395 | 2020-02 | b, d |
+| A6 | equal blend of A2, A4 and A5 (Asness, Moskowitz & Pedersen 2013) | −0.46 | −0.38 | n/a | 10.0 % | 690 | 2020-11 | b, d |
+| *A1, trial 1* | *before the execution fix (Addendum 1)* | *−0.03* | *−0.13* | *n/a* | *10.0 %* | *174* | *2016-08* | *b, d + integrity* |
+
+Gates: (a) fills/yr > 100, (b) OOS Sharpe ≥ 1.5, (c) max DD < 12 %, (d) WFE ≥ 0.60, (e) look-ahead test.
+- Every run passed (c) and (e) and every integrity test, except trial 1's position-desync test.
+- "Kill switch" is the mandate's permanent halt at a 10 % drawdown. After it fires, the rest of the stitched run is
+  flat and is still counted in the Sharpe.
+
+#### Walk-forward breakdown: OOS Sharpe per split (parameters re-chosen on each 5.25-year in-sample window)
+
+| Split (OOS window) | A1 | A2 | A3 | A4 | A5 | A6 |
+|---|---|---|---|---|---|---|
+| 1 (2011-10 → 2013-12) | 0.13 | −0.05 | 0.04 | −0.61 | 0.16 | −0.35 |
+| 2 (2013-12 → 2016-04) | 0.06 | 0.67 | 0.96 | −1.51 (killed) | 0.32 | −0.22 |
+| 3 (2016-04 → 2018-07) | −0.60 (killed) | −0.94 (killed) | −0.12 | flat | −0.57 | −0.80 |
+| 4 (2018-07 → 2020-09) | flat | flat | −0.76 | flat | −1.17 (killed) | −0.58 |
+| 5 (2020-09 → 2022-12) | flat | flat | 0.78 | flat | flat | −1.40 (killed) |
+
+The chosen parameters, all in-sample grids, per-pair statistics and every integrity test are in
+`results/cycle4/<ID>.json`.
+
+#### Where the money went (stitched OOS, USD on a 1,000,000 account)
+
+| ID | price P&L before costs | spread + slippage | net overnight financing | net result |
+|---|---|---|---|---|
+| A1 | +103,300 | −89,400 | −30,900 | −17,000 |
+| A2 | +121,200 | −86,900 | −23,600 | +10,800 |
+| A3 | +127,900 | −6,200 | −30,100 | +91,700 |
+| A4 | −89,400 | −200 | +2,400 | −87,200 |
+| A5 | +22,700 | −55,400 | −23,100 | −55,800 |
+| A6 | −51,000 | −45,400 | +1,700 | −94,700 |
+
+#### Drawdown statistics
+
+- **Five of the six hit the permanent 10 % kill switch.** A3 did not: its maximum drawdown was 8.9 %, with the worst
+  split drawdown 7.0 % (2018–2020).
+- **No daily-loss halt** (2.5 % in a day) fired in any run.
+- Out-of-sample volatility was 1–3.3 % a year, as sized.
+
+### What the results mean
+
+1. **Nothing is close to 1.5.**
+   - The best, A3, reached 0.25. With 11.25 out-of-sample years the standard error of a Sharpe ratio is about
+     0.30, so 0.25 is 0.8 SE from zero.
+   - The best of six strategies with no edge would be expected at about +0.38.
+   - The results are consistent with **no exploitable edge after costs** on these five pairs.
+2. **Trend was there before costs.**
+   - A1–A3 made +$103k to +$128k over the active period before costs. That is the modest, positive FX trend premium
+     the literature reports for the 2010s.
+   - For A1 and A2, spreads took almost all of it, because both flip positions often. For A1, plateau selection
+     picked 1-month lookbacks in 2014–2018; A2's blend always includes a 1-month component.
+   - A3 trades in small rebalances, so its spread cost was only about $6k. But it pays roughly $30k of financing
+     mark-up, which the literature's futures-based returns do not bear.
+3. **Carry lost money before costs.**
+   - From 2011 to 2015 carry was long CAD, GBP and EUR against USD and JPY, straight into the dollar rally.
+   - With near-zero rates in most of these currencies there was little carry to earn. This matches the literature:
+     G10 carry has been weak since 2008.
+   - Carry also cannot meet the 100 trades/yr gate, since rate differentials rarely change.
+4. **Cross-sectional momentum is weak in G10**, as Menkhoff et al. found; most of it sits in emerging-market
+   currencies. With five currencies, the middle-ranked currency keeps dropping to zero weight and re-entering,
+   which costs spread.
+5. **The blend did not diversify.** Its components were weak or losing after costs over this period. Averaging them
+   kept the churn and the losses.
+6. **The gates and the universe don't match these strategies.**
+   - Institutional trend and multi-factor programs reach about 0.5–0.8 Sharpe by trading 50–150 markets across
+     commodities, bonds, equity indices and currencies, with futures-level costs.
+   - Four independent USD crosses plus EURJPY, retail spreads and a financing mark-up cannot deliver 1.5. With a
+     permanent 10 % kill switch over an 11-year window, a strategy near zero Sharpe will almost surely be stopped.
+
+### Addendum 1: an execution bug, found by trial 1 and fixed
+
+Trial 1's integrity test for position desyncs failed (USDCAD, Christmas 2009). The root cause was two engine bugs,
+present since cycle 2.
+
+1. **Stale fills.** Nautilus processes due orders after every data point. With a fixed order latency, every pair
+   except the first in the data stream filled at its *previous close* quote, not its next open. This is not
+   look-ahead, since the price predates the decision, but it is optimistic.
+2. **Late decisions.** When only some pairs traded in an hour (holidays), the decision waited for the next bar
+   event, sometimes days later, and doubled orders.
+
+The fix:
+- A close is decided once every pair with a bar has reported.
+- Each pair's order goes out on its own next quote and fills there.
+- A new five-pair test with random gaps and a one-pair holiday checks every fill price. It flagged 155 of 175 fills
+  on the old code.
+
+A1 was re-run under the fixed code (trial 2) with an unchanged specification; both results are shown above. Cycles 2
+and 3 used the same execution code; the bias favoured them, and their failing verdicts stand.
+
+### What could legitimately change the outcome
+
+- **More markets.** The published Sharpe of trend and multi-factor strategies comes from diversification across
+  dozens of markets, not from five FX pairs. This needs more data, such as index, bond and commodity futures, or at
+  least G10 plus EM FX.
+- **Institutional costs.** Futures or prime-broker financing has no 0.5 % mark-up, and raw spreads are cheaper. Trend
+  was positive before costs here. These costs must come from real account data, not assumptions.
+- **Gates that fit the strategy class.** A 1.5 Sharpe and 100 trades a year target fast, high-Sharpe strategies,
+  while published factor premia are slower and smaller. Changing gates after seeing results would be data mining,
+  so a new protocol must be pre-registered first.
+- **The 2023 holdout is still untouched** and available for exactly that. This cycle's trial budget is 7 of 8 used.
 
 ### Reproduce
 
 ```bash
-pip install -r requirements.txt
-python harness.py --selftest   # synthetic-data unit tests only; no real-data metrics, not a trial
-python harness.py              # full evaluation on real EURUSD H1 data (exit 0 = PASS, 1 = FAIL)
-python scripts/eval_wfa.py     # same thing, via the skill's entry point
+pip install -r requirements.txt                 # nautilus_trader==1.221.0, pandas, pyarrow
+# MT5 exports at data/mt5/<PAIR>.csv for EURUSD GBPUSD USDJPY USDCAD EURJPY (git-ignored)
+python harness.py --check-data                  # splice + rate-table checks, no backtest
+python harness.py --hypothesis A1 --selftest    # synthetic integrity tests, ~1-2 min, never a trial
+python harness.py --hypothesis A1               # Stage 1; re-running logged code reproduces it and logs nothing
+python harness.py --hypothesis A1 --holdout     # Stage 2; refused unless A1 passed Stage 1 (none did)
 ```
 
-On the first run the harness does a sparse, blob-less git checkout of the pinned source commit
-(about 100 MB of monthly CSVs) and caches the hourly bars in `data/`, which is git-ignored. A full
-run takes about 4 s after that. Each run is deterministic: re-running any trial commit reproduces
-its logged metrics exactly (checked for T1 and T5).
+The OANDA history is fetched on first use (a sparse git checkout of `FutureSharks/financial-data` at `7ba1d40`) and
+cached in `data/spliced/`. A Stage-1 run takes 6–13 minutes on 4 cores.
 
-**Trial budget.** The harness fingerprints `strategy.py` and `harness.py` together. If the
-fingerprint is already in `trials.log`, the run is a re-run and nothing is logged. Any other code
-change counts as a new trial and is refused once 8 trials have been logged. To start a new research
-cycle, start a fresh `trials.log`, and ideally use data these 8 trials have never seen.
+### Data, costs and engine
 
----
+- **Prices.** OANDA 1-minute mids 2005-01 → 2019-11 are spliced with your MT5 M15 exports from 2019-12-01 22:00 UTC.
+  - Before the splice, USD/JPY = EUR/JPY ÷ EUR/USD.
+  - OANDA's weekend and Sunday pre-open quotes are dropped.
+  - On the six-month overlap, OANDA and MT5 hourly closes agree to a median 0.1–0.35 pips.
+- **Costs.**
+  - Your broker's spread: the MT5 bar spread; before the splice, the median MT5 spread for that pair and UTC hour.
+    Floor 1 pip, +0.5 pip slippage per fill.
+  - Overnight financing at each 17:00 New York roll: `qty·mid·(r_base − r_quote)/365 − |qty|·mid·0.5 %/365`.
+  - Rates are OECD 3-month rates to 2020-06, then central-bank policy rates, committed in `data/rates/`.
+  - The carry signal sees only published rates: a monthly average from the next month, a decision from the next
+    day.
+- **Sizing** (the mandate's formula): `units = NAV · 0.3 % · |s| / (ATR · 10 · quote→USD)`.
+  - Wilder ATR over 1,440 hourly bars; whole 1,000-unit lots; 10× cap per position.
+  - About 1.5 % annualised volatility per position at full signal.
+- **Execution.**
+  - The decision is taken at an hourly close; each pair fills at its own next open quote.
+  - A no-trade band sets rebalancing, with no calendar rule.
+  - Circuit breakers: 2.5 % daily loss → 24 h halt; 10 % drawdown → permanent halt.
+- **Walk-forward.**
+  - Five rolling splits (70 % IS / 30 % OOS) after an 18-month warm-up.
+  - Plateau selection among combinations with more than 100 in-sample fills a year.
+  - One stitched NautilusTrader OOS run.
+- **Integrity tests, on every run:**
+  - parity between Nautilus and an independent vectorised reference, including financing;
+  - multi-pair fill timing;
+  - look-ahead tests (bar-boundary and mid-bar cuts, canaries) and rate-publication-lag tests;
+  - financing checked against hand calculations;
+  - the execution rule, circuit breakers, friction (including JPY→USD) and corrupt data;
+  - splice checks and the holdout lock.
 
-### Data
+### Files
 
-| | |
+| Path | Purpose |
 |---|---|
-| Source | OANDA **mid** candles, 1-minute, UTC, from the public repo [FutureSharks/financial-data](https://github.com/FutureSharks/financial-data) at pinned commit `7ba1d404aa8b0e1c0f71321acebadcbfb9bcca8d` |
-| Resampling | 1-hour bars: open = first, high = max, low = min, close = last |
-| Span | 2015-01-01 22:00 → 2020-05-14 07:00 UTC: **5.36 years, 33,340 bars** (~6,215 bars/yr) |
-| Quality | Clean after validation; 4 intra-week gaps longer than 1 h; the longest gap (76 h) is a holiday weekend |
-| Hash | `sha256(hash_pandas_object(OHLC))` = `4a5f8acc…eeda5`, printed in every report |
+| `PREREGISTRATION.md` | Cycle-4 protocol, data and rate hashes, code fingerprints; Addendum 1. |
+| `hypotheses/academic_base.py` | Shared engine: sizing, no-trade-band execution, breakers, Nautilus strategy, vectorised reference, signal kernels. |
+| `hypotheses/a1..a6_*.py` | The six pre-registered signals, each with its paper and formulas in the docstring. |
+| `backtest.py` | Nautilus plumbing, OANDA + MT5 splice, rate table, overnight-financing module. |
+| `harness.py` | Stage 1 / Stage 2 walk-forward, gates, integrity tests, trial and holdout guards. |
+| `trials.log`, `holdout.log` | Cycle-4 Stage-1 entries (7) and Stage-2 entries (none). |
+| `results/cycle4/` | JSON report per run (`A1_trial1.json` is the pre-fix run). |
+| `data/rates/` | OECD short-term rates and central-bank policy decisions. |
+| `research/cycle1..3/` | Earlier cycles: logs, reports and write-ups. |
 
-**Why not yfinance:** the sandbox's network policy blocks Yahoo Finance, as well as Dukascopy,
-HistData, Stooq, FRED and the ECB. Only GitHub and package registries are reachable. yfinance also
-caps 1-hour history at 730 days, below the 3-year minimum. This is the most recent multi-year
-intraday EURUSD history that was reachable, so the sample ends in May 2020. To run on a newer
-export, use `python harness.py --data your.csv` with columns `time,open,high,low,close`.
+<details>
+<summary>Earlier cycles (all failed the gates honestly)</summary>
 
----
-
-### Strategy — final trial (T8): parsimonious shock momentum
-
-It uses one indicator (ATR) and three tunable parameters: `atr_n` (n), `shock_k` (k) and
-`risk_pct` (r). The WFA searches `shock_k ∈ {2, 2.5, 3, 3.5}` and `atr_n ∈ {6, 12, 24, 48}`;
-`risk_pct` is fixed at 0.25 %.
-
-```math
-TR_t = \max\left(H_t - L_t,\; |H_t - C_{t-1}|,\; |L_t - C_{t-1}|\right), \qquad
-ATR_t = \frac{1}{n}\sum_{i=0}^{n-1} TR_{t-i}
-```
-
-```math
-\text{Shock}_t = \operatorname{sign}(C_t - C_{t-1}) \cdot \mathbf{1}\left[\,TR_t > k \cdot ATR_{t-1}\right]
-```
-
-Every decision that takes effect in bar *t* uses bars ≤ *t−1* only, and fills at **Open_t**:
-
-* **Entry (flat):** take direction `Shock_{t-1}` when it is non-zero.
-* **Trailing stop (chandelier):** the initial stop is `C_{e-1} − d·k·ATR_{e-1}`. Each bar, exit if
-  `d·(C_{t-1} − S) < 0`; otherwise ratchet `S ← max_d(S, C_{t-1} − d·k·ATR_{t-1})`.
-* **Reverse:** when `Shock_{t-1} = −d`.
-* **Size** (volatility targeting, as the mandate specifies):
-
-```math
-\text{Units}_t = \min\left(\frac{NAV_{t-1}\cdot r}{k \cdot ATR_{t-1}},\; \frac{L_{\max}\cdot NAV_{t-1}}{C_{t-1}}\right), \qquad L_{\max}=10
-```
-
-  Any degenerate input (ATR ≤ 0, NaN or ∞, NAV ≤ 0, price ≤ 0) sizes to 0.
-
-### Execution and risk model (fixed, not tuned)
-
-* **Friction:** 0.5 pip half-spread plus 0.5 pip slippage on **every fill**, so 2.0 pips per round
-  trip. This is the conservative reading of "1.0 pip round-trip spread + 0.5 pip slippage per trade".
-* **Daily-loss halt:** if NAV at a bar close is ≥ 2.5 % below NAV at the start of the trading day
-  (the day rolls at 17:00 New York, DST-aware), go flat at the next open and open nothing for 24 h.
-* **Max-drawdown kill:** if NAV is ≥ 10 % below its running peak, go flat and halt permanently.
-* No calendar or time-of-day filters anywhere. The harness greps `strategy.py` for calendar
-  attributes as part of a complexity audit.
-
-### Walk-forward design
-
-There are 5 rolling windows of equal length W, split **70 % IS / 30 % OOS**. The window steps by
-0.3·W, so the five OOS segments tile the last 68 % of the data back to back (3.66 OOS years,
-2016-09 → 2020-05).
-
-* **Selection:** within each IS window, every grid point is backtested. Among those trading more
-  than 100 times a year, the harness picks the best **plateau score**: mean Sharpe over the
-  point's 3×3 grid neighbourhood. This penalises isolated spikes.
-* **Stitched OOS:** one continuous OOS simulation. Parameters switch at segment boundaries (open
-  positions are liquidated at the boundary close), while NAV, peak and circuit-breaker state carry
-  over, so a kill in one segment silences every later segment.
-* **Sharpe:** daily (trading-day) NAV returns, annualised with √252, risk-free rate 0.
-  WFE = stitched OOS Sharpe / mean of the IS Sharpes of the chosen parameters.
-
-### WFA results — final trial (T8), per split
-
-| Split | IS window | OOS window | Chosen (k, n) | IS Sharpe | OOS Sharpe | OOS return | OOS max DD | OOS trades/yr | OOS win % | OOS PF | Split WFE |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2015-01-01 → 2016-09-16 | 2016-09-16 → 2017-06-09 | 2.5, 48 | 1.22 | **1.11** | +4.49 % | 3.59 % | 124.7 | 40.7 | 1.40 | 0.91 |
-| 2 | 2015-09-27 → 2017-06-09 | 2017-06-11 → 2018-03-02 | 2.5, 48 | 1.01 | **0.52** | +1.64 % | 3.14 % | 125.9 | 39.6 | 1.15 | 0.52 |
-| 3 | 2016-06-19 → 2018-03-02 | 2018-03-04 → 2018-11-26 | 2.5, 48 | 0.88 | **0.54** | +1.64 % | 3.26 % | 132.7 | 38.1 | 1.09 | 0.61 |
-| 4 | 2017-03-13 → 2018-11-26 | 2018-11-26 → 2019-08-21 | 3.0, 12 | 1.46 | **−0.62** | −2.06 % | 5.17 % | 135.3 | 38.4 | 0.67 | −0.43 |
-| 5 | 2017-12-05 → 2019-08-21 | 2019-08-21 → 2020-05-14 | 2.5, 24 | 0.11 | **−0.83** | −2.56 % | 4.77 % | 166.8 | 33.6 | 0.68 | −7.68 |
-| **Stitched** | | 2016-09-16 → 2020-05-14 | | **0.93** (mean) | **0.20** | **+3.02 %** | **5.95 %** | **136.7** | 37.8 | 0.99 | **0.21** |
-
-Stitched OOS also shows CAGR 0.82 %, annualised volatility 4.46 %, an average net trade of −0.12
-pips, no daily-loss halts, and no kill.
-
-### Drawdown statistics (stitched OOS, final trial)
-
-| | |
-|---|---|
-| Max drawdown | **5.95 %** (peak 2018-10-02 → trough 2020-05-05, not recovered by the end of the data) |
-| Longest time under water | 589 days (2018-10-02 → end of sample) |
-| Worst OOS segment drawdown | 5.17 % (split 4) |
-| Daily-loss halts / kill switch | 0 / not triggered |
-| Circuit-breaker behaviour | Verified by tests (see below), not by chance events in the sample |
-
-Across all 8 trials the stitched OOS max drawdown ranged from 5.9 % to 10.1 %. T3 and T7 tripped
-the 10 % kill switch, which then silenced their later splits.
-
-### All trials
-
-| # | Hypothesis (full text in `trials.log`) | OOS Sharpe | IS Sharpe (mean) | WFE | OOS max DD | OOS trades/yr | Failed gates |
-|---|---|---|---|---|---|---|---|
-| 1 | Donchian breakout + ATR chandelier stop, stop-and-reverse | −0.10 | −0.42 | n/a | 8.7 % | 117.6 | b, d |
-| 2 | Slow Donchian regime, buy fast pullbacks inside it | −0.60 | −0.76 | n/a | 9.8 % | 181.0 | b, d |
-| 3 | Slow Donchian regime, trade fast breakouts aligned with it | −0.46 | 0.00 | −285.7 | 10.0 % (kill) | 115.1 | b, d |
-| 4 | Range-expansion "shock" momentum, fixed holding clock | −0.66 | 0.61 | −1.09 | 9.0 % | 132.1 | b, d |
-| 5 | Shock entry + chandelier trailing exit | **0.32** | 0.60 | 0.54 | 7.8 % | 167.1 | b, d |
-| 6 | T5 + close-location confirmation of the shock bar | 0.25 | 0.64 | 0.40 | 7.9 % | 147.1 | b, d |
-| 7 | T5 shocks only in the direction of a slow Donchian regime | −0.38 | 0.07 | −5.16 | 10.1 % (kill) | 91.0 | a, b, d |
-| 8 | T5 with the stop tied to the shock threshold; search `atr_n` | 0.20 | 0.93 | 0.21 | 5.9 % | 136.7 | b, d |
-
-Each change was motivated by the previous trial's **in-sample** grid and trade diagnostics; the
-reasoning is recorded in each trial's `HYPOTHESIS`. Every trial is also committed separately, so
-`git checkout <trial commit> && python harness.py` reproduces its logged numbers exactly.
-
-### Integrity tests (run on every evaluation)
-
-* **Perturbation look-ahead test (gate e).** At 8 random bars *t*, the harness scrambles all data
-  from bar *t+1* on (required) and, separately, from bar *t* itself (stricter). It then asserts that
-  (1) the signal frame rows ≤ *t*, (2) the positions held in bars ≤ *t* and (3) the NAV before the
-  perturbation are bit-for-bit identical in **both** engines. It runs on synthetic data and on a
-  1-year slice of real data.
-* **Canaries.** Two deliberately leaky signal frames must be caught: one reads bar *t+1*, one
-  reads bar *t*'s close. A mutation test also showed that deleting the `.shift(1)` guard is caught,
-  but only by the strict bar-*t* perturbation. That is why both perturbations are required.
-* **Engine parity.** The vectorised and event-driven engines must agree on every bar: same
-  direction, units within 1e-9, same trade count. On the real stitched OOS run (22,701 bars, 500
-  trades) the NAV difference is exactly 0.0.
-* **Edge cases** (required by `.claude/skills/tdd-enforcer`):
-  * zero, NaN or ∞ ATR, NAV and price in position sizing
-  * flat prices (ATR = 0 → no trades, NAV unchanged)
-  * missing bars, NaN rows, duplicate or out-of-order timestamps, corrupt OHLC rows
-  * an 8 % gap with a 10 % range bar
-  * a ~5 % daily loss that must halt trading for exactly 24 bars and then resume
-  * a ~15 % loss that must kill trading permanently
-  * exact friction per round trip
-  * parity with state carried across segments
-
-  Mutation checks confirmed that the breaker test fails when the breakers are disabled or the
-  halt length is set to 0.
-* **Complexity audit.** At most 4 tunable parameters and at most 3 indicators, and no calendar
-  attributes appear in `strategy.py`.
-
----
-
-### Why it failed, and what would change the outcome
-
-1. **The frequency gate and the edge pull in opposite directions.** In every in-sample grid, the
-   highest Sharpe settings trade fewer than 100 times a year: longer Donchian lookbacks in T1,
-   shock thresholds `k ≥ 3` in T5 and T6. Requiring more than 100 round trips a year on one pair
-   pushes selection into the noisiest region.
-2. **Friction is the same size as the edge.** In the final trial, average net P&L per trade in each
-   OOS split ranged from −5.9 to +7.6 pips (stitched −0.1), against 2 pips of cost per round trip.
-3. **Non-stationarity.** Shock momentum worked in-sample from 2015 to 2018 and faded from late
-   2018 through 2020 (T4, T5 and T8 splits 4–5). A 21-month rolling IS window cannot anticipate
-   that.
-4. **Statistical power.** With 3.66 OOS years, the standard error of an annualised Sharpe is about
-   0.52. The best OOS Sharpe (0.32) is about 0.6 standard errors from zero, and the expected
-   maximum of 8 pure-noise trials is about 1.4 standard errors (≈ 0.7 Sharpe). The trial history
-   is consistent with **no exploitable edge at this frequency**.
-
-Changes that would genuinely alter the picture, none of which were tried here because they
-change the mandate:
-
-* a multi-pair portfolio, where diversification is how real trend-following programmes reach
-  Sharpe > 1
-* a lower trade-frequency floor, or daily-bar trend horizons
-* modelling financing/swap costs
-* tick-level stop execution
-* **a fresh 2020–2026 holdout that none of these 8 trials has seen** before any further tuning
-
-### Known limitations
-
-* The sample ends 2020-05-14; see "Data" above.
-* Prices are mid, and friction is a fixed 2 pips per round trip. Variable spreads (for example
-  around news) and overnight swap/financing are not modelled.
-* Stops are evaluated on hourly closes and filled at the next open, not intrabar.
-* Sharpe uses daily NAV returns with a risk-free rate of 0.
+* **Cycle 1:** custom engine, OANDA EURUSD 2015 → 2020, 8 adaptive trials; best OOS Sharpe 0.32.
+* **Cycle 2:** NautilusTrader, your 5-pair MT5 data 2020-11 → 2022-12, 7 adaptive trials; the best (0.66) proved
+  fragile.
+* **Cycle 3:** the 7 cycle-2 intraday hypotheses pre-registered and re-tested on 2019-12 → 2022-12. All failed Stage 1
+  (best 0.63), and the 2023 holdout was never used. See [`research/cycle3/README.md`](research/cycle3/README.md).
+</details>

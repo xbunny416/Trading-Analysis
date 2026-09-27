@@ -4,20 +4,29 @@ Guidance for Claude Code when working in this repository.
 
 ## Project
 
-Personal workspace for writing and backtesting trading strategies. The repository
-is at an early stage: it holds Claude Code configuration (`.claude/skills/`) and
-no strategy code yet.
+Personal workspace for writing and backtesting trading strategies. It holds a
+NautilusTrader walk-forward harness for FX factor research (trend, carry,
+cross-sectional momentum; see `README.md`) plus Claude Code configuration
+(`.claude/skills/`).
 
 ## Commands
 
-No dependency file or test runner is checked in yet. The project skills expect
-this layout once code lands:
-
 | Purpose | Command or file |
 |---|---|
-| Walk-forward evaluation | `python scripts/eval_wfa.py` |
-| Test harness (written first) | `harness.py` |
-| Strategy logic | `strategy.py` |
+| Install | `pip install -r requirements.txt` (NautilusTrader 1.221, pandas, pyarrow; Python 3.11+) |
+| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --hypothesis A1 --selftest` (one per hypothesis, A1..A6) |
+| Real-data checks (splice, rate table; no backtest) | `python harness.py --check-data` |
+| Stage 1 walk-forward, development data (logs a trial) | `python harness.py --hypothesis A1` (or `scripts/eval_wfa.py`) |
+| Stage 2, locked 2023 holdout (once, after a Stage-1 pass) | `python harness.py --hypothesis A1 --holdout` |
+| Evaluate other data (never logged) | `python harness.py --hypothesis A1 --data-dir <folder of <PAIR>.csv>` |
+| Nautilus plumbing, OANDA + MT5 splice, rates, financing | `backtest.py` |
+| Strategy logic | `hypotheses/` (pre-registered A1-A6 on the shared engine `academic_base.py`; `strategy.py` re-exports the registry) |
+
+Real-data runs need the MT5 exports in `data/mt5/<PAIR>.csv` (git-ignored). The OANDA 2005-2019 history is fetched
+automatically (sparse git checkout into `../FutureSharks/financial-data`) and cached in `data/spliced/`; the rate
+tables in `data/rates/` are committed. Cycle 4 follows `PREREGISTRATION.md`: hypotheses run in the fixed order A1..A6,
+the harness refuses other orders and a second holdout run, and every completed real-data run with changed code counts
+against the 8-trial budget in `trials.log`. Iterate with `--selftest`. Cycles 1-3 are archived in `research/`.
 
 When you add a dependency file or test runner, record the exact install and test
 commands here, so that "run the tests" works on the first try.

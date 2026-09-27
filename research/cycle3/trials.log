@@ -1,0 +1,95 @@
+# trials.log - cycle 3, Stage 1 (development period 2019-12-02 -> 2022-12-30). Pre-registered order H1..H7,
+# see PREREGISTRATION.md. Cycle 1 and 2 logs are archived under research/.
+
+=== TRIAL 1 | 2026-09-27T04:38:48Z | hyp H1 | code c85d762d51eb | FAIL ===
+hypothesis : C2-T1 replicate cycle 1's best out-of-sample idea on unseen data: enter in the direction of an hourly bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier stop; reverse on an opposite shock. Same rules and parameters on all 5 pairs, one USD account.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.1622 is_sharpe_mean=0.4615 wfe=-0.3515 oos_max_dd=0.05691 oos_trades_per_year=674.27 oos_total_return=-0.01378 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.1519 OOS_sh=-2.8206 OOS_dd=0.03439 OOS_tr/yr=940.4
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=-0.4861 OOS_sh=0.9162 OOS_dd=0.02372 OOS_tr/yr=998.84
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 3.5, 'stop_mult': 1.5} IS_sh=0.7016 OOS_sh=1.07 OOS_dd=0.0199 OOS_tr/yr=222.88
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 3.5, 'stop_mult': 1.5} IS_sh=1.0025 OOS_sh=-1.0137 OOS_dd=0.03886 OOS_tr/yr=234.87
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.9375 OOS_sh=0.4009 OOS_dd=0.01645 OOS_tr/yr=980.14
+failure    : (b) OOS Sharpe -0.1622 < 1.5
+failure    : (d) WFE -0.3515 < 0.6 (OOS Sharpe -0.1622 / IS Sharpe 0.4615)
+
+=== TRIAL 2 | 2026-09-27T04:40:33Z | hyp H2 | code f185d1c47bbd | FAIL ===
+hypothesis : C2-T2 high-conviction shocks: T1 rules, but search only large shocks (shock_k 3-5) with wider stops. Motivation: T1 in-sample Sharpe rose with shock_k (best row k=3.5 in 3 of 5 splits, as in cycle 1) and costs ate half the ~5.6-pip gross edge per trade; the 5-pair book (590 trades/yr) no longer needs small shocks to clear 100 trades/yr.
+grid       : {"shock_k": [3.0, 3.5, 4.0, 5.0], "stop_mult": [2.5, 3.5, 5.0, 7.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=0.6257 is_sharpe_mean=0.3418 wfe=1.8304 oos_max_dd=0.03087 oos_trades_per_year=190.95 oos_total_return=0.03533 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 4.0, 'stop_mult': 5.0} IS_sh=-0.134 OOS_sh=0.1464 OOS_dd=0.00628 OOS_tr/yr=78.57
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 3.5, 'stop_mult': 2.5} IS_sh=-0.4951 OOS_sh=1.3123 OOS_dd=0.01206 OOS_tr/yr=249.71
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 4.0, 'stop_mult': 2.5} IS_sh=0.8884 OOS_sh=-0.2276 OOS_dd=0.02087 OOS_tr/yr=147.01
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 4.0, 'stop_mult': 2.5} IS_sh=0.8058 OOS_sh=-0.2833 OOS_dd=0.01313 OOS_tr/yr=154.21
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'stop_mult': 7.0} IS_sh=0.6441 OOS_sh=2.1361 OOS_dd=0.00667 OOS_tr/yr=326.71
+failure    : (b) OOS Sharpe 0.6257 < 1.5
+
+=== TRIAL 3 | 2026-09-27T04:42:26Z | hyp H3 | code 4f592bd2773c | FAIL ===
+hypothesis : C2-T3 classic multi-day Donchian breakout: stop-and-reverse on an entry_n-bar (5-30 trading days) channel break with an atr_mult x ATR chandelier stop, all 5 pairs. Motivation: in cycle 1 breakout in-sample Sharpe rose with lookback but the single-pair 100 trades/yr floor blocked long lookbacks; the 5-pair book lifts that constraint. Chosen as the textbook rule to limit hindsight bias.
+grid       : {"entry_n": [120, 240, 480, 720], "atr_mult": [3.0, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.4226 is_sharpe_mean=0.4085 wfe=-1.0346 oos_max_dd=0.02509 oos_trades_per_year=145.71 oos_total_return=-0.01614 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'entry_n': 480, 'atr_mult': 3.0} IS_sh=0.9246 OOS_sh=-1.2239 OOS_dd=0.02461 OOS_tr/yr=154.75
+split 2    : OOS 2021-04-26..2021-09-26 params={'entry_n': 720, 'atr_mult': 3.0} IS_sh=0.0554 OOS_sh=-1.1312 OOS_dd=0.01751 OOS_tr/yr=107.02
+split 3    : OOS 2021-09-26..2022-02-27 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=-0.931 OOS_sh=0.8225 OOS_dd=0.00733 OOS_tr/yr=132.78
+split 4    : OOS 2022-02-27..2022-07-31 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=0.7018 OOS_sh=2.0919 OOS_dd=0.0076 OOS_tr/yr=139.97
+split 5    : OOS 2022-07-31..2022-12-30 params={'entry_n': 120, 'atr_mult': 10.0} IS_sh=1.2915 OOS_sh=-2.0367 OOS_dd=0.02327 OOS_tr/yr=194.59
+failure    : (b) OOS Sharpe -0.4226 < 1.5
+failure    : (d) WFE -1.0346 < 0.6 (OOS Sharpe -0.4226 / IS Sharpe 0.4085)
+
+=== TRIAL 4 | 2026-09-27T04:44:23Z | hyp H4 | code 459f7c21ed0e | FAIL ===
+hypothesis : C2-T4 shock entries with room to run: T1 rules and shock_k range (T1 generalised, WFE 0.93), stop grid moved out to 3.5-10 ATR. Motivation: T1 picked the widest stop tested (5 ATR) in 3 of 5 in-sample windows - a boundary optimum - and its OOS profit came from multi-day follow-through.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [3.5, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.1856 is_sharpe_mean=-0.0777 wfe=None oos_max_dd=0.06691 oos_trades_per_year=989.03 oos_total_return=-0.01511 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 2.0, 'stop_mult': 3.5} IS_sh=-0.0773 OOS_sh=-2.693 OOS_dd=0.04373 OOS_tr/yr=999.92
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 2.0, 'stop_mult': 3.5} IS_sh=-0.6268 OOS_sh=0.4249 OOS_dd=0.03705 OOS_tr/yr=1089.21
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 2.0, 'stop_mult': 3.5} IS_sh=-0.7189 OOS_sh=0.6667 OOS_dd=0.02617 OOS_tr/yr=1002.98
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.2164 OOS_sh=0.0648 OOS_dd=0.01428 OOS_tr/yr=918.12
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 10.0} IS_sh=0.8179 OOS_sh=0.5271 OOS_dd=0.00844 OOS_tr/yr=934.5
+failure    : (b) OOS Sharpe -0.1856 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.0777 <= 0
+
+=== TRIAL 5 | 2026-09-27T04:47:45Z | hyp H5 | code 97dfde7f975d | FAIL ===
+hypothesis : C2-T5 currency-strength trend: score each currency by averaging its vol-normalised mom_n-bar momentum across every pair that contains it, trade each pair on crosses of (base strength - quote strength), atr_mult x ATR chandelier stop. Motivation: T1-T4 single-pair signals were weak/fragile; currency-level averaging cancels pair-specific noise (currency momentum, Menkhoff et al. 2012).
+grid       : {"mom_n": [24, 72, 168, 336], "atr_mult": [3.0, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-1.972 is_sharpe_mean=-1.1296 wfe=None oos_max_dd=0.10002 oos_trades_per_year=1129.98 oos_total_return=-0.10001 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'mom_n': 24, 'atr_mult': 10.0} IS_sh=-0.5271 OOS_sh=-3.8993 OOS_dd=0.02807 OOS_tr/yr=2611.71
+split 2    : OOS 2021-04-26..2021-09-26 params={'mom_n': 168, 'atr_mult': 10.0} IS_sh=-1.5997 OOS_sh=-1.6544 OOS_dd=0.01759 OOS_tr/yr=1093.97
+split 3    : OOS 2021-09-26..2022-02-27 params={'mom_n': 24, 'atr_mult': 3.0} IS_sh=-2.2178 OOS_sh=-3.0011 OOS_dd=0.07242 OOS_tr/yr=1934.83
+split 4    : OOS 2022-02-27..2022-07-31 params={'mom_n': 336, 'atr_mult': 10.0} IS_sh=-1.4522 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 336, 'atr_mult': 10.0} IS_sh=0.1488 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -1.972 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -1.1296 <= 0
+
+=== TRIAL 6 | 2026-09-27T04:49:39Z | hyp H6 | code 819eaa225508 | FAIL ===
+hypothesis : C2-T6 currency-strength trend with a hysteresis band: enter when the pair's currency-strength score |z| > z_entry, exit when it returns through 0, chandelier stop as backstop; ATR window tied to the momentum window. Motivation: T5 whipsawed around z=0 (550-2600 trades/yr in-sample, identical across stop widths); only long lookbacks had positive in-sample Sharpe.
+grid       : {"mom_n": [168, 336, 504, 720], "z_entry": [0.5, 1.0, 1.5, 2.0]}  fixed: {"atr_mult": 5.0, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.3551 is_sharpe_mean=-0.0155 wfe=None oos_max_dd=0.04079 oos_trades_per_year=282.85 oos_total_return=-0.02112 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'mom_n': 504, 'z_entry': 1.0} IS_sh=-0.3817 OOS_sh=-0.0245 OOS_dd=0.01294 OOS_tr/yr=164.27
+split 2    : OOS 2021-04-26..2021-09-26 params={'mom_n': 168, 'z_entry': 1.5} IS_sh=-0.9803 OOS_sh=-1.6692 OOS_dd=0.022 OOS_tr/yr=133.18
+split 3    : OOS 2021-09-26..2022-02-27 params={'mom_n': 504, 'z_entry': 1.0} IS_sh=0.0548 OOS_sh=-1.2568 OOS_dd=0.01647 OOS_tr/yr=192.06
+split 4    : OOS 2022-02-27..2022-07-31 params={'mom_n': 168, 'z_entry': 0.5} IS_sh=-0.0965 OOS_sh=3.0098 OOS_dd=0.0098 OOS_tr/yr=391.45
+split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 168, 'z_entry': 0.5} IS_sh=1.3263 OOS_sh=-2.1479 OOS_dd=0.04079 OOS_tr/yr=535.71
+failure    : (b) OOS Sharpe -0.3551 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.0155 <= 0
+
+=== TRIAL 7 | 2026-09-27T04:51:35Z | hyp H7 | code fe640a3dcfbc | FAIL ===
+hypothesis : C2-T7 parsimonious shock momentum (robustness test of T1): T1 rules with the chandelier-stop distance tied to the shock threshold (stop = shock_k x ATR), and the WFA searching the volatility baseline atr_n instead. Motivation: T1 is the only positive OOS result but T4 showed it is selection-fragile; removing the stop degree of freedom tests whether its edge survives a less flexible search.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "atr_n": [12, 24, 48, 96]}  fixed: {"risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.0605 is_sharpe_mean=0.3945 wfe=-0.1534 oos_max_dd=0.04764 oos_trades_per_year=271.42 oos_total_return=-0.00515 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 3.5, 'atr_n': 12} IS_sh=0.1179 OOS_sh=-1.6959 OOS_dd=0.02259 OOS_tr/yr=233.32
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 3.5, 'atr_n': 12} IS_sh=-0.2824 OOS_sh=0.6879 OOS_dd=0.01801 OOS_tr/yr=294.9
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=0.2896 OOS_sh=0.0507 OOS_dd=0.01686 OOS_tr/yr=177.83
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=0.9648 OOS_sh=-0.3527 OOS_dd=0.01529 OOS_tr/yr=199.28
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'atr_n': 96} IS_sh=0.8824 OOS_sh=0.2399 OOS_dd=0.02987 OOS_tr/yr=454.04
+failure    : (b) OOS Sharpe -0.0605 < 1.5
+failure    : (d) WFE -0.1534 < 0.6 (OOS Sharpe -0.0605 / IS Sharpe 0.3945)
+
+# All 7 pre-registered hypotheses were run in order; none passed Stage 1, so no Stage-2 (holdout) run was made.
+# The 2023 holdout was never loaded. Slot 8 was not used, as pre-registered.

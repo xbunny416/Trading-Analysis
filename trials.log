@@ -67,3 +67,16 @@ failure    : (a) OOS fills/year 2.4 <= 100
 failure    : (b) OOS Sharpe -0.7243 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.367 <= 0
 
+=== TRIAL 6 | 2026-09-27T07:59:34Z | hyp A5 | code 6327f8573e23 | FAIL ===
+hypothesis : A5 cross-sectional currency momentum (Menkhoff-Sarno-Schmeling-Schrimpf 2012): rank USD, EUR, GBP, JPY, CAD by L-month performance, dollar-neutral rank weights traded through the USD pairs; volatility-targeted, no-trade band.
+grid       : {"lookback_months": [1, 3, 6, 12], "band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.2306 is_sharpe_mean=-0.1112 wfe=None oos_max_dd=0.10023 oos_trades_per_year=395.13 oos_total_return=-0.05583 leak_test=PASS
+split 1    : OOS 2011-10-02..2013-12-31 params={'lookback_months': 12, 'band': 0.5} IS_sh=0.1264 OOS_sh=0.1575 OOS_dd=0.04603 OOS_tr/yr=489.99
+split 2    : OOS 2013-12-31..2016-04-01 params={'lookback_months': 6, 'band': 0.5} IS_sh=-0.1563 OOS_sh=0.3217 OOS_dd=0.02937 OOS_tr/yr=415.23
+split 3    : OOS 2016-04-01..2018-07-01 params={'lookback_months': 12, 'band': 0.5} IS_sh=0.038 OOS_sh=-0.5749 OOS_dd=0.05656 OOS_tr/yr=439.17
+split 4    : OOS 2018-07-01..2020-09-30 params={'lookback_months': 12, 'band': 0.1} IS_sh=0.0051 OOS_sh=-1.1748 OOS_dd=0.04676 OOS_tr/yr=631.38
+split 5    : OOS 2020-09-30..2022-12-30 params={'lookback_months': 6, 'band': 0.5} IS_sh=-0.5694 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -0.2306 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.1112 <= 0
+

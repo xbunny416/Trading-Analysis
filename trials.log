@@ -78,3 +78,16 @@ split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 168, 'z_entry': 0.5} IS
 failure    : (b) OOS Sharpe -0.3551 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.0155 <= 0
 
+=== TRIAL 7 | 2026-09-27T04:51:35Z | hyp H7 | code fe640a3dcfbc | FAIL ===
+hypothesis : C2-T7 parsimonious shock momentum (robustness test of T1): T1 rules with the chandelier-stop distance tied to the shock threshold (stop = shock_k x ATR), and the WFA searching the volatility baseline atr_n instead. Motivation: T1 is the only positive OOS result but T4 showed it is selection-fragile; removing the stop degree of freedom tests whether its edge survives a less flexible search.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "atr_n": [12, 24, 48, 96]}  fixed: {"risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.0605 is_sharpe_mean=0.3945 wfe=-0.1534 oos_max_dd=0.04764 oos_trades_per_year=271.42 oos_total_return=-0.00515 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 3.5, 'atr_n': 12} IS_sh=0.1179 OOS_sh=-1.6959 OOS_dd=0.02259 OOS_tr/yr=233.32
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 3.5, 'atr_n': 12} IS_sh=-0.2824 OOS_sh=0.6879 OOS_dd=0.01801 OOS_tr/yr=294.9
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=0.2896 OOS_sh=0.0507 OOS_dd=0.01686 OOS_tr/yr=177.83
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 3.5, 'atr_n': 96} IS_sh=0.9648 OOS_sh=-0.3527 OOS_dd=0.01529 OOS_tr/yr=199.28
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'atr_n': 96} IS_sh=0.8824 OOS_sh=0.2399 OOS_dd=0.02987 OOS_tr/yr=454.04
+failure    : (b) OOS Sharpe -0.0605 < 1.5
+failure    : (d) WFE -0.1534 < 0.6 (OOS Sharpe -0.0605 / IS Sharpe 0.3945)
+

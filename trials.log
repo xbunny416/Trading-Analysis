@@ -53,3 +53,17 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.5} IS_sh=0.5351 OOS_sh
 split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.1} IS_sh=-0.2925 OOS_sh=0.7817 OOS_dd=0.03145 OOS_tr/yr=1044.29
 failure    : (b) OOS Sharpe 0.2543 < 1.5
 
+=== TRIAL 5 | 2026-09-27T07:45:54Z | hyp A4 | code 0f24b7bcc11b | FAIL ===
+hypothesis : A4 currency carry (Koijen-Moskowitz-Pedersen-Vrugt 2018; Lustig-Roussanov-Verdelhan 2011): long the higher-yielding currency of each pair when the known rate differential exceeds theta; volatility-targeted, no-trade band.
+grid       : {"theta": [0.0, 0.25, 0.5, 1.0], "band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.7243 is_sharpe_mean=-0.367 wfe=None oos_max_dd=0.10003 oos_trades_per_year=2.4 oos_total_return=-0.0872 leak_test=PASS
+split 1    : OOS 2011-10-02..2013-12-31 params={'theta': 1.0, 'band': 0.1} IS_sh=-0.3519 OOS_sh=-0.6088 OOS_dd=0.03134 OOS_tr/yr=4.45
+split 2    : OOS 2013-12-31..2016-04-01 params={'theta': 0.25, 'band': 0.1} IS_sh=-0.7872 OOS_sh=-1.5091 OOS_dd=0.08421 OOS_tr/yr=7.56
+split 3    : OOS 2016-04-01..2018-07-01 params={'theta': 0.0, 'band': 0.1} IS_sh=-0.3022 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 4    : OOS 2018-07-01..2020-09-30 params={'theta': 1.0, 'band': 0.1} IS_sh=-0.5793 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2020-09-30..2022-12-30 params={'theta': 1.0, 'band': 0.5} IS_sh=0.1858 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (a) OOS fills/year 2.4 <= 100
+failure    : (b) OOS Sharpe -0.7243 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.367 <= 0
+

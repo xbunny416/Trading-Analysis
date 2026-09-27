@@ -65,3 +65,16 @@ split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 336, 'atr_mult': 10.0} 
 failure    : (b) OOS Sharpe -1.972 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -1.1296 <= 0
 
+=== TRIAL 6 | 2026-09-27T04:49:39Z | hyp H6 | code 819eaa225508 | FAIL ===
+hypothesis : C2-T6 currency-strength trend with a hysteresis band: enter when the pair's currency-strength score |z| > z_entry, exit when it returns through 0, chandelier stop as backstop; ATR window tied to the momentum window. Motivation: T5 whipsawed around z=0 (550-2600 trades/yr in-sample, identical across stop widths); only long lookbacks had positive in-sample Sharpe.
+grid       : {"mom_n": [168, 336, 504, 720], "z_entry": [0.5, 1.0, 1.5, 2.0]}  fixed: {"atr_mult": 5.0, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.3551 is_sharpe_mean=-0.0155 wfe=None oos_max_dd=0.04079 oos_trades_per_year=282.85 oos_total_return=-0.02112 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'mom_n': 504, 'z_entry': 1.0} IS_sh=-0.3817 OOS_sh=-0.0245 OOS_dd=0.01294 OOS_tr/yr=164.27
+split 2    : OOS 2021-04-26..2021-09-26 params={'mom_n': 168, 'z_entry': 1.5} IS_sh=-0.9803 OOS_sh=-1.6692 OOS_dd=0.022 OOS_tr/yr=133.18
+split 3    : OOS 2021-09-26..2022-02-27 params={'mom_n': 504, 'z_entry': 1.0} IS_sh=0.0548 OOS_sh=-1.2568 OOS_dd=0.01647 OOS_tr/yr=192.06
+split 4    : OOS 2022-02-27..2022-07-31 params={'mom_n': 168, 'z_entry': 0.5} IS_sh=-0.0965 OOS_sh=3.0098 OOS_dd=0.0098 OOS_tr/yr=391.45
+split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 168, 'z_entry': 0.5} IS_sh=1.3263 OOS_sh=-2.1479 OOS_dd=0.04079 OOS_tr/yr=535.71
+failure    : (b) OOS Sharpe -0.3551 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.0155 <= 0
+

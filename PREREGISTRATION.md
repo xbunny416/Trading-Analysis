@@ -269,3 +269,49 @@ described here.
 
 **Earlier cycles.** Cycles 2 and 3 used the same execution code, so their non-EURUSD fills were at the previous
 close quote. That bias favoured them, and all of them failed anyway; their verdicts stand.
+
+---
+
+## Addendum 2 (after trial 7): A3 re-evaluated with a fast rolling walk-forward (trial 8, post-hoc)
+
+Added at your request after all six Stage-1 results were known. A3 (Baz et al. multi-speed EWMA crossover) was the
+best of them: OOS Sharpe 0.25, WFE 0.79, max drawdown 8.9 %, failing only gate (b). **This is a post-hoc trial**,
+chosen after seeing that result. It is committed and pushed before the run, and is the last slot of the 8-trial
+budget.
+
+**What is tested: A3F = A3 unchanged, with a different walk-forward.**
+- **Strategy:** signal, constants, sizing, execution, costs and the band grid {0.1, 0.2, 0.3, 0.5} are imported
+  from `a3_ewma_crossover.py` with no edits.
+- **Out-of-sample windows:** 28 equal rolling windows of 146.7 days each (at most 152 days, under half a year).
+  They tile the same stitched OOS span as before, 2011-10-02 → 2022-12-30.
+- **In-sample windows:** the 342 days immediately before each OOS window. That keeps the mandate's 70 : 30 ratio,
+  and the windows roll rather than anchor. The first IS window is 2010-10-25 → 2011-10-02; the last OOS window is
+  2022-08-07 → 2022-12-30.
+- **Parameter choice:** the band is re-chosen on every IS window by the same plateau rule.
+- **Gate (d), stricter:** WFE = OOS Sharpe / mean IS Sharpe must be at least **2/3** (was 0.60). The gates
+  (a) fills/yr > 100, (b) OOS Sharpe ≥ 1.5, (c) max DD < 12 % and (e) the leak test, and every integrity test, are
+  unchanged.
+- **Stage 2:** only after a Stage-1 PASS under the same fingerprint, once. The same geometry continues into 2023:
+  three OOS windows of 146.7 days, the last one short.
+
+**Harness changes.**
+- `make_rolling_splits`, with a new `rolling_splits` test: windows tile without gaps, IS immediately precedes OOS,
+  the 70 : 30 ratio holds, boundaries fall on bar opens, and the holdout continues the geometry.
+- Per-hypothesis `WFA_MAX_OOS_DAYS` / `WFA_MIN_WFE` overrides.
+- A module's `DEPENDS` files are included in its fingerprint and complexity audit.
+- The order guard now expects the first hypothesis with no logged trial. A logged hypothesis can only be reproduced
+  with identical code.
+- The `harness.py` change alters A1–A6's fingerprints. Their logged results are reproducible from commit `002f2a3`.
+- All seven selftests pass.
+
+| ID | File | Code fingerprint |
+|---|---|---|
+| A3F | `hypotheses/a3f_ewma_fast_wfa.py` (+ `a3_ewma_crossover.py`) | `eb183beec26a` |
+
+**Stated before the run:**
+- Only the band is re-chosen, and within every earlier split the four bands differed by just 0.05–0.13 in
+  in-sample Sharpe. The signal's out-of-sample Sharpe should therefore stay near 0.2–0.3, and **gate (b) will
+  almost surely fail**.
+- An in-sample Sharpe measured over 342 days has a standard error of about 1.0, so WFE will be dominated by noise.
+- The same OOS data was already seen in trial 4, so a Stage-1 pass here would not be independent evidence. Only the
+  untouched 2023 holdout could confirm it.

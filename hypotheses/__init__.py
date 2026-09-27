@@ -16,6 +16,8 @@ REGISTRY = {
     "A4": ("a4_carry", "Koijen-Moskowitz-Pedersen-Vrugt 2018", "carry: sign of the known rate differential"),
     "A5": ("a5_xs_momentum", "Menkhoff-Sarno-Schmeling-Schrimpf 2012", "cross-sectional currency momentum"),
     "A6": ("a6_multifactor", "Asness-Moskowitz-Pedersen 2013; KMPV 2018", "equal blend of A2, A4 and A5"),
+    # Addendum 2 (post-hoc, trial 8): A3 unchanged, re-evaluated with a fast rolling walk-forward
+    "A3F": ("a3f_ewma_fast_wfa", "Baz et al. 2015 (Man AHL)", "A3 with <= 152-day rolling OOS windows, WFE >= 2/3"),
 }
 ORDER = tuple(REGISTRY)
 BASE_FILE = Path(__file__).resolve().parent / "academic_base.py"
@@ -27,3 +29,8 @@ def path(hid: str) -> Path:
 
 def load(hid: str) -> ModuleType:
     return importlib.import_module(f"hypotheses.{REGISTRY[hid][0]}")
+
+
+def depends(hid: str) -> list[Path]:
+    """Other hypothesis files a module imports (part of its code fingerprint and complexity audit)."""
+    return [Path(__file__).resolve().parent / f for f in getattr(load(hid), "DEPENDS", ())]

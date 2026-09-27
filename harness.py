@@ -308,6 +308,54 @@ def make_holdout_splits(index: pd.DatetimeIndex, dev_end: pd.Timestamp = DEV_END
     return [sp for sp in out if sp["oos"][1] > sp["oos"][0]]
 
 
+def make_rolling_splits(index: pd.DatetimeIndex, max_oos_days: float, is_frac: float, start_ns: int,
+                        oos_days: float | None = None) -> list[dict]:
+    """Fast rolling (not anchored) walk-forward: OOS windows of equal length, at most `max_oos_days`, tile
+    [start, last close]; each IS window is the stretch immediately before its OOS window, is_frac : 1 - is_frac
+    of it in length. With `oos_days` given (the holdout), that window length is continued and the last window
+    may be short. Boundaries snap to bar opens."""
+    opens = index.as_unit("ns").asi8
+    t_end = int(opens[-1] + HOUR)
+    day = 86_400_000_000_000
+
+    def at(v: float) -> int:
+        k = int(np.searchsorted(opens, v, side="left"))
+        return int(opens[k]) if k < len(opens) else t_end
+
+    a0 = at(start_ns)
+    span = (t_end - a0) / day
+    if oos_days is None:
+        oos_days = span / math.ceil(span / max_oos_days)
+    step, is_len = oos_days * day, oos_days * day * is_frac / (1 - is_frac)
+    n = math.ceil(span / oos_days - 1e-9)
+    bounds = [a0] + [at(a0 + k * step) for k in range(1, n)] + [t_end]
+    return [{"split": k + 1, "is": (at(bounds[k] - is_len), bounds[k]), "oos": (bounds[k], bounds[k + 1]),
+             "oos_days": oos_days} for k in range(n) if bounds[k + 1] > bounds[k]]
+
+
+def wfa_splits(index: pd.DatetimeIndex) -> list[dict]:
+    """The development walk-forward: the standard 5 splits, or - for a hypothesis that sets WFA_MAX_OOS_DAYS
+    (Addendum 2) - the fast rolling geometry over the same stitched OOS span."""
+    std = make_splits(index)
+    if not hasattr(S, "WFA_MAX_OOS_DAYS"):
+        return std
+    return make_rolling_splits(index, S.WFA_MAX_OOS_DAYS, IS_FRACTION, std[0]["oos"][0])
+
+
+def holdout_wfa_splits(index: pd.DatetimeIndex) -> list[dict]:
+    """The development geometry continued into the holdout."""
+    if not hasattr(S, "WFA_MAX_OOS_DAYS"):
+        return make_holdout_splits(index)
+    opens = index.as_unit("ns").asi8
+    dev = wfa_splits(index[opens < DEV_END.value])
+    return make_rolling_splits(index, S.WFA_MAX_OOS_DAYS, IS_FRACTION,
+                               int(opens[np.searchsorted(opens, DEV_END.value)]), oos_days=dev[0]["oos_days"])
+
+
+def min_wfe() -> float:
+    return float(getattr(S, "WFA_MIN_WFE", MIN_WFE))
+
+
 def run_wfa(market: B.Market, pool: ProcessPoolExecutor, splits: list[dict] | None = None) -> dict:
     keys, values, combos = grid_params(S.DEFAULT_PARAMS)
     splits = splits or make_splits(market.index)
@@ -642,6 +690,36 @@ def fill_timing_test() -> dict:
             "desyncs": st.desyncs, "bad_fills": bad[:5], "n_bad": len(bad)}
 
 
+def rolling_split_tests() -> dict:
+    """The fast rolling walk-forward (make_rolling_splits): OOS windows of `oos_days` (< half a year) tile
+    [start, end) without gaps or overlaps; each IS window is the `is_days` immediately before its OOS window
+    (rolling, not anchored); every boundary is a bar open; the holdout version continues the same geometry from
+    DEV_END and never puts an OOS bar before it."""
+    idx = pd.date_range("2005-01-03", "2023-12-29", freq="h", tz="UTC")
+    idx = idx[~B.market_closed(idx)]
+    start = pd.Timestamp("2011-10-02 21:00", tz="UTC")
+    dev = idx[idx < DEV_END]
+    sp = make_rolling_splits(dev, 152, IS_FRACTION, start.value)
+    opens = set(dev.as_unit("ns").asi8.tolist()) | {int(dev[-1].value + HOUR)}
+    day = 86_400e9
+    oos_days = [(b - a) / day for a, b in (x["oos"] for x in sp)]
+    is_days = [(b - a) / day for a, b in (x["is"] for x in sp)]
+    ok = (sp[0]["oos"][0] == int(dev[np.searchsorted(dev.asi8, start.value)].value)
+          and all(sp[k]["oos"][1] == sp[k + 1]["oos"][0] for k in range(len(sp) - 1))
+          and sp[-1]["oos"][1] == int(dev[-1].value + HOUR) and all(x["is"][1] == x["oos"][0] for x in sp)
+          and max(oos_days) < 152 + 3 and min(oos_days) > 140
+          and all(abs(i / o - IS_FRACTION / (1 - IS_FRACTION)) < 0.05 for i, o in zip(is_days, oos_days))
+          and all(v in opens for x in sp for v in (*x["is"], *x["oos"])))
+    first_ho = int(idx[np.searchsorted(idx.asi8, DEV_END.value)].value)
+    ho = make_rolling_splits(idx, 152, IS_FRACTION, first_ho, oos_days=sp[0]["oos_days"])
+    ho_ok = (ho[0]["oos"][0] == first_ho and all(x["is"][1] == x["oos"][0] for x in ho)
+             and ho[0]["is"][0] < DEV_END.value and ho[-1]["oos"][1] == int(idx[-1].value + HOUR)
+             and all(abs(x["oos_days"] - sp[0]["oos_days"]) < 1e-9 for x in ho))
+    return {"passed": bool(ok and ho_ok), "n_splits": len(sp), "oos_days_min_max": [round(min(oos_days), 1),
+            round(max(oos_days), 1)], "is_days_min_max": [round(min(is_days), 1), round(max(is_days), 1)],
+            "holdout_splits": len(ho)}
+
+
 def execution_rule_tests() -> dict:
     """Table-driven checks of the rebalancing rule and the signed target sizing."""
     A = __import__("hypotheses.academic_base", fromlist=["x"])
@@ -808,6 +886,7 @@ def edge_case_tests() -> dict:
     res["friction"] = friction_tests()
     res["financing"] = financing_tests()
     res["execution_rule"] = execution_rule_tests()
+    res["rolling_splits"] = rolling_split_tests()
     res["fill_timing_multi_pair"] = fill_timing_test()
     return res
 
@@ -984,7 +1063,7 @@ def rate_lag_tests(frames: dict[str, pd.DataFrame], rates: B.RateTable, p: S.Str
 
 def complexity_audit() -> dict:
     fields = [f.name for f in dataclasses.fields(S.StrategyParams)]
-    src = H.path(HYP_ID).read_text() + H.BASE_FILE.read_text()
+    src = "".join(f.read_text() for f in [H.path(HYP_ID), H.BASE_FILE] + H.depends(HYP_ID))
     hits = sorted({m.group(0) for m in CALENDAR_PATTERN.finditer(src)})
     grid_ok = set(S.PARAM_GRID) <= set(fields) and set(S.FEATURE_PARAMS) <= set(fields)
     ok = len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and not hits and grid_ok
@@ -997,12 +1076,12 @@ def complexity_audit() -> dict:
 # =============================================================================
 def code_fingerprint(hid: str) -> str:
     h = hashlib.sha256()
-    for f in [ROOT / name for name in CODE_FILES] + [H.path(hid)]:
+    for f in [ROOT / name for name in CODE_FILES] + [H.path(hid)] + H.depends(hid):
         h.update(f.read_bytes())
     return h.hexdigest()[:12]
 
 
-_ENTRY = re.compile(r"^=== (TRIAL|HOLDOUT) (\d+) \| (\S+) \| hyp ([AH]\d+) \| code (\w+) \| (PASS|FAIL)")
+_ENTRY = re.compile(r"^=== (TRIAL|HOLDOUT) (\d+) \| (\S+) \| hyp ([AH]\d+[A-Z]?) \| code (\w+) \| (PASS|FAIL)")
 
 
 def _entries(path: Path, kind: str) -> list[dict]:
@@ -1087,8 +1166,9 @@ def _gate_failures(wfa: dict) -> list[str]:
         out.append(f"(c) OOS max drawdown {o['max_drawdown']:.2%} >= {MAX_OOS_DRAWDOWN:.0%}")
     if wfa["wfe"] is None:
         out.append(f"(d) WFE undefined: mean IS Sharpe {wfa['is_sharpe_mean']} <= 0")
-    elif not wfa["wfe"] >= MIN_WFE:
-        out.append(f"(d) WFE {wfa['wfe']} < {MIN_WFE} (OOS Sharpe {o['sharpe']} / IS Sharpe {wfa['is_sharpe_mean']})")
+    elif not wfa["wfe"] >= min_wfe():
+        out.append(f"(d) WFE {wfa['wfe']} < {min_wfe():.4g} (OOS Sharpe {o['sharpe']} / IS Sharpe "
+                   f"{wfa['is_sharpe_mean']})")
     return out
 
 
@@ -1105,7 +1185,9 @@ def _report(stage: int, status: str, failures: list[str], trial: dict, provenanc
                    "risk_pct": A.RISK_PCT, "atr_mult": A.ATR_MULT, "atr_bars": A.ATR_BARS},
         "provenance": provenance, "data": data_info,
         "config": {"param_grid": S.PARAM_GRID, "defaults": dataclasses.asdict(S.DEFAULT_PARAMS),
-                   "limits": dataclasses.asdict(S.RiskLimits()), "n_splits": N_SPLITS, "is_fraction": IS_FRACTION,
+                   "limits": dataclasses.asdict(S.RiskLimits()), "n_splits": len(wfa["splits"]),
+                   "is_fraction": IS_FRACTION, "wfa_max_oos_days": getattr(S, "WFA_MAX_OOS_DAYS", None),
+                   "min_wfe": min_wfe(),
                    "burn_in_months": 18, "min_data_years": MIN_DATA_YEARS, "dev_end": str(DEV_END)},
         "metrics": {
             "oos_sharpe": o["sharpe"], "is_sharpe_mean": wfa["is_sharpe_mean"], "wfe": wfa["wfe"],
@@ -1216,10 +1298,10 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
         if len(trials) >= MAX_TRIALS:
             print(f"REFUSED: trial budget exhausted ({len(trials)}/{MAX_TRIALS})", file=sys.stderr)
             return 1
-        # the pre-registered order, under the current code: the first hypothesis with no logged trial for its
-        # current fingerprint (after a disclosed bug fix, earlier hypotheses are re-run first, within the budget)
-        expected = next((h for h in H.ORDER if not any(t["hyp"] == h and t["code"] == code_fingerprint(h)
-                                                       for t in trials)), None)
+        # the pre-registered order (with its addenda): the first hypothesis with no logged trial. A logged
+        # hypothesis may only be reproduced with identical code (a re-run, never logged); re-running it with
+        # changed code would need another addendum. (Addendum 1's A1 re-run used a fingerprint-based rule.)
+        expected = next((h for h in H.ORDER if not any(t["hyp"] == h for t in trials)), None)
         if HYP_ID != expected:
             print(f"REFUSED: pre-registered order requires {expected} next, not {HYP_ID}", file=sys.stderr)
             return 1
@@ -1239,7 +1321,7 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
     if official:
         tests["splice"] = splice_checks(data_dir)
     with _pool(market.pairs, data_dir, DEV_END, official) as pool:
-        wfa = run_wfa(market, pool, make_splits(market.index))
+        wfa = run_wfa(market, pool, wfa_splits(market.index))
 
     first = market.index[0]
     span = pd.Timedelta(hours=int(S.warmup_bars(wfa["chosen"][0]) * 1.5) + 24 * 120)
@@ -1298,7 +1380,7 @@ def run_stage2(data_dir: Path, official: bool, t_start: float) -> int:
     failures += [f"data: {e}" for e in data_errors]
     market = B.Market(m15, rates=rates)
     tests = selftest()
-    splits = make_holdout_splits(market.index)
+    splits = holdout_wfa_splits(market.index)
     with _pool(market.pairs, data_dir, None, official) as pool:
         wfa = run_wfa(market, pool, splits)
     tests["no_order_desyncs"] = {"passed": wfa["oos_desyncs"] == 0 and wfa["is_desyncs"] == 0,

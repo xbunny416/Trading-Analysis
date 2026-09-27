@@ -15,3 +15,16 @@ failure    : (b) OOS Sharpe -0.0282 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.1296 <= 0
 failure    : integrity: no_order_desyncs failed
 
+=== TRIAL 2 | 2026-09-27T07:23:08Z | hyp A1 | code de5192d10c9c | FAIL ===
+hypothesis : A1 time-series momentum (Moskowitz-Ooi-Pedersen 2012): long a pair whose own past L-month return is positive, short if negative; volatility-targeted, no-trade band.
+grid       : {"lookback_months": [1, 3, 6, 12], "band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.0285 is_sharpe_mean=-0.1197 wfe=None oos_max_dd=0.10009 oos_trades_per_year=175.38 oos_total_return=-0.01704 leak_test=PASS
+split 1    : OOS 2011-10-02..2013-12-31 params={'lookback_months': 12, 'band': 0.2} IS_sh=0.1874 OOS_sh=0.132 OOS_dd=0.07867 OOS_tr/yr=211.84
+split 2    : OOS 2013-12-31..2016-04-01 params={'lookback_months': 1, 'band': 0.5} IS_sh=-0.0329 OOS_sh=0.0575 OOS_dd=0.08408 OOS_tr/yr=547.26
+split 3    : OOS 2016-04-01..2018-07-01 params={'lookback_months': 1, 'band': 0.5} IS_sh=-0.9711 OOS_sh=-0.5971 OOS_dd=0.04706 OOS_tr/yr=117.79
+split 4    : OOS 2018-07-01..2020-09-30 params={'lookback_months': 12, 'band': 0.5} IS_sh=0.378 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2020-09-30..2022-12-30 params={'lookback_months': 6, 'band': 0.5} IS_sh=-0.1598 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -0.0285 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.1197 <= 0
+

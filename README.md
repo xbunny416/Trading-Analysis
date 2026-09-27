@@ -7,8 +7,10 @@ This repository just for my own coding trading workspace.
 **Verdict: no strategy passes.**
 - All six pre-registered strategies from the academic and institutional literature failed **Stage 1**, the
   mandate's walk-forward gates on the development period.
+- Trial 8, a post-hoc re-test of the best one (A3) with a fast rolling walk-forward (Addendum 2), failed as well.
 - None became eligible for **Stage 2**, so the **2023 holdout was never loaded**.
-- No pull request was opened; the protocol opens one only for a strategy that passes both stages.
+- The work was merged to `main` at your request (PR #3); the protocol itself would open a PR only for a strategy
+  that passes both stages.
 
 ### How bias and data mining were ruled out
 
@@ -20,7 +22,8 @@ real data**:
 - the data splice, costs, overnight financing and gates.
 
 Each run is logged in `trials.log` under a code fingerprint, and the harness refuses any other order. One bug fix
-after trial 1 is disclosed in **Addendum 1** (see below). The budget used was 7 of 8 trials.
+after trial 1 is disclosed in **Addendum 1**, and the post-hoc trial 8 in **Addendum 2** (see below). All 8 trials
+of the budget are now used.
 
 ### Stage 1 results (development data 2005-01 → 2022-12; stitched out-of-sample 2011-10-02 → 2022-12-30, 11.25 years)
 
@@ -120,6 +123,38 @@ The fix:
 A1 was re-run under the fixed code (trial 2) with an unchanged specification; both results are shown above. Cycles 2
 and 3 used the same execution code; the bias favoured them, and their failing verdicts stand.
 
+### Addendum 2 (trial 8): A3 with a fast rolling walk-forward
+
+At your request, A3 was re-tested with its code unchanged, but with a faster walk-forward and a stricter efficiency
+gate:
+- 28 rolling (not anchored) out-of-sample windows of 146.7 days, under half a year, covering the same 2011-10 →
+  2022-12 span as before.
+- Each is preceded by its own 342-day in-sample window (70 : 30), and the band is re-chosen on every window.
+- Gate (d) was raised to WFE ≥ 2/3.
+
+The protocol was pre-registered and pushed (`8acfd39`) before the run. It was chosen after seeing A3's result, so
+only the 2023 holdout could have confirmed a pass.
+
+| | Standard WFA (trial 4) | Fast rolling WFA (trial 8) |
+|---|---|---|
+| OOS windows | 5 × 2.25 years | 28 × 147 days |
+| OOS Sharpe (gate b ≥ 1.5) | 0.25 ✗ | **0.21 ✗** |
+| mean IS Sharpe | 0.32 | 0.19 |
+| WFE (gate d) | 0.79 (≥ 0.60 ✓) | 1.13 (≥ 2/3 ✓) |
+| max drawdown | 8.9 % | 9.3 % |
+| fills / yr | 483 | 617 |
+
+**What the fast walk-forward shows:**
+- **In-sample results don't predict the next window.** Across the 28 windows, the correlation between in-sample and
+  out-of-sample Sharpe is **0.00**.
+- **The overall efficiency figure is misleading.** WFE passes only because a one-year in-sample Sharpe averages a
+  low 0.19. Window by window, WFE is defined in 15 of the 28 windows and reaches 2/3 in just 5 of them (median
+  −0.28).
+- **Window Sharpes are noise.** They range from −2.4 to +2.6; 15 of 28 are positive and 4 exceed 1.5. That spread is
+  what a strategy with a Sharpe of about 0.2 produces at this window length, and good windows don't persist.
+- **Re-optimising faster changes nothing.** The band choice barely matters, so the out-of-sample Sharpe stayed at
+  0.21. As predicted in the addendum, the result still falls far short of 1.5.
+
 ### What could legitimately change the outcome
 
 - **More markets.** The published Sharpe of trend and multi-factor strategies comes from diversification across
@@ -130,7 +165,8 @@ and 3 used the same execution code; the bias favoured them, and their failing ve
 - **Gates that fit the strategy class.** A 1.5 Sharpe and 100 trades a year target fast, high-Sharpe strategies,
   while published factor premia are slower and smaller. Changing gates after seeing results would be data mining,
   so a new protocol must be pre-registered first.
-- **The 2023 holdout is still untouched** and available for exactly that. This cycle's trial budget is 7 of 8 used.
+- **The 2023 holdout is still untouched** and available for exactly that. This cycle's 8-trial budget is used up,
+  so any further test needs a new pre-registered cycle.
 
 ### Reproduce
 
@@ -187,8 +223,8 @@ cached in `data/spliced/`. A Stage-1 run takes 6–13 minutes on 4 cores.
 | `hypotheses/a1..a6_*.py` | The six pre-registered signals, each with its paper and formulas in the docstring. |
 | `backtest.py` | Nautilus plumbing, OANDA + MT5 splice, rate table, overnight-financing module. |
 | `harness.py` | Stage 1 / Stage 2 walk-forward, gates, integrity tests, trial and holdout guards. |
-| `trials.log`, `holdout.log` | Cycle-4 Stage-1 entries (7) and Stage-2 entries (none). |
-| `results/cycle4/` | JSON report per run (`A1_trial1.json` is the pre-fix run). |
+| `trials.log`, `holdout.log` | Cycle-4 Stage-1 entries (8) and Stage-2 entries (none). |
+| `results/cycle4/` | JSON report per run (`A1_trial1.json` is the pre-fix run; `A3F.json` is trial 8). |
 | `data/rates/` | OECD short-term rates and central-bank policy decisions. |
 | `research/cycle1..3/` | Earlier cycles: logs, reports and write-ups. |
 

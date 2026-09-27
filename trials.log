@@ -96,3 +96,40 @@ failure    : (d) WFE undefined: mean IS Sharpe -0.3767 <= 0
 # Cycle 4 closed. The six pre-registered hypotheses ran in order (A1 twice: trial 1 before and trial 2 after the
 # execution fix of PREREGISTRATION.md Addendum 1). None passed Stage 1, so no Stage-2 (holdout) run was made and the
 # 2023 holdout was never loaded. 7 of the 8-trial budget used; slot 8 was not used.
+=== TRIAL 8 | 2026-09-27T16:17:47Z | hyp A3F | code eb183beec26a | FAIL ===
+hypothesis : A3F = A3 (multi-speed EWMA crossover, Baz et al. 2015) with a fast rolling walk-forward: OOS windows <= 152 days, IS the preceding 70:30 stretch, WFE gate >= 2/3 (Addendum 2, post-hoc).
+grid       : {"band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2010-10-25) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.2149 is_sharpe_mean=0.1896 wfe=1.1335 oos_max_dd=0.09259 oos_trades_per_year=617.28 oos_total_return=0.0784 leak_test=PASS
+split 1    : OOS 2011-10-02..2012-02-26 params={'band': 0.5} IS_sh=-0.2305 OOS_sh=-1.5332 OOS_dd=0.02706 OOS_tr/yr=231.01
+split 2    : OOS 2012-02-26..2012-07-22 params={'band': 0.5} IS_sh=-0.7355 OOS_sh=0.1446 OOS_dd=0.01406 OOS_tr/yr=233.63
+split 3    : OOS 2012-07-22..2012-12-16 params={'band': 0.2} IS_sh=-0.5498 OOS_sh=-0.7411 OOS_dd=0.0297 OOS_tr/yr=797.36
+split 4    : OOS 2012-12-16..2013-05-12 params={'band': 0.1} IS_sh=-0.9904 OOS_sh=1.5898 OOS_dd=0.01788 OOS_tr/yr=698.4
+split 5    : OOS 2013-05-12..2013-10-06 params={'band': 0.1} IS_sh=0.6084 OOS_sh=-1.6055 OOS_dd=0.0377 OOS_tr/yr=1123.08
+split 6    : OOS 2013-10-06..2014-03-02 params={'band': 0.5} IS_sh=0.6725 OOS_sh=1.9679 OOS_dd=0.01281 OOS_tr/yr=101.84
+split 7    : OOS 2014-03-02..2014-07-25 params={'band': 0.5} IS_sh=0.3684 OOS_sh=-0.4635 OOS_dd=0.00882 OOS_tr/yr=370.93
+split 8    : OOS 2014-07-25..2014-12-19 params={'band': 0.5} IS_sh=1.3528 OOS_sh=2.6209 OOS_dd=0.01731 OOS_tr/yr=204.21
+split 9    : OOS 2014-12-19..2015-05-15 params={'band': 0.3} IS_sh=1.5316 OOS_sh=0.9998 OOS_dd=0.03141 OOS_tr/yr=161.87
+split 10    : OOS 2015-05-15..2015-10-08 params={'band': 0.2} IS_sh=1.6047 OOS_sh=-0.773 OOS_dd=0.01529 OOS_tr/yr=741.91
+split 11    : OOS 2015-10-08..2016-03-03 params={'band': 0.2} IS_sh=1.0506 OOS_sh=1.2303 OOS_dd=0.02641 OOS_tr/yr=615.11
+split 12    : OOS 2016-03-03..2016-07-28 params={'band': 0.1} IS_sh=-0.0828 OOS_sh=0.1765 OOS_dd=0.01964 OOS_tr/yr=948.82
+split 13    : OOS 2016-07-28..2016-12-21 params={'band': 0.3} IS_sh=0.3417 OOS_sh=0.8926 OOS_dd=0.01507 OOS_tr/yr=490.46
+split 14    : OOS 2016-12-21..2017-05-17 params={'band': 0.5} IS_sh=0.5747 OOS_sh=-2.3808 OOS_dd=0.02731 OOS_tr/yr=321.25
+split 15    : OOS 2017-05-17..2017-10-11 params={'band': 0.5} IS_sh=-0.5178 OOS_sh=0.3571 OOS_dd=0.01626 OOS_tr/yr=211.68
+split 16    : OOS 2017-10-11..2018-03-06 params={'band': 0.5} IS_sh=-0.1924 OOS_sh=0.1405 OOS_dd=0.01917 OOS_tr/yr=226.56
+split 17    : OOS 2018-03-06..2018-07-31 params={'band': 0.1} IS_sh=0.3374 OOS_sh=-0.6893 OOS_dd=0.01847 OOS_tr/yr=1531.56
+split 18    : OOS 2018-07-31..2018-12-25 params={'band': 0.1} IS_sh=-0.02 OOS_sh=0.4751 OOS_dd=0.02388 OOS_tr/yr=904.09
+split 19    : OOS 2018-12-25..2019-05-20 params={'band': 0.1} IS_sh=-0.1044 OOS_sh=-1.3258 OOS_dd=0.0315 OOS_tr/yr=1389.24
+split 20    : OOS 2019-05-20..2019-10-14 params={'band': 0.5} IS_sh=0.0481 OOS_sh=-0.0112 OOS_dd=0.02364 OOS_tr/yr=333.71
+split 21    : OOS 2019-10-14..2020-03-09 params={'band': 0.2} IS_sh=0.0569 OOS_sh=-2.1161 OOS_dd=0.03085 OOS_tr/yr=1165.48
+split 22    : OOS 2020-03-09..2020-08-02 params={'band': 0.1} IS_sh=-0.8376 OOS_sh=-0.9292 OOS_dd=0.03965 OOS_tr/yr=1302.08
+split 23    : OOS 2020-08-02..2020-12-27 params={'band': 0.2} IS_sh=-1.5534 OOS_sh=1.0215 OOS_dd=0.02448 OOS_tr/yr=109.3
+split 24    : OOS 2020-12-27..2021-05-23 params={'band': 0.1} IS_sh=-0.355 OOS_sh=1.3239 OOS_dd=0.01667 OOS_tr/yr=589.04
+split 25    : OOS 2021-05-23..2021-10-17 params={'band': 0.1} IS_sh=1.4173 OOS_sh=-1.0304 OOS_dd=0.02716 OOS_tr/yr=1451.06
+split 26    : OOS 2021-10-17..2022-03-13 params={'band': 0.3} IS_sh=0.8352 OOS_sh=-0.2326 OOS_dd=0.02065 OOS_tr/yr=621.17
+split 27    : OOS 2022-03-13..2022-08-07 params={'band': 0.5} IS_sh=-0.2413 OOS_sh=1.7775 OOS_dd=0.01451 OOS_tr/yr=156.54
+split 28    : OOS 2022-08-07..2022-12-30 params={'band': 0.5} IS_sh=0.919 OOS_sh=0.9427 OOS_dd=0.01552 OOS_tr/yr=249.31
+failure    : (b) OOS Sharpe 0.2149 < 1.5
+
+# Addendum 2: trial 8 (A3F, A3 with a fast rolling walk-forward, post-hoc, requested after the results above)
+# failed Stage 1 on gate (b). The 8-trial budget is used up; the 2023 holdout was never loaded.

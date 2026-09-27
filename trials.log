@@ -52,3 +52,16 @@ split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 10.
 failure    : (b) OOS Sharpe -0.1856 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.0777 <= 0
 
+=== TRIAL 5 | 2026-09-27T04:47:45Z | hyp H5 | code 97dfde7f975d | FAIL ===
+hypothesis : C2-T5 currency-strength trend: score each currency by averaging its vol-normalised mom_n-bar momentum across every pair that contains it, trade each pair on crosses of (base strength - quote strength), atr_mult x ATR chandelier stop. Motivation: T1-T4 single-pair signals were weak/fragile; currency-level averaging cancels pair-specific noise (currency momentum, Menkhoff et al. 2012).
+grid       : {"mom_n": [24, 72, 168, 336], "atr_mult": [3.0, 5.0, 7.0, 10.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-1.972 is_sharpe_mean=-1.1296 wfe=None oos_max_dd=0.10002 oos_trades_per_year=1129.98 oos_total_return=-0.10001 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'mom_n': 24, 'atr_mult': 10.0} IS_sh=-0.5271 OOS_sh=-3.8993 OOS_dd=0.02807 OOS_tr/yr=2611.71
+split 2    : OOS 2021-04-26..2021-09-26 params={'mom_n': 168, 'atr_mult': 10.0} IS_sh=-1.5997 OOS_sh=-1.6544 OOS_dd=0.01759 OOS_tr/yr=1093.97
+split 3    : OOS 2021-09-26..2022-02-27 params={'mom_n': 24, 'atr_mult': 3.0} IS_sh=-2.2178 OOS_sh=-3.0011 OOS_dd=0.07242 OOS_tr/yr=1934.83
+split 4    : OOS 2022-02-27..2022-07-31 params={'mom_n': 336, 'atr_mult': 10.0} IS_sh=-1.4522 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2022-07-31..2022-12-30 params={'mom_n': 336, 'atr_mult': 10.0} IS_sh=0.1488 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -1.972 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -1.1296 <= 0
+

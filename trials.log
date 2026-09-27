@@ -41,3 +41,15 @@ split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.5} IS_sh=-0.5137 OOS_s
 failure    : (b) OOS Sharpe 0.0461 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.0667 <= 0
 
+=== TRIAL 4 | 2026-09-27T07:37:09Z | hyp A3 | code 9e9382b1678d | FAIL ===
+hypothesis : A3 multi-speed EWMA crossover (Baz et al. 2015, Man AHL): average response u(z) of three normalised EWMA crossovers (8/24, 16/48, 32/96 days); volatility-targeted, no-trade band.
+grid       : {"band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.2543 is_sharpe_mean=0.3228 wfe=0.7877 oos_max_dd=0.08902 oos_trades_per_year=482.82 oos_total_return=0.0917 leak_test=PASS
+split 1    : OOS 2011-10-02..2013-12-31 params={'band': 0.5} IS_sh=0.5421 OOS_sh=0.0364 OOS_dd=0.04799 OOS_tr/yr=225.19
+split 2    : OOS 2013-12-31..2016-04-01 params={'band': 0.2} IS_sh=0.3042 OOS_sh=0.9625 OOS_dd=0.04437 OOS_tr/yr=585.5
+split 3    : OOS 2016-04-01..2018-07-01 params={'band': 0.5} IS_sh=0.5253 OOS_sh=-0.1164 OOS_dd=0.03605 OOS_tr/yr=272.92
+split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.5} IS_sh=0.5351 OOS_sh=-0.7576 OOS_dd=0.07012 OOS_tr/yr=285.9
+split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.1} IS_sh=-0.2925 OOS_sh=0.7817 OOS_dd=0.03145 OOS_tr/yr=1044.29
+failure    : (b) OOS Sharpe 0.2543 < 1.5
+

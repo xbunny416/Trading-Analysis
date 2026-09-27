@@ -16,7 +16,9 @@ Execution (a no-trade band instead of a rebalancing calendar)
         T == 0, P != 0              -> EXIT   (-P)
         sign(T) != sign(P)          -> FLIP   (T - P, one order)
         |T - P| >= band * max(|T|, |P|) -> REBAL (T - P)
-    Orders are market orders filled at the next hour's open quote. Parameter changes at walk-forward segment
+    A close is decided as soon as every pair with a bar at that close has reported. Each pair's order is sent
+    when that pair's next quote arrives (the open of its next bar) and fills against it - a pair that does not
+    trade for a while (holiday) is filled when it reopens. Parameter changes at walk-forward segment
     boundaries do not liquidate: the new parameters' target is simply traded through the same rule.
 
 Risk limits (portfolio level, checked at every hourly close, acted on at the next open):
@@ -322,6 +324,9 @@ class TargetPortfolioStrategy(Strategy):
         self._md = MarketData(self.pairs, max(type(self).HISTORY(q) for q in uniq))
         self._signals = {q: self.SIGNALS(q, self.pairs, self._md) for q in uniq}
         self._carry: dict[str, tuple[np.ndarray, np.ndarray]] = {}
+        self._expected: dict[int, int] = {}          # bar-close time -> number of pairs with a bar closing then
+        self._iid_pair = {B.instrument_id(p): p for p in self.pairs}
+        self._pending: dict[str, list] = {}           # pair -> [signed units, role, reason] awaiting its next quote
         self._seen: set[str] = set()
         self._units = {pair: 0 for pair in self.pairs}
         self._risk = RiskManager(limits, B.STARTING_NAV)
@@ -334,11 +339,17 @@ class TargetPortfolioStrategy(Strategy):
         self.desyncs = 0
 
     def bind_market(self, market) -> None:
-        """Called by backtest.Market.run: the `carry` column (known rate differential at each bar close)."""
+        """Called by backtest.Market.run: the `carry` column (known rate differential at each bar close) and how
+        many pairs have a bar closing at each time (so a close is decided as soon as it is complete)."""
+        closes = []
         for p in self.pairs:
             f = market.h1[p]
+            t = f.index.as_unit("ns").asi8 + HOUR_NS
+            closes.append(t)
             if "carry" in f.columns:
-                self._carry[p] = (f.index.as_unit("ns").asi8 + HOUR_NS, f["carry"].to_numpy(dtype=float))
+                self._carry[p] = (t, f["carry"].to_numpy(dtype=float))
+        u, c = np.unique(np.concatenate(closes), return_counts=True)
+        self._expected = dict(zip(u.tolist(), c.tolist()))
 
     def _carry_at(self, pair: str, ts: int) -> float:
         if pair not in self._carry:
@@ -351,12 +362,13 @@ class TargetPortfolioStrategy(Strategy):
     def on_start(self) -> None:
         for p in self.pairs:
             self.subscribe_bars(B.bar_type(p))
+            self.subscribe_quote_ticks(B.instrument_id(p))
 
     def on_bar(self, bar) -> None:
         ts = bar.ts_event
         pair = self._pair_of[bar.bar_type]
         if ts != self._ts:
-            if self._seen:  # the previous close never completed (a pair had no bar): decide with what came in
+            if self._seen:  # only without bind_market: a close is complete once a later bar arrives
                 self._decide_all(self._ts)
             self._on_close_time(ts)
         self._md.update(pair, bar.open.as_double(), bar.high.as_double(), bar.low.as_double(),
@@ -364,8 +376,21 @@ class TargetPortfolioStrategy(Strategy):
         for sig in self._signals.values():
             sig.update(pair)
         self._seen.add(pair)
-        if len(self._seen) == len(self.pairs):
+        if len(self._seen) == self._expected.get(ts, len(self.pairs)):
             self._decide_all(ts)
+
+    def on_quote_tick(self, tick) -> None:
+        """A pair's first quote after a decision is the open of its next bar: send its order now (zero latency,
+        so it fills against exactly this quote)."""
+        pair = self._iid_pair.get(tick.instrument_id)
+        order = self._pending.pop(pair, None)
+        if order is None or order[0] == 0:
+            return
+        du, role, reason = order
+        side = OrderSide.BUY if du > 0 else OrderSide.SELL
+        o = self.order_factory.market(B.instrument_id(pair), side, Quantity.from_int(abs(du)))
+        self._role[o.client_order_id] = (pair, role, reason)
+        self.submit_order(o)
 
     def _decide_all(self, ts: int) -> None:
         seen, self._seen = self._seen, set()
@@ -404,20 +429,24 @@ class TargetPortfolioStrategy(Strategy):
                     self._units[pair] = 0
 
     def _submit(self, pair: str, signed_units: int, ts: int, role: str, reason: str) -> None:
-        side = OrderSide.BUY if signed_units > 0 else OrderSide.SELL
-        order = self.order_factory.market(B.instrument_id(pair), side, Quantity.from_int(abs(signed_units)),
-                                          reduce_only=(role == "EXIT"))
-        self._role[order.client_order_id] = (pair, role, reason)
+        """Log the decision and queue the order until the pair's next quote (merged with one still waiting)."""
         self._orders.append({"ts": ts, "pair": pair, "units": signed_units, "role": role, "reason": reason})
-        self.submit_order(order)
+        waiting = self._pending.get(pair)
+        if waiting is None:
+            self._pending[pair] = [signed_units, role, reason]
+        else:
+            waiting[0] += signed_units
+            waiting[1], waiting[2] = role, reason
 
     def _sync_positions(self) -> None:
-        """The venue's net position is the truth; any mismatch (e.g. a rejected order) is counted and fixed."""
+        """The venue's net position plus orders still waiting for their quote must equal the intended position;
+        any mismatch (e.g. a rejected order) is counted and fixed."""
         for pair in self.pairs:
             net = int(self.portfolio.net_position(B.instrument_id(pair)))
-            if net != self._units[pair]:
+            waiting = self._pending[pair][0] if pair in self._pending else 0
+            if net + waiting != self._units[pair]:
                 self.desyncs += 1
-                self._units[pair] = net
+                self._units[pair] = net + waiting
 
     def _equity_usd(self) -> float:
         eq = self.portfolio.account(B.SIM).balance_total(USD).as_double()

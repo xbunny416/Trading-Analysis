@@ -214,3 +214,58 @@ commit.
 - A hypothesis **PASSES** only if Stage 1 **and** Stage 2 pass.
 - Every Stage-1 and Stage-2 result is reported.
 - A pull request to `main` is opened only if some hypothesis passes both stages.
+
+---
+
+## Addendum 1 (after trial 1): execution-timing bug fix
+
+Added after trial 1. The protocol above is unchanged except for the code fingerprints and the re-run rule
+described here.
+
+**What happened.**
+- Trial 1 (A1, code `21ac561d0549`) completed and failed the gates: OOS Sharpe −0.03, and the kill switch fired in
+  split 3.
+- Its integrity test `no_order_desyncs` also failed: 8 of the 80 in-sample runs, all USDCAD around 25 December 2009.
+
+**Root cause.** Two engine bugs, present since cycle 2.
+1. **Stale fills.** Nautilus processes due orders after every single data point. With a fixed 1-ns latency, all
+   orders decided at a close were processed on the first next-open quote in the stream (EURUSD's). Every other
+   pair therefore filled against its previous close quote, not its next open. This is not look-ahead (the price
+   predates the decision), and the leak tests correctly passed. It does violate "execute at the open of bar t", and
+   it is optimistic across gaps. The single-pair parity tests could not see it.
+2. **Late decisions at incomplete closes.** A close was decided only once all five pairs had a bar. When only some
+   pairs traded (Christmas 2009: USDCAD alone), the decision waited for the next bar event, days later. It then went
+   out against stale bookkeeping, so orders were doubled (the desyncs).
+
+**Fix.**
+- A close is decided as soon as every pair with a bar at that time has reported; the strategy learns this from the
+  bar index.
+- Each pair's order is sent when that pair's next quote (its next open) arrives, and fills against exactly that
+  quote with zero latency.
+- Position bookkeeping counts orders still waiting for their quote.
+- New test `fill_timing_multi_pair`: five synthetic pairs, random missing bars, and a two-day holiday in which only
+  USDCAD trades. Every fill must be at its own pair's first open after the decision, with no desyncs. On the old
+  code, 155 of 175 fills were wrong. The mutation "send the order at the decision" makes it fail again (175 of 175
+  wrong). All six selftests pass, and the real Christmas-2009 case now has no desyncs.
+
+**What does not change.** Signals, grids, constants, data, costs, gates, the split and the order A1 → A6.
+
+**What changes.**
+- Every code fingerprint, since `harness.py`, `backtest.py` and `academic_base.py` all changed. The new table is
+  below.
+- The harness now expects, in the pre-registered order, the first hypothesis with no logged trial under its current
+  code. A1 therefore runs again under the fixed code (trial 2), then A2 … A6 (trials 3–7): 7 of the 8-trial budget.
+- Trial 1 stays in `trials.log`, and its report is kept as `results/cycle4/A1_trial1.json`. Both A1 results are
+  reported. A1's trial-1 outcome is known before its re-run, but the re-run involves no researcher choice.
+
+| ID | Code fingerprint after the fix |
+|---|---|
+| A1 | `de5192d10c9c` |
+| A2 | `787ac7b42f1b` |
+| A3 | `9e9382b1678d` |
+| A4 | `0f24b7bcc11b` |
+| A5 | `6327f8573e23` |
+| A6 | `af992ad79220` |
+
+**Earlier cycles.** Cycles 2 and 3 used the same execution code, so their non-EURUSD fills were at the previous
+close quote. That bias favoured them, and all of them failed anyway; their verdicts stand.

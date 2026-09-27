@@ -465,17 +465,29 @@ def parity(frames_or_market, plan_fn=None) -> dict:
 
 
 class _RoundTripProbe(Strategy):
-    """Buys `units` of `pair` at one bar close and sells them at the next; records the USD balance."""
+    """Buys `units` of `pair` at one bar close and sells them at the next; records the USD balance. Like the
+    strategies, it sends each order on the pair's next quote (the next bar's open) with zero latency."""
 
     def __init__(self, pairs, pair, units, start_ns):
         super().__init__(StrategyConfig(strategy_id="Probe-001"))
         self.pairs, self.pair, self.units = pairs, pair, units
         self.warmup_start_ns = start_ns
         self.k, self.ts, self.balances = 0, -1, []
+        self.pending = None
 
     def on_start(self):
         for p in self.pairs:
             self.subscribe_bars(B.bar_type(p))
+        self.subscribe_quote_ticks(B.instrument_id(self.pair))
+
+    def queue(self, side):
+        self.pending = side
+
+    def on_quote_tick(self, tick):
+        if self.pending is not None:
+            self.submit_order(self.order_factory.market(B.instrument_id(self.pair), self.pending,
+                                                        Quantity.from_int(abs(self.units))))
+            self.pending = None
 
     def on_bar(self, bar):
         if bar.ts_event == self.ts:
@@ -484,9 +496,7 @@ class _RoundTripProbe(Strategy):
         self.k += 1
         self.balances.append(self.portfolio.account(B.SIM).balance_total(USD).as_double())
         if self.k in (3, 4):
-            side = OrderSide.BUY if self.k == 3 else OrderSide.SELL
-            self.submit_order(self.order_factory.market(B.instrument_id(self.pair), side,
-                                                        Quantity.from_int(self.units)))
+            self.queue(OrderSide.BUY if self.k == 3 else OrderSide.SELL)
 
     def result(self):
         return self.balances
@@ -537,9 +547,7 @@ class _HoldProbe(_RoundTripProbe):
         self.balances.append(self.portfolio.account(B.SIM).balance_total(USD).as_double())
         if self.k in (self.k_in, self.k_out):
             opening = self.k == self.k_in
-            side = OrderSide.BUY if (self.units > 0) == opening else OrderSide.SELL
-            self.submit_order(self.order_factory.market(B.instrument_id(self.pair), side,
-                                                        Quantity.from_int(abs(self.units))))
+            self.queue(OrderSide.BUY if (self.units > 0) == opening else OrderSide.SELL)
 
 
 def financing_tests() -> dict:
@@ -588,6 +596,50 @@ def financing_tests() -> dict:
     out["flat_book_no_charge"] = {"passed": bool(len(mk.financing.bookings) == 0 and b[-1] == b[0])}
     mk.dispose()
     return out
+
+
+def fill_timing_test() -> dict:
+    """Multi-pair execution. Every fill must be at its pair's OWN next-open quote after the decision (ask for buys,
+    bid for sells) - never at a stale quote - even when pairs have different gaps (random missing bars and a
+    two-day holiday in which only USDCAD trades), and the strategy's bookkeeping must never desync from the venue.
+    (Nautilus processes due orders after each data point, so a naive design fills every pair but the first at
+    the previous close, and decides late when a close is incomplete.)"""
+    p = dataclasses.replace(S.DEFAULT_PARAMS, **{k: v[0] for k, v in S.PARAM_GRID.items()})
+    days = _syn_days(4000, p)
+    px = {"EURUSD": 1.15, "GBPUSD": 1.3, "USDJPY": 110.0, "USDCAD": 1.3, "EURJPY": 125.0}
+    rng = np.random.default_rng(41)
+    frames = {}
+    for i, (pair, price) in enumerate(px.items()):
+        f = synthetic_m15(pair, days=days, seed=40 + i, price=price, ann_vol=0.12, vol_regimes=True)
+        f = f[rng.random(len(f)) > 0.03]                                    # random missing M15 bars
+        frames[pair] = f
+    hol = frames["USDCAD"].index[int(len(frames["USDCAD"]) * 0.8)]
+    for pair in frames:                                                     # holiday: only USDCAD trades
+        if pair != "USDCAD":
+            f = frames[pair]
+            frames[pair] = f[(f.index < hol) | (f.index >= hol + pd.Timedelta(days=2))]
+    mk = _market(frames)
+    plan = _plan_over(mk, p)
+    st = S.PortfolioTrendStrategy(plan, mk.pairs)
+    res = mk.run(st, plan[0].start_ns, plan[-1].end_ns)
+    bad, n = [], 0
+    for pair, fl in res.fills.groupby("pair"):
+        h = mk.h1[pair]
+        opens = h.index.as_unit("ns").asi8
+        dec = np.sort(res.orders.loc[res.orders["pair"] == pair, "ts"].to_numpy())
+        for f in fl.itertuples(index=False):
+            n += 1
+            j = int(np.searchsorted(opens, f.ts - B.ONE_MS))
+            d = dec[np.searchsorted(dec, f.ts, side="right") - 1]            # latest decision before the fill
+            first = int(np.searchsorted(opens, d, side="left"))              # the pair's first bar opening after it
+            want = h["open_ask"].iloc[j] if f.units > 0 else h["open_bid"].iloc[j]
+            if not (j < len(opens) and opens[j] + B.ONE_MS == f.ts and j == first and abs(f.px - want) < 1e-9):
+                bad.append((pair, str(pd.Timestamp(f.ts, tz="UTC")), f.px, float(want)))
+    mk.dispose()
+    filled = set(res.fills["pair"])            # A5 never trades the EURJPY cross, by design
+    ok = not bad and n >= 10 and st.desyncs == 0 and len(filled) >= 4 and "USDCAD" in filled
+    return {"passed": bool(ok), "fills_checked": n, "pairs_filled": sorted(set(res.fills["pair"])),
+            "desyncs": st.desyncs, "bad_fills": bad[:5], "n_bad": len(bad)}
 
 
 def execution_rule_tests() -> dict:
@@ -756,6 +808,7 @@ def edge_case_tests() -> dict:
     res["friction"] = friction_tests()
     res["financing"] = financing_tests()
     res["execution_rule"] = execution_rule_tests()
+    res["fill_timing_multi_pair"] = fill_timing_test()
     return res
 
 
@@ -1163,7 +1216,10 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
         if len(trials) >= MAX_TRIALS:
             print(f"REFUSED: trial budget exhausted ({len(trials)}/{MAX_TRIALS})", file=sys.stderr)
             return 1
-        expected = H.ORDER[len(trials)] if len(trials) < len(H.ORDER) else None
+        # the pre-registered order, under the current code: the first hypothesis with no logged trial for its
+        # current fingerprint (after a disclosed bug fix, earlier hypotheses are re-run first, within the budget)
+        expected = next((h for h in H.ORDER if not any(t["hyp"] == h and t["code"] == code_fingerprint(h)
+                                                       for t in trials)), None)
         if HYP_ID != expected:
             print(f"REFUSED: pre-registered order requires {expected} next, not {HYP_ID}", file=sys.stderr)
             return 1

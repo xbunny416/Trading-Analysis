@@ -16,9 +16,12 @@ MT5 M15 export (bid OHLC + spread in points, server clock Europe/Athens)
 Engine
 ------
 One SIM venue: NETTING, MARGIN account in USD, zero fees (costs are in the quotes), bar_execution off,
-and a 1 ns order latency. A market order submitted when an hourly bar closes therefore fills against
-the NEXT hour's open quote - "decide at the close of bar t-1, execute at the open of bar t".
-Positions are marked at the bid (longs) / ask (shorts), i.e. at liquidation value.
+zero order latency. Strategies decide when an hourly bar closes and submit each pair's order when that
+pair's next quote arrives - the open quote of its next bar - so it fills against exactly that quote:
+"decide at the close of bar t-1, execute at the open of bar t", per pair, whatever the other pairs do.
+(Nautilus processes due orders after every data point; a fixed latency would fill all but the first pair
+of a timestamp against their previous close quote.) Positions are marked at the bid (longs) / ask
+(shorts), i.e. at liquidation value.
 
 Cycle 4 additions
 -----------------
@@ -42,7 +45,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from nautilus_trader.backtest.engine import BacktestEngine, BacktestEngineConfig
-from nautilus_trader.backtest.models import LatencyModel
 from nautilus_trader.backtest.modules import SimulationModule
 from nautilus_trader.config import LoggingConfig
 from nautilus_trader.config import SimulationModuleConfig
@@ -559,7 +561,6 @@ class Market:
             self.financing = FinancingModule(self.rates) if self.rates is not None else None
             eng.add_venue(SIM, OmsType.NETTING, AccountType.MARGIN, [Money(STARTING_NAV, BASE_CCY)],
                           base_currency=BASE_CCY, default_leverage=Decimal(50), bar_execution=False,
-                          latency_model=LatencyModel(base_latency_nanos=1),
                           modules=[self.financing] if self.financing is not None else None)
             data = []
             for p in self.pairs:

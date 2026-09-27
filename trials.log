@@ -80,3 +80,19 @@ split 5    : OOS 2020-09-30..2022-12-30 params={'lookback_months': 6, 'band': 0.
 failure    : (b) OOS Sharpe -0.2306 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.1112 <= 0
 
+=== TRIAL 7 | 2026-09-27T08:06:58Z | hyp A6 | code af992ad79220 | FAIL ===
+hypothesis : A6 multi-factor FX (Asness-Moskowitz-Pedersen 2013; KMPV 2018): equal blend of the A2 trend blend, A4 carry (theta = 0) and A5 cross-sectional momentum (12 months), netted per pair; volatility-targeted, no-trade band.
+grid       : {"band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.4616 is_sharpe_mean=-0.3767 wfe=None oos_max_dd=0.10031 oos_trades_per_year=690.47 oos_total_return=-0.09472 leak_test=PASS
+split 1    : OOS 2011-10-02..2013-12-31 params={'band': 0.5} IS_sh=-0.2889 OOS_sh=-0.3531 OOS_dd=0.03614 OOS_tr/yr=989.33
+split 2    : OOS 2013-12-31..2016-04-01 params={'band': 0.5} IS_sh=-0.2329 OOS_sh=-0.2201 OOS_dd=0.03233 OOS_tr/yr=644.62
+split 3    : OOS 2016-04-01..2018-07-01 params={'band': 0.5} IS_sh=-0.3564 OOS_sh=-0.7972 OOS_dd=0.04598 OOS_tr/yr=864.55
+split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.5} IS_sh=-0.37 OOS_sh=-0.5806 OOS_dd=0.05464 OOS_tr/yr=872.38
+split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.5} IS_sh=-0.6353 OOS_sh=-1.395 OOS_dd=0.00792 OOS_tr/yr=81.8
+failure    : (b) OOS Sharpe -0.4616 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.3767 <= 0
+
+# Cycle 4 closed. The six pre-registered hypotheses ran in order (A1 twice: trial 1 before and trial 2 after the
+# execution fix of PREREGISTRATION.md Addendum 1). None passed Stage 1, so no Stage-2 (holdout) run was made and the
+# 2023 holdout was never loaded. 7 of the 8-trial budget used; slot 8 was not used.

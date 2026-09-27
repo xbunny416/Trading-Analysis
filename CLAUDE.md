@@ -13,15 +13,17 @@ NautilusTrader walk-forward harness for FX trend-following research (see
 | Purpose | Command or file |
 |---|---|
 | Install | `pip install -r requirements.txt` (NautilusTrader 1.221, Python 3.11+) |
-| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --selftest` |
-| Walk-forward evaluation (logs a trial) | `python harness.py` or `python scripts/eval_wfa.py` |
-| Evaluate other data (never logged) | `python harness.py --data-dir <folder of <PAIR>.csv>` |
+| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --hypothesis H1 --selftest` |
+| Stage 1 walk-forward, development data (logs a trial) | `python harness.py --hypothesis H1` (or `scripts/eval_wfa.py`) |
+| Stage 2, locked 2023 holdout (once, after a Stage-1 pass) | `python harness.py --hypothesis H1 --holdout` |
+| Evaluate other data (never logged) | `python harness.py --hypothesis H1 --data-dir <folder of <PAIR>.csv>` |
 | Nautilus data / engine plumbing | `backtest.py` |
-| Strategy logic | `strategy.py` |
+| Strategy logic | `hypotheses/` (pre-registered H1-H7; `strategy.py` re-exports the registry) |
 
-Real-data runs need the MT5 exports in `data/mt5/<PAIR>.csv` (git-ignored). Every
-completed real-data run with changed code counts against the 8-trial budget in
-`trials.log`; iterate with `--selftest` first.
+Real-data runs need the MT5 exports in `data/mt5/<PAIR>.csv` (git-ignored). Cycle 3
+follows `PREREGISTRATION.md`: hypotheses run in the fixed order H1..H7, the harness
+refuses other orders and a second holdout run, and every completed real-data run with
+changed code counts against the 8-trial budget in `trials.log`. Iterate with `--selftest`.
 
 When you add a dependency file or test runner, record the exact install and test
 commands here, so that "run the tests" works on the first try.

@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 """
-harness.py - cycle 2 walk-forward evaluation and integrity harness, running every backtest in NautilusTrader.
+harness.py - cycle 3 walk-forward evaluation and integrity harness, running every backtest in NautilusTrader.
 
-The process exits with status 0 only if every gate passes on the 5-pair portfolio:
+Cycle 3 follows PREREGISTRATION.md: a fixed list of hypotheses (hypotheses/H1..H7), evaluated in order on the
+development period, and a locked holdout that a hypothesis may use exactly once after passing Stage 1.
+
+Each stage exits with status 0 only if every gate passes on the 5-pair portfolio:
 
     a) out-of-sample trades per year      > 100
     b) out-of-sample Sharpe ratio         >= 1.5
@@ -15,12 +18,14 @@ tests). Any failure prints the exact reason and exits with status 1.
 
 Usage
 -----
-    python harness.py               full evaluation on data/mt5/<PAIR>.csv (logs a trial in trials.log)
-    python harness.py --selftest    synthetic-data tests only (no real-data metrics, not a trial)
-    python harness.py --data-dir D  evaluate MT5 exports in D instead (reported, never logged as a trial)
+    python harness.py --hypothesis H1 --selftest   synthetic-data tests only (never a trial)
+    python harness.py --hypothesis H1              Stage 1: WFA on the development period (logs a trial)
+    python harness.py --hypothesis H1 --holdout    Stage 2: once, only after a logged Stage-1 pass
+    python harness.py --hypothesis H1 --data-dir D Stage 1 on other exports (reported, never logged)
 
-Data: the user's MT5 M15 exports (bid OHLC + spread), 2020-11-30 -> 2022-12-30, EURUSD GBPUSD USDJPY USDCAD
-EURJPY. The span is 2.1 years; the 3-year minimum of cycle 1 was relaxed to 2 years by the user for cycle 2.
+Data: the user's MT5 M15 exports (bid OHLC + spread), 2019-12-02 -> 2023-12-29, EURUSD GBPUSD USDJPY USDCAD
+EURJPY. Development = everything before 2023-01-01 UTC (3.08 years); holdout = 2023. Stage-1 runs never load
+holdout bars.
 """
 from __future__ import annotations
 
@@ -47,12 +52,22 @@ from nautilus_trader.model.objects import Quantity
 from nautilus_trader.trading.strategy import Strategy
 
 import backtest as B
-import strategy as S
+import hypotheses as H
 
 ROOT = Path(__file__).resolve().parent
-RESULTS_DIR = ROOT / "results"
+RESULTS_DIR = ROOT / "results" / "cycle3"
 TRIALS_LOG = ROOT / "trials.log"
-CODE_FILES = ("strategy.py", "harness.py", "backtest.py")
+HOLDOUT_LOG = ROOT / "holdout.log"
+CODE_FILES = ("harness.py", "backtest.py")      # + the selected hypothesis module
+DEV_END = pd.Timestamp("2023-01-01", tz="UTC")   # development data strictly before, holdout at or after
+
+S = None        # the selected hypothesis module (bound by use_hypothesis)
+HYP_ID = None
+
+
+def use_hypothesis(hid: str) -> None:
+    global S, HYP_ID
+    S, HYP_ID = H.load(hid), hid
 
 # ----------------------------------------------------------------------------- gates
 MIN_TRADES_PER_YEAR = 100.0
@@ -64,7 +79,7 @@ MAX_TRIALS = 8
 # ----------------------------------------------------------------------------- WFA
 N_SPLITS = 5
 IS_FRACTION = 0.70
-MIN_DATA_YEARS = 2.0          # user decision for cycle 2 (cycle 1 required 3.0)
+MIN_DATA_YEARS = 3.0          # the original mandate (cycle 2 had relaxed it to 2.0 for its shorter data)
 TRADING_DAYS_PER_YEAR = 252
 WORKERS = 4
 
@@ -194,10 +209,11 @@ def grid_params(base: S.StrategyParams):
 _WORKER: dict = {}
 
 
-def _worker_init(pairs: tuple[str, ...], data_dir: str) -> None:
+def _worker_init(pairs: tuple[str, ...], data_dir: str, end: str | None, hid: str) -> None:
     import logging
     logging.disable(logging.CRITICAL)
-    _WORKER["market"] = B.Market(B.load_universe(pairs, Path(data_dir)))
+    use_hypothesis(hid)
+    _WORKER["market"] = B.Market(B.load_universe(pairs, Path(data_dir), end=pd.Timestamp(end) if end else None))
 
 
 def _worker_run(task: tuple) -> dict:
@@ -229,9 +245,31 @@ def select_params(is_rows: list[dict], values: list[list]) -> dict:
     return best
 
 
-def run_wfa(market: B.Market, pool: ProcessPoolExecutor) -> dict:
+def make_holdout_splits(index: pd.DatetimeIndex, dev_end: pd.Timestamp = DEV_END,
+                        n_splits: int = N_SPLITS, is_frac: float = IS_FRACTION) -> list[dict]:
+    """Continue the development split geometry (window W, step 0.3W, IS = 0.7W) into the holdout."""
+    opens = index.as_unit("ns").asi8
+    dev = opens[opens < dev_end.value]
+    t0, t_dev = float(dev[0]), float(dev[-1] + HOUR)
+    width = (t_dev - t0) / (1 + (n_splits - 1) * (1 - is_frac))
+    step = width * (1 - is_frac)
+    t_end = float(opens[-1] + HOUR)
+
+    def at(v: float) -> int:
+        k = int(np.searchsorted(opens, v, side="left"))
+        return int(opens[k]) if k < len(opens) else int(t_end)
+
+    out, a, k = [], float(opens[np.searchsorted(opens, dev_end.value)]), 1
+    while a < t_end:
+        c = min(a + step, t_end)
+        out.append({"split": k, "is": (at(a - width * is_frac), at(a)), "oos": (at(a), at(c) if c < t_end else int(t_end))})
+        a, k = c, k + 1
+    return [sp for sp in out if sp["oos"][1] > sp["oos"][0]]
+
+
+def run_wfa(market: B.Market, pool: ProcessPoolExecutor, splits: list[dict] | None = None) -> dict:
     keys, values, combos = grid_params(S.DEFAULT_PARAMS)
-    splits = make_splits(market.index)
+    splits = splits or make_splits(market.index)
     tasks = [(dataclasses.asdict(p), *sp["is"]) for sp in splits for p in combos]
     results = list(pool.map(_worker_run, tasks))
     rows, chosen, plan = [], [], []
@@ -625,7 +663,7 @@ def run_leak_suite(frames: dict[str, pd.DataFrame], p: S.StrategyParams, n_point
 
 def complexity_audit() -> dict:
     fields = [f.name for f in dataclasses.fields(S.StrategyParams)]
-    src = (ROOT / "strategy.py").read_text()
+    src = H.path(HYP_ID).read_text()
     hits = sorted({m.group(0) for m in CALENDAR_PATTERN.finditer(src)})
     grid_ok = set(S.PARAM_GRID) <= set(fields) and set(S.FEATURE_PARAMS) <= set(fields)
     ok = len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and not hits and grid_ok
@@ -634,35 +672,45 @@ def complexity_audit() -> dict:
 
 
 # =============================================================================
-# Trials log
+# Trials and holdout logs
 # =============================================================================
-def code_fingerprint() -> str:
+def code_fingerprint(hid: str) -> str:
     h = hashlib.sha256()
-    for name in CODE_FILES:
-        h.update((ROOT / name).read_bytes())
+    for f in [ROOT / name for name in CODE_FILES] + [H.path(hid)]:
+        h.update(f.read_bytes())
     return h.hexdigest()[:12]
 
 
-def logged_trials() -> list[dict]:
-    if not TRIALS_LOG.exists():
+_ENTRY = re.compile(r"^=== (TRIAL|HOLDOUT) (\d+) \| (\S+) \| hyp (H\d+) \| code (\w+) \| (PASS|FAIL)")
+
+
+def _entries(path: Path, kind: str) -> list[dict]:
+    if not path.exists():
         return []
-    pat = re.compile(r"^=== TRIAL (\d+) \| (\S+) \| code (\w+) \| (PASS|FAIL)")
-    return [{"n": int(m.group(1)), "code": m.group(3)} for line in TRIALS_LOG.read_text().splitlines()
-            if (m := pat.match(line))]
+    return [{"n": int(m.group(2)), "hyp": m.group(4), "code": m.group(5), "status": m.group(6)}
+            for line in path.read_text().splitlines() if (m := _ENTRY.match(line)) and m.group(1) == kind]
 
 
-def append_trial(n: int, fp: str, report: dict) -> None:
+def logged_trials() -> list[dict]:
+    return _entries(TRIALS_LOG, "TRIAL")
+
+
+def logged_holdouts() -> list[dict]:
+    return _entries(HOLDOUT_LOG, "HOLDOUT")
+
+
+def append_entry(path: Path, kind: str, n: int, fp: str, report: dict) -> None:
     o = report["metrics"]
     lines = [
-        f"=== TRIAL {n} | {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} | code {fp} | "
+        f"=== {kind} {n} | {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} | hyp {HYP_ID} | code {fp} | "
         f"{report['status']} ===",
         f"hypothesis : {S.HYPOTHESIS}",
         f"grid       : {json.dumps(S.PARAM_GRID)}  fixed: "
         f"{json.dumps({k: v for k, v in dataclasses.asdict(S.DEFAULT_PARAMS).items() if k not in S.PARAM_GRID})}",
-        f"data       : {', '.join(f'{p} {h}' for p, h in report['provenance'].items())}",
+        f"data       : {report['period']} | {', '.join(f'{p} {h}' for p, h in report['provenance'].items())}",
         f"metrics    : oos_sharpe={o['oos_sharpe']} is_sharpe_mean={o['is_sharpe_mean']} wfe={o['wfe']} "
         f"oos_max_dd={o['oos_max_drawdown']} oos_trades_per_year={o['oos_trades_per_year']} "
-        f"oos_total_return={o['oos_total_return']} leak_test={'PASS' if report['tests']['leak']['passed'] else 'FAIL'}",
+        f"oos_total_return={o['oos_total_return']} leak_test={'PASS' if o['leak_test_passed'] else 'FAIL'}",
     ]
     for r in report["splits"]:
         lines.append(f"split {r['split']}    : OOS {r['oos_period'][0][:10]}..{r['oos_period'][1][:10]} "
@@ -670,7 +718,7 @@ def append_trial(n: int, fp: str, report: dict) -> None:
                      f"OOS_sh={r['oos']['sharpe']} OOS_dd={r['oos']['max_drawdown']} "
                      f"OOS_tr/yr={r['oos']['trades_per_year']}")
     lines += [f"failure    : {f}" for f in report["failures"]]
-    with TRIALS_LOG.open("a") as fh:
+    with path.open("a") as fh:
         fh.write("\n".join(lines) + "\n\n")
 
 
@@ -702,42 +750,94 @@ def _failed_names(d: dict, prefix: str = "") -> list[str]:
     return out
 
 
-def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--selftest", action="store_true", help="synthetic tests only (no real-data metrics)")
-    ap.add_argument("--data-dir", default=str(B.DATA_DIR), help="folder with <PAIR>.csv MT5 exports")
-    args = ap.parse_args(argv)
-    data_dir = Path(args.data_dir).resolve()
-    counts_as_trial = data_dir == B.DATA_DIR.resolve()
-    t_start = time.time()
+def _gate_failures(wfa: dict) -> list[str]:
+    o, out = wfa["oos"], []
+    if not o["trades_per_year"] > MIN_TRADES_PER_YEAR:
+        out.append(f"(a) OOS trades/year {o['trades_per_year']} <= {MIN_TRADES_PER_YEAR:g}")
+    if not o["sharpe"] >= MIN_OOS_SHARPE:
+        out.append(f"(b) OOS Sharpe {o['sharpe']} < {MIN_OOS_SHARPE}")
+    if not o["max_drawdown"] < MAX_OOS_DRAWDOWN:
+        out.append(f"(c) OOS max drawdown {o['max_drawdown']:.2%} >= {MAX_OOS_DRAWDOWN:.0%}")
+    if wfa["wfe"] is None:
+        out.append(f"(d) WFE undefined: mean IS Sharpe {wfa['is_sharpe_mean']} <= 0")
+    elif not wfa["wfe"] >= MIN_WFE:
+        out.append(f"(d) WFE {wfa['wfe']} < {MIN_WFE} (OOS Sharpe {o['sharpe']} / IS Sharpe {wfa['is_sharpe_mean']})")
+    return out
 
-    if args.selftest:
-        tests = selftest()
-        ok = _all_passed(tests)
-        print(json.dumps({"mode": "selftest", "status": "PASS" if ok else "FAIL", "failed": _failed_names(tests),
-                          "tests": tests}, indent=2, default=str))
-        return 0 if ok else 1
 
-    fp = code_fingerprint()
-    trials = logged_trials()
-    rerun = next((t for t in trials if t["code"] == fp), None)
-    if counts_as_trial and rerun is None and len(trials) >= MAX_TRIALS:
-        print(json.dumps({"status": "FAIL", "failures": [
-            f"trial budget exhausted: {len(trials)} of {MAX_TRIALS} trials already logged in trials.log"]}, indent=2))
+def _report(stage: int, status: str, failures: list[str], trial: dict, provenance: dict, data_info: dict,
+            period: str, wfa: dict, tests: dict, leak_passed: bool, t_start: float) -> dict:
+    o = wfa["oos"]
+    return {
+        "stage": stage, "status": status, "failures": failures, "trial": trial, "hypothesis_id": HYP_ID,
+        "hypothesis": S.HYPOTHESIS, "period": period,
+        "engine": {"nautilus_trader": __import__("nautilus_trader").__version__, "venue": "SIM NETTING MARGIN USD",
+                   "latency_ns": 1, "fees": 0, "min_spread_pips": B.MIN_SPREAD_PIPS,
+                   "slippage_pips_per_fill": B.SLIPPAGE_PIPS},
+        "provenance": provenance, "data": data_info,
+        "config": {"param_grid": S.PARAM_GRID, "defaults": dataclasses.asdict(S.DEFAULT_PARAMS),
+                   "limits": dataclasses.asdict(S.RiskLimits()), "n_splits": N_SPLITS, "is_fraction": IS_FRACTION,
+                   "min_data_years": MIN_DATA_YEARS, "dev_end": str(DEV_END)},
+        "metrics": {
+            "oos_sharpe": o["sharpe"], "is_sharpe_mean": wfa["is_sharpe_mean"], "wfe": wfa["wfe"],
+            "oos_max_drawdown": o["max_drawdown"], "oos_trades_per_year": o["trades_per_year"],
+            "oos_total_return": o["total_return"], "oos_cagr": o.get("cagr"), "oos_ann_vol": o.get("ann_vol"),
+            "oos_win_rate": o.get("win_rate"), "oos_avg_trade_pips_net": o.get("avg_trade_pips_net"),
+            "oos_years": o["years"], "oos_halts_daily_loss": wfa["oos_result"].n_halts,
+            "oos_killed_max_dd": wfa["oos_result"].killed, "oos_per_pair": o.get("per_pair"),
+            "leak_test_passed": leak_passed,
+        },
+        "splits": wfa["splits"], "tests": tests, "runtime_seconds": round(time.time() - t_start, 1),
+    }
+
+
+def _pool(pairs, data_dir: Path, end: pd.Timestamp | None) -> ProcessPoolExecutor:
+    return ProcessPoolExecutor(max_workers=WORKERS, mp_context=mp.get_context("spawn"), initializer=_worker_init,
+                               initargs=(pairs, str(data_dir), str(end) if end is not None else None, HYP_ID))
+
+
+def _finish(report: dict, name: str, wfa: dict, market: B.Market) -> int:
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    (RESULTS_DIR / f"{name}.json").write_text(json.dumps(report, indent=2, default=str))
+    (RESULTS_DIR / f"{name}_equity.csv").write_text(wfa["oos_result"].equity.rename("equity").to_csv())
+    slim = {**report, "splits": [{k: v for k, v in r.items() if k != "is_grid"} for r in report["splits"]]}
+    print(json.dumps(slim, indent=2, default=str))
+    market.dispose()
+    if report["failures"]:
+        print(f"\nHARNESS FAIL ({name}):", file=sys.stderr)
+        for f in report["failures"]:
+            print(f"  - {f}", file=sys.stderr)
         return 1
+    print(f"\nHARNESS PASS ({name})", file=sys.stderr)
+    return 0
+
+
+def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
+    fp = code_fingerprint(HYP_ID)
+    trials = logged_trials()
+    rerun = next((t for t in trials if t["code"] == fp and t["hyp"] == HYP_ID), None)
+    if official and rerun is None:
+        if len(trials) >= MAX_TRIALS:
+            print(f"REFUSED: trial budget exhausted ({len(trials)}/{MAX_TRIALS})", file=sys.stderr)
+            return 1
+        expected = H.ORDER[len(trials)] if len(trials) < len(H.ORDER) else None
+        if HYP_ID != expected:
+            print(f"REFUSED: pre-registered order requires {expected} next, not {HYP_ID}", file=sys.stderr)
+            return 1
 
     failures: list[str] = []
     provenance = data_provenance(data_dir=data_dir)
-    m15 = B.load_universe(data_dir=data_dir)
+    m15 = B.load_universe(data_dir=data_dir, end=DEV_END)
     data_errors, data_info = validate_data(m15)
     failures += [f"data: {e}" for e in data_errors]
     market = B.Market(m15)
 
     tests = selftest()
-    ctx = mp.get_context("spawn")
-    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=ctx, initializer=_worker_init,
-                             initargs=(market.pairs, str(data_dir))) as pool:
-        wfa = run_wfa(market, pool)
+    tests["holdout_locked"] = {"passed": bool(market.index.max() < DEV_END and
+                                              all(f.index.max() < DEV_END for f in m15.values())),
+                               "last_bar_loaded": str(market.index.max())}
+    with _pool(market.pairs, data_dir, DEV_END) as pool:
+        wfa = run_wfa(market, pool, make_splits(market.index))
 
     first = market.index[0]
     leak_frames = {p: f.loc[: first + pd.Timedelta(days=75)] for p, f in m15.items()}
@@ -748,71 +848,84 @@ def main(argv: list[str] | None = None) -> int:
     tests["no_order_desyncs"] = {"passed": wfa["oos_desyncs"] == 0 and wfa["is_desyncs"] == 0,
                                  "oos": wfa["oos_desyncs"], "is": wfa["is_desyncs"]}
 
-    o = wfa["oos"]
-    if not o["trades_per_year"] > MIN_TRADES_PER_YEAR:
-        failures.append(f"(a) OOS trades/year {o['trades_per_year']} <= {MIN_TRADES_PER_YEAR:g}")
-    if not o["sharpe"] >= MIN_OOS_SHARPE:
-        failures.append(f"(b) OOS Sharpe {o['sharpe']} < {MIN_OOS_SHARPE}")
-    if not o["max_drawdown"] < MAX_OOS_DRAWDOWN:
-        failures.append(f"(c) OOS max drawdown {o['max_drawdown']:.2%} >= {MAX_OOS_DRAWDOWN:.0%}")
-    if wfa["wfe"] is None:
-        failures.append(f"(d) WFE undefined: mean IS Sharpe {wfa['is_sharpe_mean']} <= 0")
-    elif not wfa["wfe"] >= MIN_WFE:
-        failures.append(f"(d) WFE {wfa['wfe']} < {MIN_WFE} (OOS Sharpe {o['sharpe']} / IS Sharpe "
-                        f"{wfa['is_sharpe_mean']})")
+    failures += _gate_failures(wfa)
     if not tests["leak"]["passed"]:
         failures.append(f"(e) perturbation leak test failed: {json.dumps(tests['leak'])}")
     failures += [f"integrity: {n} failed" for n in _failed_names({k: v for k, v in tests.items() if k != "leak"})]
-
-    status = "PASS" if not failures else "FAIL"
-    report = {
-        "status": status,
-        "failures": failures,
-        "trial": {"code_fingerprint": fp, "rerun_of_trial": rerun["n"] if rerun else None,
-                  "trial_number": (rerun["n"] if rerun else len(trials) + 1) if counts_as_trial else None,
-                  "budget": MAX_TRIALS, "counts_as_trial": counts_as_trial, "data_dir": str(data_dir)},
-        "hypothesis": S.HYPOTHESIS,
-        "engine": {"nautilus_trader": __import__("nautilus_trader").__version__, "venue": "SIM NETTING MARGIN USD",
-                   "latency_ns": 1, "fees": 0, "min_spread_pips": B.MIN_SPREAD_PIPS,
-                   "slippage_pips_per_fill": B.SLIPPAGE_PIPS},
-        "provenance": provenance,
-        "data": data_info,
-        "config": {"param_grid": S.PARAM_GRID, "defaults": dataclasses.asdict(S.DEFAULT_PARAMS),
-                   "limits": dataclasses.asdict(S.RiskLimits()), "n_splits": N_SPLITS, "is_fraction": IS_FRACTION,
-                   "min_data_years": MIN_DATA_YEARS},
-        "metrics": {
-            "oos_sharpe": o["sharpe"], "is_sharpe_mean": wfa["is_sharpe_mean"], "wfe": wfa["wfe"],
-            "oos_max_drawdown": o["max_drawdown"], "oos_trades_per_year": o["trades_per_year"],
-            "oos_total_return": o["total_return"], "oos_cagr": o.get("cagr"), "oos_ann_vol": o.get("ann_vol"),
-            "oos_win_rate": o.get("win_rate"), "oos_avg_trade_pips_net": o.get("avg_trade_pips_net"),
-            "oos_years": o["years"], "oos_halts_daily_loss": wfa["oos_result"].n_halts,
-            "oos_killed_max_dd": wfa["oos_result"].killed, "oos_per_pair": o.get("per_pair"),
-            "leak_test_passed": tests["leak"]["passed"],
-        },
-        "splits": wfa["splits"],
-        "tests": tests,
-        "runtime_seconds": round(time.time() - t_start, 1),
-    }
-    if not counts_as_trial:
+    trial = {"code_fingerprint": fp, "rerun_of_trial": rerun["n"] if rerun else None,
+             "trial_number": (rerun["n"] if rerun else len(trials) + 1) if official else None,
+             "budget": MAX_TRIALS, "counts_as_trial": official, "data_dir": str(data_dir)}
+    period = f"development {market.index[0]:%Y-%m-%d} -> {market.index[-1]:%Y-%m-%d}"
+    report = _report(1, "PASS" if not failures else "FAIL", failures, trial, provenance, data_info, period, wfa,
+                     tests, tests["leak"]["passed"], t_start)
+    if not official:
         print(json.dumps({k: report[k] for k in ("status", "failures", "trial", "metrics")}, indent=2, default=str))
         print(f"\nNOT A TRIAL: custom data dir {data_dir}", file=sys.stderr)
         market.dispose()
         return 0 if not failures else 1
     if rerun is None:
-        append_trial(len(trials) + 1, fp, report)
-    RESULTS_DIR.mkdir(exist_ok=True)
-    (RESULTS_DIR / "wfa_latest.json").write_text(json.dumps(report, indent=2, default=str))
-    (RESULTS_DIR / "wfa_oos_equity.csv").write_text(wfa["oos_result"].equity.rename("equity").to_csv())
-    slim = {**report, "splits": [{k: v for k, v in r.items() if k != "is_grid"} for r in report["splits"]]}
-    print(json.dumps(slim, indent=2, default=str))
-    market.dispose()
-    if failures:
-        print("\nHARNESS FAIL:", file=sys.stderr)
-        for f in failures:
-            print(f"  - {f}", file=sys.stderr)
+        append_entry(TRIALS_LOG, "TRIAL", len(trials) + 1, fp, report)
+    return _finish(report, HYP_ID, wfa, market)
+
+
+def run_stage2(data_dir: Path, official: bool, t_start: float) -> int:
+    fp = code_fingerprint(HYP_ID)
+    if not official:
+        print("REFUSED: the holdout is only evaluated on the official data (data/mt5)", file=sys.stderr)
         return 1
-    print("\nHARNESS PASS", file=sys.stderr)
-    return 0
+    passed = [t for t in logged_trials() if t["hyp"] == HYP_ID and t["code"] == fp and t["status"] == "PASS"]
+    if not passed:
+        print(f"REFUSED: {HYP_ID} (code {fp}) has no logged Stage-1 PASS; the holdout stays locked", file=sys.stderr)
+        return 1
+    if any(h["code"] == fp for h in logged_holdouts()):
+        print(f"REFUSED: the holdout was already used for {HYP_ID} (code {fp}); it is evaluated exactly once",
+              file=sys.stderr)
+        return 1
+
+    failures: list[str] = []
+    provenance = data_provenance(data_dir=data_dir)
+    m15 = B.load_universe(data_dir=data_dir)
+    data_errors, data_info = validate_data(m15)
+    failures += [f"data: {e}" for e in data_errors]
+    market = B.Market(m15)
+    tests = selftest()
+    splits = make_holdout_splits(market.index)
+    with _pool(market.pairs, data_dir, None) as pool:
+        wfa = run_wfa(market, pool, splits)
+    tests["no_order_desyncs"] = {"passed": wfa["oos_desyncs"] == 0 and wfa["is_desyncs"] == 0,
+                                 "oos": wfa["oos_desyncs"], "is": wfa["is_desyncs"]}
+    failures += _gate_failures(wfa)
+    failures += [f"integrity: {n} failed" for n in _failed_names(tests)]
+    trial = {"code_fingerprint": fp, "stage1_trial": passed[-1]["n"], "counts_as_trial": True,
+             "data_dir": str(data_dir)}
+    period = f"holdout {pd.Timestamp(splits[0]['oos'][0], tz='UTC'):%Y-%m-%d} -> {market.index[-1]:%Y-%m-%d}"
+    report = _report(2, "PASS" if not failures else "FAIL", failures, trial, provenance, data_info, period, wfa,
+                     tests, True, t_start)   # leak test: same code fingerprint passed it in Stage 1
+    append_entry(HOLDOUT_LOG, "HOLDOUT", len(logged_holdouts()) + 1, fp, report)
+    return _finish(report, f"{HYP_ID}_holdout", wfa, market)
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--hypothesis", required=True, choices=H.ORDER, help="pre-registered hypothesis id")
+    ap.add_argument("--selftest", action="store_true", help="synthetic tests only (no real-data metrics)")
+    ap.add_argument("--holdout", action="store_true", help="Stage 2: evaluate a Stage-1 pass once on 2023")
+    ap.add_argument("--data-dir", default=str(B.DATA_DIR), help="folder with <PAIR>.csv MT5 exports")
+    args = ap.parse_args(argv)
+    use_hypothesis(args.hypothesis)
+    data_dir = Path(args.data_dir).resolve()
+    official = data_dir == B.DATA_DIR.resolve()
+    t_start = time.time()
+
+    if args.selftest:
+        tests = selftest()
+        ok = _all_passed(tests)
+        print(json.dumps({"mode": "selftest", "hypothesis": HYP_ID, "status": "PASS" if ok else "FAIL",
+                          "failed": _failed_names(tests), "tests": tests}, indent=2, default=str))
+        return 0 if ok else 1
+    if args.holdout:
+        return run_stage2(data_dir, official, t_start)
+    return run_stage1(data_dir, official, t_start)
 
 
 if __name__ == "__main__":

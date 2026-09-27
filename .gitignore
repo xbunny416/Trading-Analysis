@@ -2,3 +2,4 @@ __pycache__/
 *.pyc
 data/
 results/wfa_oos_equity.csv
+results/cycle3/*_equity.csv

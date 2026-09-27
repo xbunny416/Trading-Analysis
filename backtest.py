@@ -131,12 +131,15 @@ def hourly_frame(m15: pd.DataFrame, pair: str) -> pd.DataFrame:
     return h.round({c: prec for c in h.columns if c != "spread_pips"})
 
 
-def load_universe(pairs=PAIRS, data_dir: Path = DATA_DIR) -> dict[str, pd.DataFrame]:
-    """M15 frames for every pair, trimmed to their common span."""
+def load_universe(pairs=PAIRS, data_dir: Path = DATA_DIR, end: pd.Timestamp | None = None) -> dict[str, pd.DataFrame]:
+    """M15 frames for every pair, trimmed to their common span; bars at or after `end` (UTC) are never loaded."""
     m15 = {p: load_mt5_csv(data_dir / f"{p}.csv", p) for p in pairs}
     lo = max(f.index[0] for f in m15.values())
     hi = min(f.index[-1] for f in m15.values())
-    return {p: f.loc[lo:hi] for p, f in m15.items()}
+    out = {p: f.loc[lo:hi] for p, f in m15.items()}
+    if end is not None:
+        out = {p: f[f.index < end] for p, f in out.items()}
+    return out
 
 
 # ============================================================================= nautilus objects

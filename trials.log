@@ -1,3 +1,16 @@
 # trials.log - cycle 3, Stage 1 (development period 2019-12-02 -> 2022-12-30). Pre-registered order H1..H7,
 # see PREREGISTRATION.md. Cycle 1 and 2 logs are archived under research/.
 
+=== TRIAL 1 | 2026-09-27T04:38:48Z | hyp H1 | code c85d762d51eb | FAIL ===
+hypothesis : C2-T1 replicate cycle 1's best out-of-sample idea on unseen data: enter in the direction of an hourly bar whose true range exceeds shock_k x ATR(atr_n); ride it with a stop_mult x ATR chandelier stop; reverse on an opposite shock. Same rules and parameters on all 5 pairs, one USD account.
+grid       : {"shock_k": [2.0, 2.5, 3.0, 3.5], "stop_mult": [1.5, 2.5, 3.5, 5.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=-0.1622 is_sharpe_mean=0.4615 wfe=-0.3515 oos_max_dd=0.05691 oos_trades_per_year=674.27 oos_total_return=-0.01378 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.1519 OOS_sh=-2.8206 OOS_dd=0.03439 OOS_tr/yr=940.4
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=-0.4861 OOS_sh=0.9162 OOS_dd=0.02372 OOS_tr/yr=998.84
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 3.5, 'stop_mult': 1.5} IS_sh=0.7016 OOS_sh=1.07 OOS_dd=0.0199 OOS_tr/yr=222.88
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 3.5, 'stop_mult': 1.5} IS_sh=1.0025 OOS_sh=-1.0137 OOS_dd=0.03886 OOS_tr/yr=234.87
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 5.0} IS_sh=0.9375 OOS_sh=0.4009 OOS_dd=0.01645 OOS_tr/yr=980.14
+failure    : (b) OOS Sharpe -0.1622 < 1.5
+failure    : (d) WFE -0.3515 < 0.6 (OOS Sharpe -0.1622 / IS Sharpe 0.4615)
+

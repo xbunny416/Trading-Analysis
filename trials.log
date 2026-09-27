@@ -14,3 +14,15 @@ split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 2.0, 'stop_mult': 5.0
 failure    : (b) OOS Sharpe -0.1622 < 1.5
 failure    : (d) WFE -0.3515 < 0.6 (OOS Sharpe -0.1622 / IS Sharpe 0.4615)
 
+=== TRIAL 2 | 2026-09-27T04:40:33Z | hyp H2 | code f185d1c47bbd | FAIL ===
+hypothesis : C2-T2 high-conviction shocks: T1 rules, but search only large shocks (shock_k 3-5) with wider stops. Motivation: T1 in-sample Sharpe rose with shock_k (best row k=3.5 in 3 of 5 splits, as in cycle 1) and costs ate half the ~5.6-pip gross edge per trade; the 5-pair book (590 trades/yr) no longer needs small shocks to clear 100 trades/yr.
+grid       : {"shock_k": [3.0, 3.5, 4.0, 5.0], "stop_mult": [2.5, 3.5, 5.0, 7.0]}  fixed: {"atr_n": 24, "risk_pct": 0.001}
+data       : development 2019-12-01 -> 2022-12-30 | EURUSD bc4b9cfd06f8c3dc, GBPUSD 01e555bc13d01094, USDJPY 1af85499df842f9b, USDCAD 6f93d394bc220851, EURJPY 99467048dc35ee9f
+metrics    : oos_sharpe=0.6257 is_sharpe_mean=0.3418 wfe=1.8304 oos_max_dd=0.03087 oos_trades_per_year=190.95 oos_total_return=0.03533 leak_test=PASS
+split 1    : OOS 2020-11-23..2021-04-26 params={'shock_k': 4.0, 'stop_mult': 5.0} IS_sh=-0.134 OOS_sh=0.1464 OOS_dd=0.00628 OOS_tr/yr=78.57
+split 2    : OOS 2021-04-26..2021-09-26 params={'shock_k': 3.5, 'stop_mult': 2.5} IS_sh=-0.4951 OOS_sh=1.3123 OOS_dd=0.01206 OOS_tr/yr=249.71
+split 3    : OOS 2021-09-26..2022-02-27 params={'shock_k': 4.0, 'stop_mult': 2.5} IS_sh=0.8884 OOS_sh=-0.2276 OOS_dd=0.02087 OOS_tr/yr=147.01
+split 4    : OOS 2022-02-27..2022-07-31 params={'shock_k': 4.0, 'stop_mult': 2.5} IS_sh=0.8058 OOS_sh=-0.2833 OOS_dd=0.01313 OOS_tr/yr=154.21
+split 5    : OOS 2022-07-31..2022-12-30 params={'shock_k': 3.0, 'stop_mult': 7.0} IS_sh=0.6441 OOS_sh=2.1361 OOS_dd=0.00667 OOS_tr/yr=326.71
+failure    : (b) OOS Sharpe 0.6257 < 1.5
+

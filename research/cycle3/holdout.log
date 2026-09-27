@@ -1,0 +1,3 @@
+# holdout.log - cycle 3, Stage 2 (locked holdout 2023-01-01 -> 2023-12-29). One entry per hypothesis at most,
+# only after a logged Stage-1 PASS with the same code fingerprint. See PREREGISTRATION.md.
+

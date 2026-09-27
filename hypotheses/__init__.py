@@ -1,7 +1,7 @@
-"""Pre-registered cycle-3 hypotheses (see PREREGISTRATION.md).
+"""Pre-registered cycle-4 hypotheses (see PREREGISTRATION.md): published FX factor strategies.
 
-Each module is the cycle-2 ``strategy.py`` of the listed commit, copied byte for byte; H1-H4 additionally end
-with an appended compatibility shim so their per-pair signal functions accept the {pair: frame} universe.
+Each module defines its signal (vectorised ``signal_frame`` and event-driven ``Signals``) on top of the shared
+sizing / execution / risk engine in ``academic_base.py``. The cycle-3 hypotheses live in research/cycle3/.
 """
 from __future__ import annotations
 
@@ -10,15 +10,15 @@ from pathlib import Path
 from types import ModuleType
 
 REGISTRY = {
-    "H1": ("h1_shock_chandelier", "0350c08", "range-shock entry + chandelier stop"),
-    "H2": ("h2_high_conviction_shock", "7d66a4b", "H1 with large shocks only"),
-    "H3": ("h3_donchian_breakout", "3951388", "multi-day Donchian breakout, stop-and-reverse"),
-    "H4": ("h4_shock_wide_stops", "c7f2519", "H1 with wider stops"),
-    "H5": ("h5_currency_strength", "e90f080", "cross-sectional currency-strength trend, zero-cross"),
-    "H6": ("h6_currency_strength_band", "cded45d", "currency strength with a hysteresis band"),
-    "H7": ("h7_parsimonious_shock", "992e3e7", "shock momentum with the stop tied to the threshold"),
+    "A1": ("a1_tsmom_mop", "Moskowitz-Ooi-Pedersen 2012", "time-series momentum, sign of the L-month return"),
+    "A2": ("a2_tsmom_blend", "Hurst-Ooi-Pedersen 2017", "time-series momentum, equal blend of 1/3/12 months"),
+    "A3": ("a3_ewma_crossover", "Baz et al. 2015 (Man AHL)", "multi-speed EWMA crossover with response function"),
+    "A4": ("a4_carry", "Koijen-Moskowitz-Pedersen-Vrugt 2018", "carry: sign of the known rate differential"),
+    "A5": ("a5_xs_momentum", "Menkhoff-Sarno-Schmeling-Schrimpf 2012", "cross-sectional currency momentum"),
+    "A6": ("a6_multifactor", "Asness-Moskowitz-Pedersen 2013; KMPV 2018", "equal blend of A2, A4 and A5"),
 }
 ORDER = tuple(REGISTRY)
+BASE_FILE = Path(__file__).resolve().parent / "academic_base.py"
 
 
 def path(hid: str) -> Path:

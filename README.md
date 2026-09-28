@@ -45,9 +45,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-012 | trend: vol-managed blend of dollar consensus and per-pair A3 | 0.28 | 0.91 | 6.8% | 622 | 0.0607 (20) | b |
 | C5-013 | trend: vol-managed per-pair A3 | 0.33 | 1.03 | 7.9% | 251 | 0.0802 (21) | b |
 | C5-014 | trend: vol-managed dollar consensus of A2 TSMOM | -0.15 | n/a | 10.0% | 1164 | 0.0013 (22) | b, d |
-| C5-015 | trend: fast vol-managed dollar consensus (A3 spans x 1/8..1/2) | registered, not run yet | | | | | |
-| C5-016 | trend: Donchian / Turtle breakout, per pair | registered, not run yet | | | | | |
-| C5-017 | carry: vol-managed dollar carry (LRV 2014) | registered, not run yet | | | | | |
+| C5-015 | trend: fast vol-managed dollar consensus (A3 spans x 1/8..1/2) | 0.26 | 1.73 | 6.8% | 894 | 0.0517 (23) | b |
+| C5-016 | trend: Donchian / Turtle breakout, per pair | -0.10 | n/a | 10.0% | 168 | 0.0023 (24) | b, d |
+| C5-017 | carry: vol-managed dollar carry (LRV 2014) | -0.33 | n/a | 10.0% | 5 | 0.0001 (25) | a, b, d |
 
 ### Batch notes
 
@@ -129,6 +129,16 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     the second source an ensemble needs.
   - **Tests:** the multi-pair signal-parity test caught one bug in C5-017 before registration. EURJPY's target was
     NaN rather than 0 during the volatility warm-up; it is fixed and all selftests pass.
+  - **Result:** all fail.
+    - **The fast dollar trend (C5-015)** reaches 0.26. The walk-forward chose the slowest speed on offer (A3 × 1/2)
+      in all five splits, and it trails C5-010 (A3 speed, 0.36). Faster trend is worse, not better.
+    - **The Donchian breakout (C5-016)** is negative (−0.10) and negative in-sample in every split. It makes only
+      about +$30k before costs; $46k of spread and $27k of financing sink it, and the kill switch fired.
+    - **The dollar carry (C5-017)** loses heavily (−0.33, about −$77k before costs). It was long the foreign
+      currencies through the 2014–15 dollar rally, because their rates were higher, and the kill switch fired in
+      split 2. It also fails gate (a) with 5 fills a year.
+  - **Lesson:** after 25 trials, slower trend is the only thing that earns. Batch 7 tests a slower trend, and a
+    fundamental signal that is not a price trend: the change in interest-rate differentials.
 
 ### Reproduce
 

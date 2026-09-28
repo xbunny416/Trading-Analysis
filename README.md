@@ -172,7 +172,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     registered before either has run, so the blend is not chosen after seeing value's result.
   - **Harness:** in the one-pair circuit-breaker scenario, a blend of opposite signals first holds a position too
     small (0.04× leverage) to gap cleanly. The test now gaps the first held position with at least 0.3× leverage.
-    The daily-halt mutation is still caught, on C5-021 and C5-010.
+    The daily-halt mutation is still caught, on C5-021 and C5-010. All twenty-one cycle-5 selftests pass.
 
 ### Reproduce
 

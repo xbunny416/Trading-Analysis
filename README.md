@@ -160,6 +160,19 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Lesson:** 27 trials, best 0.41. Price trend is the only source with an edge on these pairs, and it is worth
     about 0.4–0.5 before costs. Carry, rate momentum, breakouts, shocks, mean reversion and relative value are all
     negative before costs.
+- **Batch 8 (C5-020…021), registered together:** value and momentum (Asness, Moskowitz & Pedersen 2013). Their
+  central result is that value and momentum are negatively correlated in every asset class, so a combination beats
+  either one alone.
+  - **C5-020:** currency value, volatility-managed. Long the currencies that fell most against the others over 3
+    years, short those that rose most (dollar-neutral rank weights).
+    - This is a price-only proxy. Proper value needs CPI levels, and this environment's network policy blocks the
+      CPI sources (FRED, OECD).
+    - It uses 3 years rather than AMP's 5 because the data starts in 2005.
+  - **C5-021:** 50/50 of the dollar trend (C5-010's construction) and C5-020's value, volatility-managed. It is
+    registered before either has run, so the blend is not chosen after seeing value's result.
+  - **Harness:** in the one-pair circuit-breaker scenario, a blend of opposite signals first holds a position too
+    small (0.04× leverage) to gap cleanly. The test now gaps the first held position with at least 0.3× leverage.
+    The daily-halt mutation is still caught, on C5-021 and C5-010.
 
 ### Reproduce
 

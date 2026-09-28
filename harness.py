@@ -918,12 +918,19 @@ def circuit_breaker_test() -> dict:
              if held[j - 1] != 0 and held[j] == held[j - 1] and near_peak[j - 1]]
     if not holds:
         return {"passed": False, "reason": "scenario never held a position"}
-    k = holds[0]
+    eq_ns = pre.equity.index.as_unit("ns").asi8
+
+    def leverage(j: int) -> float:
+        eq_j = float(pre.equity[eq_ns <= closes[j - 1]].iloc[-1])
+        return abs(held[j - 1]) * mk.h1["EURUSD"]["close"].iloc[j - 1] / eq_j
+
+    # the first such position large enough for a clean gap (blends of opposite signals can start near zero)
+    levs = [(j, leverage(j)) for j in holds]
+    big = [(j, v) for j, v in levs if v >= 0.3]
+    if not big:
+        return {"passed": False, "reason": f"leverage {max(v for _, v in levs):.3f} too small for a clean gap scenario"}
+    k, lev = big[0]
     side = 1.0 if held[k - 1] > 0 else -1.0
-    eq_prev = float(pre.equity[pre.equity.index.as_unit("ns").asi8 <= closes[k - 1]].iloc[-1])
-    lev = abs(held[k - 1]) * mk.h1["EURUSD"]["close"].iloc[k - 1] / eq_prev
-    if lev < 0.3:
-        return {"passed": False, "reason": f"leverage {lev:.3f} too small for a clean gap scenario"}
     gap_start = mk.index[k]
 
     def gapped(loss: float) -> B.RunResult:

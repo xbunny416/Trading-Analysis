@@ -40,6 +40,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-007 | relative value: EURUSD-GBPUSD spread mean reversion | -0.45 | n/a | 6.4% | 133 | 0.0001 (15) | b, d |
 | C5-008 | large-shock follow-through, bar-count hold | -0.32 | -1.57 | 10.1% | 141 | 0.001 (16) | b, d |
 | C5-009 | large-shock reversal, bar-count hold | -0.87 | n/a | 10.0% | 92 | 0.0 (17) | a, b, d |
+| C5-010 | trend: volatility-managed dollar consensus | registered, not run yet | | | | | |
+| C5-011 | trend: dollar consensus, de-risk-only volatility scaling | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -85,6 +87,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Lesson:** after 17 trials on this data, trend is the only source with a real edge before costs (short-term
     reversal had a small one that spreads erased). Batch 4 tries volatility management of the best trend book
     (Moreira & Muir 2017).
+- **Batch 4 (C5-010…011), registered:** the dollar-trend consensus (C5-006), sized by recent volatility.
+  - **C5-010:** scale by ATR₁₄₄₀ / ATR_F, clipped to 0.5–2.
+  - **C5-011:** the same scale, but capped at 1, so it only de-risks.
+  - The engine now exposes each bar's high and low; all eleven cycle-5 selftests pass.
 
 ### Reproduce
 

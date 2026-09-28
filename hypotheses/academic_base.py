@@ -182,11 +182,14 @@ class MarketData:
         self.closes = {p: deque(maxlen=history) for p in self.pairs}
         self._atr = {p: WilderATR() for p in self.pairs}
         self.carry = {p: math.nan for p in self.pairs}
+        self.high = {p: math.nan for p in self.pairs}     # the latest bar's high and low
+        self.low = {p: math.nan for p in self.pairs}
 
     def update(self, pair: str, o: float, h: float, l: float, c: float, carry: float) -> None:
         self._atr[pair].update(h, l, c)
         self.closes[pair].append(c)
         self.carry[pair] = carry
+        self.high[pair], self.low[pair] = h, l
 
     def atr(self, pair: str) -> float:
         return self._atr[pair].value

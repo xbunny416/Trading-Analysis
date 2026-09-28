@@ -34,6 +34,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-001 | time-series mean reversion (hourly z-score) | -0.38 | n/a | 10.0% | 132 | 0.0013 (9) | b, d |
 | C5-002 | cross-sectional short-term reversal | -0.78 | n/a | 10.0% | 640 | 0.0 (10) | b, d |
 | C5-003 | trend: A3 with a signal-strength threshold | 0.23 | 0.79 | 9.2% | 276 | 0.0999 (11) | b |
+| C5-004 | trend: A2 that refuses to pay carry | registered, not run yet | | | | | |
+| C5-005 | trend: A2 only in efficient (trending) regimes | registered, not run yet | | | | | |
+| C5-006 | trend: dollar consensus of A3 over the USD pairs | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -49,6 +52,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     financing (−$30k) is its main drag, not spread ($7k).
   - **Lesson:** trend is the only source with a real edge before costs (about +$124k, a Sharpe of roughly 0.33).
     Batch 2 therefore works on the trend book itself.
+- **Batch 2 (C5-004…006), registered:**
+  - **C5-004:** trend that refuses positions paying more than κ % a year of carry, since financing is trend's main
+    drag.
+  - **C5-005:** trend held only in trending regimes, measured by a normalised efficiency ratio.
+  - **C5-006:** A3's trend averaged into one dollar view, traded through the four USD pairs.
+  - **Harness:** a new multi-pair signal-parity test checks that, at every decision, the signal the engine trades
+    equals the vectorised one for every pair, cross-pair signals included. A deliberate bug in the ranking was
+    caught 8,394 times.
 
 ### Reproduce
 

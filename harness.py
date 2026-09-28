@@ -771,6 +771,50 @@ def fill_timing_test() -> dict:
             "desyncs": st.desyncs, "bad_fills": bad[:5], "n_bad": len(bad)}
 
 
+def signal_parity_multi() -> dict:
+    """Multi-pair: at every decision, the signal the event-driven strategy trades for each pair with a bar at
+    that close equals the vectorised signal (unshifted feature row of that bar), including cross-sectional,
+    consensus and carry signals. Single-pair parity cannot see cross-pair logic; this can."""
+    p = S.DEFAULT_PARAMS
+    px = {"EURUSD": 1.15, "GBPUSD": 1.3, "USDJPY": 110.0, "USDCAD": 1.3, "EURJPY": 125.0}
+    days = _syn_days(1500)
+    rng = np.random.default_rng(61)
+    frames = {}
+    for i, (pair, price) in enumerate(px.items()):
+        f = synthetic_m15(pair, days=days, seed=60 + i, price=price, ann_vol=0.1)
+        frames[pair] = f[rng.random(len(f)) > 0.02]                          # a few missing bars
+    mk = _market(frames)
+    plan = _plan_over(mk, p)
+    rec: list[tuple[int, dict]] = []
+
+    class Recorder(S.PortfolioTrendStrategy):
+        def _decide_all(self, ts):
+            if self._seg >= 0:
+                rec.append((ts, dict(self._signals[self.plan[self._seg].params].signals())))
+            super()._decide_all(ts)
+
+    mk.run(Recorder(plan, mk.pairs), plan[0].start_ns, plan[-1].end_ns)
+    feats = S.compute_features(mk.h1, p)
+    bars = {k: f.index.as_unit("ns").asi8 for k, f in feats.items()}
+    vec = {k: f["signal"].to_numpy(dtype=float) for k, f in feats.items()}
+    worst, n, bad = 0.0, 0, []
+    for ts, sig in rec:
+        for k in mk.pairs:
+            j = int(np.searchsorted(bars[k], ts - HOUR))
+            if j >= len(bars[k]) or bars[k][j] != ts - HOUR:
+                continue                                                     # no bar of k closes at ts
+            a, b = float(sig.get(k, math.nan)), float(vec[k][j])
+            n += 1
+            if (a != a) != (b != b) or (a == a and abs(a - b) > 1e-6):
+                bad.append((k, str(pd.Timestamp(ts, tz="UTC")), a, b))
+            elif a == a:
+                worst = max(worst, abs(a - b))
+    mk.dispose()
+    nonzero = sum(1 for _, sig in rec for v in sig.values() if v == v and v != 0)
+    return {"passed": bool(not bad and n > 1000 and nonzero > 100), "compared": n, "nonzero_signals": nonzero,
+            "max_abs_diff": worst, "n_bad": len(bad), "bad": bad[:5]}
+
+
 def rolling_split_tests() -> dict:
     """The fast rolling walk-forward (make_rolling_splits): OOS windows of `oos_days` (< half a year) tile
     [start, end) without gaps or overlaps; each IS window is the `is_days` immediately before its OOS window
@@ -972,6 +1016,7 @@ def edge_case_tests() -> dict:
     res["execution_rule"] = execution_rule_tests()
     res["rolling_splits"] = rolling_split_tests()
     res["fill_timing_multi_pair"] = fill_timing_test()
+    res["signal_parity_multi_pair"] = signal_parity_multi()
     return res
 
 

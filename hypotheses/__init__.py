@@ -30,6 +30,9 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-001": ("c5_001_ts_meanrev", "time-series mean reversion (hourly z-score)", ""),
     "C5-002": ("c5_002_xs_reversal", "cross-sectional short-term reversal", "A5"),
     "C5-003": ("c5_003_a3_threshold", "trend: A3 with a signal-strength threshold", "A3"),
+    "C5-004": ("c5_004_trend_carry_filter", "trend: A2 that refuses to pay carry", "A2"),
+    "C5-005": ("c5_005_trend_efficiency_regime", "trend: A2 only in efficient (trending) regimes", "A2"),
+    "C5-006": ("c5_006_dollar_trend", "trend: dollar consensus of A3 over the USD pairs", "A3"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

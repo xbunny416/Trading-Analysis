@@ -97,6 +97,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - **C5-011** (de-risk only) reaches 0.28.
     - That is still a quarter of the 1.5 gate. The deflated Sharpe is 0.12, against a luck benchmark of 0.72
       after 19 trials.
+- **Batch 5 (C5-012…014), registered:** the same volatility scaling (C5-010's ATR₁₄₄₀ / ATR_F, clipped to 0.5–2),
+  applied to the rest of the trend family.
+  - **C5-012:** an equal blend of the dollar consensus and per-pair A3 trend, then volatility-managed.
+  - **C5-013:** per-pair A3 trend, volatility-managed.
+  - **C5-014:** a dollar consensus of the 1/3/12-month momentum blend (A2), volatility-managed.
+  - All three reuse C5-010's grid (fast ATR 120–960 bars × band 0.1–0.5); all fourteen cycle-5 selftests pass.
 
 ### Reproduce
 

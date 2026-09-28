@@ -31,15 +31,24 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 
 | Trial | Family | OOS Sharpe | WFE | max DD | fills/yr | DSR (N) | Failed gates |
 |---|---|---|---|---|---|---|---|
-| C5-001 | time-series mean reversion | registered, running | | | | | |
-| C5-002 | cross-sectional short-term reversal | registered, running | | | | | |
-| C5-003 | trend: A3 with a signal-strength threshold | registered, running | | | | | |
+| C5-001 | time-series mean reversion (hourly z-score) | -0.38 | n/a | 10.0% | 132 | 0.0013 (9) | b, d |
+| C5-002 | cross-sectional short-term reversal | -0.78 | n/a | 10.0% | 640 | 0.0 (10) | b, d |
+| C5-003 | trend: A3 with a signal-strength threshold | 0.23 | 0.79 | 9.2% | 276 | 0.0999 (11) | b |
 
 ### Batch notes
 
 - **Batch 1 (C5-001…003):** three different return sources. Cycle 4's trend strategies were one bet (daily-return
   correlation 0.75–0.91), and carry offset trend (−0.6). So this batch probes short-horizon mean reversion, a
   market-neutral short-term reversal, and a cheaper version of the only positive trend (A3).
+  - **Result:** all fail.
+  - **Mean reversion (C5-001)** loses even before costs (−$33k): it wins 60–70 % of trades, but FX keeps trending
+    over 1–7 days and the losers are large. The kill switch fired.
+  - **Short-term reversal (C5-002)** has a tiny edge before costs (+$12k). About 5,000 entries and exits, costing
+    $94k of spread, destroy it. The kill switch fired.
+  - **A3 with a threshold (C5-003)** matches A3 (0.23 vs 0.25). The threshold barely changes it, and overnight
+    financing (−$30k) is its main drag, not spread ($7k).
+  - **Lesson:** trend is the only source with a real edge before costs (about +$124k, a Sharpe of roughly 0.33).
+    Batch 2 therefore works on the trend book itself.
 
 ### Reproduce
 

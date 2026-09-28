@@ -105,6 +105,10 @@ SYN_RATES = B.RateTable.synthetic(start="2020-01-01", months=72, seed=7, switch=
 _CONST = pd.date_range("2019-01-01", periods=96, freq="MS", tz="UTC")
 FIXED_RATES = B.RateTable({c: pd.Series(v, index=_CONST) for c, v in
                            {"EUR": 3.0, "USD": 1.0, "GBP": 2.0, "JPY": -0.1, "CAD": 1.5}.items()})
+# the circuit-breaker scenario: FIXED_RATES with the EUR rate rising 0.25 points a month, so that carry rules (EUR
+# above USD) and rate-change rules (the EUR-USD differential rising) both hold a position
+BREAKER_RATES = B.RateTable({c: pd.Series(v + (0.25 * np.arange(len(_CONST)) if c == "EUR" else 0.0), index=_CONST)
+                             for c, v in {"EUR": 3.0, "USD": 1.0, "GBP": 2.0, "JPY": -0.1, "CAD": 1.5}.items()})
 
 
 # =============================================================================
@@ -899,7 +903,7 @@ def circuit_breaker_test() -> dict:
     jumps = 0.004 * np.floor(np.maximum(t - turn, 0.0) / 97.0)
     close = 1.10 * np.exp(drift + 0.001 * np.sin(2 * np.pi * t / 40.0) + jumps)
     base = m15_from_hourly_close(close, "2021-03-01")
-    mk = _market({"EURUSD": base}, rates=FIXED_RATES)   # EUR carries more than USD: carry rules go long
+    mk = _market({"EURUSD": base}, rates=BREAKER_RATES)  # EUR carries more than USD, and more each month
     closes = _decision_times(mk)
     p = S.DEFAULT_PARAMS
     plan = [S.Segment(int(closes[50]), int(closes[-1]), p)]
@@ -928,7 +932,7 @@ def circuit_breaker_test() -> dict:
         rows = d.index >= gap_start
         for c in ("open", "high", "low", "close"):
             d.loc[rows, c] = d.loc[rows, c] * f
-        m = _market({"EURUSD": d}, rates=FIXED_RATES)
+        m = _market({"EURUSD": d}, rates=BREAKER_RATES)
         r = m.run(S.PortfolioTrendStrategy(plan, m.pairs), plan[0].start_ns, plan[-1].end_ns)
         m.dispose()
         return r

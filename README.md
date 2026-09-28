@@ -139,6 +139,15 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       split 2. It also fails gate (a) with 5 fills a year.
   - **Lesson:** after 25 trials, slower trend is the only thing that earns. Batch 7 tests a slower trend, and a
     fundamental signal that is not a price trend: the change in interest-rate differentials.
+- **Batch 7 (C5-018…019), registered:**
+  - **C5-018:** interest-rate momentum (Dahlquist & Hasseltoft 2020; Brooks 2017). Long a pair when its known rate
+    differential rose by more than θ points over the last 3–12 months, short when it fell, volatility-managed like
+    C5-010. It trades the change in rates rather than their level (carry), and uses no prices.
+  - **C5-019:** a slower dollar trend, with A3's spans × 1, 1.5 or 2. C5-015's walk-forward chose the slowest speed
+    on offer every time.
+  - **Harness:** the circuit-breaker test's scenario used constant rates, so a rate-change signal never held a
+    position there. Its rate table now has a rising EUR rate. Carry rules still go long, and a mutation that
+    disables the daily halt is still caught. The full cycle-5 selftest suite is re-running on the new harness.
 
 ### Reproduce
 

@@ -37,6 +37,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-004 | trend: A2 that refuses to pay carry | -0.05 | n/a | 10.0% | 494 | 0.0141 (12) | b, d |
 | C5-005 | trend: A2 only in efficient (trending) regimes | -0.09 | n/a | 10.0% | 482 | 0.0107 (13) | b, d |
 | C5-006 | trend: dollar consensus of A3 over the USD pairs | 0.25 | 1.04 | 6.2% | 585 | 0.114 (14) | b |
+| C5-007 | relative value: EURUSD-GBPUSD spread mean reversion | registered, not run yet | | | | | |
+| C5-008 | large-shock follow-through, bar-count hold | registered, not run yet | | | | | |
+| C5-009 | large-shock reversal, bar-count hold | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -67,6 +70,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       drawdown, only $4k of spread. But its edge before costs (about $84k) is no bigger.
   - **Lesson:** FX trend on these pairs is worth about 0.35 before costs and 0.25 after, however it is packaged.
     Batch 3 leaves trend.
+- **Batch 3 (C5-007…009), registered:**
+  - **C5-007:** EUR/GBP relative value, fading z-score extremes of ln(EURUSD) − ln(GBPUSD).
+  - **C5-008:** large-shock follow-through: after an hourly move beyond k × ATR, hold its direction for H bars.
+    This is cycles 2–3's best intraday idea, now on the full history and with correct fills.
+  - **C5-009:** the mirror image of C5-008, fading the shock, logged as its own trial.
+  - **Engine:** gains an `on_close` hook for state built from several pairs.
+  - **Tests:** synthetic test data now has rare fat-tail jumps, so shock strategies trade in the tests. The
+    signal-parity recorder now reads signals exactly where the decision does. All selftests pass.
 
 ### Reproduce
 

@@ -210,6 +210,10 @@ class Signals:
     def update(self, pair: str) -> None:
         """Fold the pair's latest bar (already in `md`) into any extra state."""
 
+    def on_close(self, ts: int) -> None:
+        """Called once per hourly close, warm-up included, after every pair with a bar closing then has been
+        folded in: the place for state built from several pairs at once (other pairs at their latest close)."""
+
     def signals(self) -> dict[str, float]:
         """Signal per pair in [-1, 1]; NaN while not ready. Called at each hourly close."""
         raise NotImplementedError
@@ -394,6 +398,8 @@ class TargetPortfolioStrategy(Strategy):
 
     def _decide_all(self, ts: int) -> None:
         seen, self._seen = self._seen, set()
+        for sig in self._signals.values():
+            sig.on_close(ts)
         if self._seg < 0:
             return
         params = self.plan[self._seg].params

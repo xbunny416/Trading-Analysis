@@ -50,6 +50,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-017 | carry: vol-managed dollar carry (LRV 2014) | -0.33 | n/a | 10.0% | 5 | 0.0001 (25) | a, b, d |
 | C5-018 | rate momentum: change in the known rate differential, vol-managed | -0.28 | n/a | 10.0% | 9 | 0.0003 (26) | a, b, d |
 | C5-019 | trend: slow vol-managed dollar consensus (A3 spans x 1..2) | 0.41 | 1.78 | 5.1% | 390 | 0.1288 (27) | b |
+| C5-020 | value: 3-year cross-sectional reversal (nominal proxy), vol-managed | 0.03 | 3.05 | 9.3% | 414 | 0.0077 (28) | b |
+| C5-021 | ensemble: 50/50 dollar trend + currency value, vol-managed | 0.25 | 1.33 | 4.0% | 568 | 0.0484 (29) | b |
 
 ### Batch notes
 
@@ -173,6 +175,13 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Harness:** in the one-pair circuit-breaker scenario, a blend of opposite signals first holds a position too
     small (0.04× leverage) to gap cleanly. The test now gaps the first held position with at least 0.3× leverage.
     The daily-halt mutation is still caught, on C5-021 and C5-010. All twenty-one cycle-5 selftests pass.
+  - **Result:** both fail.
+    - **Value alone (C5-020)** reaches 0.03. It does earn before costs, about +$88k. But the rank weights jump
+      whenever two currencies swap places: 1,344 entries and exits cost $59k of spread, plus $26k of financing.
+    - **Value + trend (C5-021)** reaches 0.25, below trend alone, because the value leg's churn costs $33k.
+    - Value's daily returns are nearly uncorrelated with trend (−0.06 to −0.10), not the −0.5 AMP report.
+  - **Lesson:** value is the second source with an edge before costs, and it is independent of trend. The rank
+    weights waste it. Batch 9 keeps the signal and replaces the ranks with smooth weights.
 
 ### Reproduce
 

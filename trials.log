@@ -127,3 +127,29 @@ failure    : (a) OOS fills/year 91.51 <= 100
 failure    : (b) OOS Sharpe -0.8707 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.3942 <= 0
 
+=== TRIAL 10 | 2026-09-28T19:01:10Z | hyp C5-010 | code 05b75c0f4f5b | FAIL ===
+hypothesis : C5-010 volatility-managed dollar trend: C5-006's USD consensus scaled by ATR_1440 / ATR_F (clipped 0.5-2), i.e. sized by recent rather than 60-day volatility (Moreira-Muir 2017).
+grid       : {"fast_bars": [120, 240, 480, 960], "band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.3563 is_sharpe_mean=0.2618 wfe=1.3609 oos_max_dd=0.05188 oos_trades_per_year=343.99 oos_total_return=0.09668 leak_test=PASS
+deflated   : dsr=0.1183 n_trials=18 benchmark_sharpe=0.7045 psr_vs_zero=0.8872
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 120, 'band': 0.5} IS_sh=0.5256 OOS_sh=-0.9413 OOS_dd=0.03811 OOS_tr/yr=310.64
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 480, 'band': 0.5} IS_sh=-0.129 OOS_sh=1.2672 OOS_dd=0.0253 OOS_tr/yr=117.37
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 960, 'band': 0.2} IS_sh=0.4758 OOS_sh=0.0627 OOS_dd=0.02758 OOS_tr/yr=441.39
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 960, 'band': 0.2} IS_sh=0.5435 OOS_sh=-0.5631 OOS_dd=0.05188 OOS_tr/yr=622.94
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 120, 'band': 0.2} IS_sh=-0.1068 OOS_sh=1.1937 OOS_dd=0.02647 OOS_tr/yr=227.62
+failure    : (b) OOS Sharpe 0.3563 < 1.5
+
+=== TRIAL 11 | 2026-09-28T19:19:13Z | hyp C5-011 | code f121a710b9bf | FAIL ===
+hypothesis : C5-011 de-risk-only dollar trend: C5-006's USD consensus scaled by min(1, ATR_1440 / ATR_F), cutting exposure when recent volatility exceeds the 60-day level.
+grid       : {"fast_bars": [120, 240, 480, 960], "band": [0.1, 0.2, 0.3, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.2788 is_sharpe_mean=0.2609 wfe=1.0687 oos_max_dd=0.0604 oos_trades_per_year=405.18 oos_total_return=0.07031 leak_test=PASS
+deflated   : dsr=0.0668 n_trials=19 benchmark_sharpe=0.7201 psr_vs_zero=0.8285
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 120, 'band': 0.3} IS_sh=0.4641 OOS_sh=-1.0167 OOS_dd=0.04133 OOS_tr/yr=459.73
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 960, 'band': 0.5} IS_sh=-0.1035 OOS_sh=1.1658 OOS_dd=0.02871 OOS_tr/yr=115.59
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 120, 'band': 0.5} IS_sh=0.4939 OOS_sh=-0.0169 OOS_dd=0.02129 OOS_tr/yr=174.24
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 960, 'band': 0.1} IS_sh=0.524 OOS_sh=-0.5475 OOS_dd=0.0526 OOS_tr/yr=1059.12
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 120, 'band': 0.2} IS_sh=-0.0741 OOS_sh=1.1852 OOS_dd=0.02409 OOS_tr/yr=217.39
+failure    : (b) OOS Sharpe 0.2788 < 1.5
+

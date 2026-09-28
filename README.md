@@ -40,8 +40,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-007 | relative value: EURUSD-GBPUSD spread mean reversion | -0.45 | n/a | 6.4% | 133 | 0.0001 (15) | b, d |
 | C5-008 | large-shock follow-through, bar-count hold | -0.32 | -1.57 | 10.1% | 141 | 0.001 (16) | b, d |
 | C5-009 | large-shock reversal, bar-count hold | -0.87 | n/a | 10.0% | 92 | 0.0 (17) | a, b, d |
-| C5-010 | trend: volatility-managed dollar consensus | registered, not run yet | | | | | |
-| C5-011 | trend: dollar consensus, de-risk-only volatility scaling | registered, not run yet | | | | | |
+| C5-010 | trend: volatility-managed dollar consensus | 0.36 | 1.36 | 5.2% | 344 | 0.1183 (18) | b |
+| C5-011 | trend: dollar consensus, de-risk-only volatility scaling | 0.28 | 1.07 | 6.0% | 405 | 0.0668 (19) | b |
 
 ### Batch notes
 
@@ -91,6 +91,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-010:** scale by ATR₁₄₄₀ / ATR_F, clipped to 0.5–2.
   - **C5-011:** the same scale, but capped at 1, so it only de-risks.
   - The engine now exposes each bar's high and low; all eleven cycle-5 selftests pass.
+  - **Result:** both fail gate (b), but volatility management helps, as Moreira & Muir found.
+    - **C5-010** reaches **0.36**, the best of cycle 5 (WFE 1.36, drawdown 5.2 %, +$114k before costs vs C5-006's
+      +$84k).
+    - **C5-011** (de-risk only) reaches 0.28.
+    - That is still a quarter of the 1.5 gate. The deflated Sharpe is 0.12, against a luck benchmark of 0.72
+      after 19 trials.
 
 ### Reproduce
 

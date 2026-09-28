@@ -103,6 +103,17 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-013:** per-pair A3 trend, volatility-managed.
   - **C5-014:** a dollar consensus of the 1/3/12-month momentum blend (A2), volatility-managed.
   - All three reuse C5-010's grid (fast ATR 120–960 bars × band 0.1–0.5); all fourteen cycle-5 selftests pass.
+- **Batch 6 (C5-015…017), registered:** three new directions, written while batch 5 ran.
+  - **C5-015:** a faster dollar trend. Every A3 EWMA span is multiplied by 1/8, 1/4 or 1/2, and the walk-forward
+    chooses the factor. Hourly mean reversion (C5-001) lost because 1–7-day deviations kept running, which is trend
+    at horizons shorter than A3's fastest speed.
+  - **C5-016:** Donchian / Turtle breakout per pair: enter on a close beyond the N-bar high or low (N = 5–40 days),
+    exit on the opposite N/2-bar extreme. It is flat in ranges, unlike A3.
+  - **C5-017:** volatility-managed dollar carry (Lustig, Roussanov & Verdelhan 2014): long the foreign currencies
+    against the USD when their average known rate is above the US rate, short otherwise. A positive result would be
+    the second source an ensemble needs.
+  - **Tests:** the multi-pair signal-parity test caught one bug in C5-017 before registration. EURJPY's target was
+    NaN rather than 0 during the volatility warm-up; it is fixed and all selftests pass.
 
 ### Reproduce
 

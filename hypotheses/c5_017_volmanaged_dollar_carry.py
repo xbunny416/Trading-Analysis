@@ -51,7 +51,7 @@ def dollar_carry_sign(foreign_minus_us: list[float]) -> float:
     """sign of the average (rounded to 1e-9 so both paths agree at exact ties); NaN if any rate is unknown."""
     if not foreign_minus_us or any(v != v for v in foreign_minus_us):
         return math.nan
-    a = round(sum(foreign_minus_us) / len(foreign_minus_us), 9)
+    a = round(float(sum(foreign_minus_us)) / len(foreign_minus_us), 9)
     return float((a > 0) - (a < 0))
 
 
@@ -71,7 +71,11 @@ def compute_features(data, p: StrategyParams):
     for k, f in frames.items():
         g = base[k]
         leg = A.usd_leg(k)
-        s = (leg[1] * s_fx).reindex(g.index).to_numpy(dtype=float) if leg is not None else np.zeros(len(g))
+        if leg is None:
+            g["signal"] = 0.0                  # EURJPY: always flat
+            out[k] = g
+            continue
+        s = (leg[1] * s_fx).reindex(g.index).to_numpy(dtype=float)
         fast = A.wilder_atr(f["high"].to_numpy(), f["low"].to_numpy(), f["close"].to_numpy(), p.fast_bars)
         m = np.array([vol_scale(a, b) for a, b in zip(g["atr"].to_numpy(dtype=float), fast)])
         g["signal"] = s * m

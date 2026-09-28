@@ -37,9 +37,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-004 | trend: A2 that refuses to pay carry | -0.05 | n/a | 10.0% | 494 | 0.0141 (12) | b, d |
 | C5-005 | trend: A2 only in efficient (trending) regimes | -0.09 | n/a | 10.0% | 482 | 0.0107 (13) | b, d |
 | C5-006 | trend: dollar consensus of A3 over the USD pairs | 0.25 | 1.04 | 6.2% | 585 | 0.114 (14) | b |
-| C5-007 | relative value: EURUSD-GBPUSD spread mean reversion | registered, not run yet | | | | | |
-| C5-008 | large-shock follow-through, bar-count hold | registered, not run yet | | | | | |
-| C5-009 | large-shock reversal, bar-count hold | registered, not run yet | | | | | |
+| C5-007 | relative value: EURUSD-GBPUSD spread mean reversion | -0.45 | n/a | 6.4% | 133 | 0.0001 (15) | b, d |
+| C5-008 | large-shock follow-through, bar-count hold | -0.32 | -1.57 | 10.1% | 141 | 0.001 (16) | b, d |
+| C5-009 | large-shock reversal, bar-count hold | -0.87 | n/a | 10.0% | 92 | 0.0 (17) | a, b, d |
 
 ### Batch notes
 
@@ -78,6 +78,13 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Engine:** gains an `on_close` hook for state built from several pairs.
   - **Tests:** synthetic test data now has rare fat-tail jumps, so shock strategies trade in the tests. The
     signal-parity recorder now reads signals exactly where the decision does. All selftests pass.
+  - **Result:** all fail, and all three are negative before costs.
+    - **EUR/GBP relative value** has no reversion edge (−$5k before costs, −$35k of spread).
+    - **Hourly shocks** neither continue (C5-008, −$26k before costs) nor reverse (C5-009, −$76k). At this frequency
+      the pairs look efficient.
+  - **Lesson:** after 17 trials on this data, trend is the only source with a real edge before costs (short-term
+    reversal had a small one that spreads erased). Batch 4 tries volatility management of the best trend book
+    (Moreira & Muir 2017).
 
 ### Reproduce
 

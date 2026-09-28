@@ -84,3 +84,46 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.1} IS_sh=0.5367 OOS_sh
 split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.2} IS_sh=-0.2148 OOS_sh=1.1628 OOS_dd=0.02442 OOS_tr/yr=203.17
 failure    : (b) OOS Sharpe 0.2477 < 1.5
 
+=== TRIAL 7 | 2026-09-28T18:12:56Z | hyp C5-007 | code d2f2c8ddf9ea | FAIL ===
+hypothesis : C5-007 EUR/GBP relative value: fade z-score extremes of ln(EURUSD) - ln(GBPUSD) vs its n-bar EWMA (long one leg, short the other), exit at the mean.
+grid       : {"n": [24, 72, 168, 336], "z_in": [1.5, 2.0, 2.5, 3.0]}  fixed: {"band": 0.25}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.4489 is_sharpe_mean=-0.3122 wfe=None oos_max_dd=0.06376 oos_trades_per_year=133.22 oos_total_return=-0.04887 leak_test=PASS
+deflated   : dsr=0.0001 n_trials=15 benchmark_sharpe=0.6093 psr_vs_zero=0.0602
+split 1    : OOS 2011-10-02..2013-12-31 params={'n': 24, 'z_in': 3.0} IS_sh=-0.6623 OOS_sh=0.2169 OOS_dd=0.00937 OOS_tr/yr=137.07
+split 2    : OOS 2013-12-31..2016-04-01 params={'n': 24, 'z_in': 3.0} IS_sh=-0.3257 OOS_sh=-0.5543 OOS_dd=0.027 OOS_tr/yr=124.48
+split 3    : OOS 2016-04-01..2018-07-01 params={'n': 72, 'z_in': 2.0} IS_sh=0.1882 OOS_sh=-0.6092 OOS_dd=0.0311 OOS_tr/yr=88.01
+split 4    : OOS 2018-07-01..2020-09-30 params={'n': 72, 'z_in': 1.5} IS_sh=-0.2038 OOS_sh=-0.8122 OOS_dd=0.04068 OOS_tr/yr=176.08
+split 5    : OOS 2020-09-30..2022-12-30 params={'n': 24, 'z_in': 3.0} IS_sh=-0.5573 OOS_sh=-0.037 OOS_dd=0.01367 OOS_tr/yr=140.48
+failure    : (b) OOS Sharpe -0.4489 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.3122 <= 0
+
+=== TRIAL 8 | 2026-09-28T18:24:11Z | hyp C5-008 | code 0474ff616ddc | FAIL ===
+hypothesis : C5-008 large-shock follow-through: after an hourly close-to-close move beyond k x ATR, hold its direction for `hold` bars.
+grid       : {"k": [2.5, 3.0, 3.5, 4.0], "hold": [6, 24, 72, 168]}  fixed: {"band": 0.25}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.3198 is_sharpe_mean=0.2032 wfe=-1.5738 oos_max_dd=0.10075 oos_trades_per_year=141.05 oos_total_return=-0.07625 leak_test=PASS
+deflated   : dsr=0.001 n_trials=16 benchmark_sharpe=0.6035 psr_vs_zero=0.1428
+split 1    : OOS 2011-10-02..2013-12-31 params={'k': 3.5, 'hold': 72} IS_sh=0.1622 OOS_sh=-0.4053 OOS_dd=0.04355 OOS_tr/yr=140.19
+split 2    : OOS 2013-12-31..2016-04-01 params={'k': 3.5, 'hold': 6} IS_sh=-0.3723 OOS_sh=0.214 OOS_dd=0.0175 OOS_tr/yr=258.29
+split 3    : OOS 2016-04-01..2018-07-01 params={'k': 4.0, 'hold': 6} IS_sh=0.2642 OOS_sh=0.9507 OOS_dd=0.01813 OOS_tr/yr=132.91
+split 4    : OOS 2018-07-01..2020-09-30 params={'k': 4.0, 'hold': 72} IS_sh=0.8231 OOS_sh=-1.2529 OOS_dd=0.07955 OOS_tr/yr=111.16
+split 5    : OOS 2020-09-30..2022-12-30 params={'k': 4.0, 'hold': 168} IS_sh=0.1388 OOS_sh=-0.4819 OOS_dd=0.03311 OOS_tr/yr=62.68
+failure    : (b) OOS Sharpe -0.3198 < 1.5
+failure    : (d) WFE -1.5738 <= 0.5 (OOS Sharpe -0.3198 / IS Sharpe 0.2032)
+
+=== TRIAL 9 | 2026-09-28T18:35:03Z | hyp C5-009 | code ef3d1dadd9f7 | FAIL ===
+hypothesis : C5-009 large-shock reversal: after an hourly close-to-close move beyond k x ATR, hold the opposite direction for `hold` bars.
+grid       : {"k": [2.5, 3.0, 3.5, 4.0], "hold": [1, 3, 6, 12]}  fixed: {"band": 0.25}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.8707 is_sharpe_mean=-0.3942 wfe=None oos_max_dd=0.10014 oos_trades_per_year=91.51 oos_total_return=-0.10014 leak_test=PASS
+deflated   : dsr=0.0 n_trials=17 benchmark_sharpe=0.6718 psr_vs_zero=0.0
+split 1    : OOS 2011-10-02..2013-12-31 params={'k': 3.5, 'hold': 1} IS_sh=0.5953 OOS_sh=-0.8785 OOS_dd=0.01113 OOS_tr/yr=171.79
+split 2    : OOS 2013-12-31..2016-04-01 params={'k': 4.0, 'hold': 1} IS_sh=0.3331 OOS_sh=-1.6466 OOS_dd=0.02813 OOS_tr/yr=172.05
+split 3    : OOS 2016-04-01..2018-07-01 params={'k': 3.5, 'hold': 12} IS_sh=-1.0065 OOS_sh=-1.3701 OOS_dd=0.06876 OOS_tr/yr=113.79
+split 4    : OOS 2018-07-01..2020-09-30 params={'k': 3.5, 'hold': 12} IS_sh=-1.2879 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2020-09-30..2022-12-30 params={'k': 2.5, 'hold': 3} IS_sh=-0.6048 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (a) OOS fills/year 91.51 <= 100
+failure    : (b) OOS Sharpe -0.8707 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.3942 <= 0
+

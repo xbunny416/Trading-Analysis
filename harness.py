@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 """
-harness.py - cycle 4 walk-forward evaluation and integrity harness, running every backtest in NautilusTrader.
+harness.py - cycle 5 walk-forward evaluation and integrity harness, running every backtest in NautilusTrader.
 
-Cycle 4 follows PREREGISTRATION.md: a fixed list of published FX factor strategies (hypotheses/A1..A6), evaluated in
-order on the development period, and a locked holdout that a hypothesis may use exactly once after passing Stage 1.
+Cycle 5 is an adaptive search (README, cycle 5): every look at real data is a logged trial with an immutable ID
+(C5-001, ...), committed before its run; each report carries a deflated Sharpe ratio over all trials on this data;
+a Stage-1 pass unlocks the 2023 holdout once, and only a holdout pass counts. Cycle 4 (PREREGISTRATION.md, A1..A6,
+A3F) is archived in research/cycle4; its modules remain as a library.
 
 Each stage exits with status 0 only if every gate passes on the 5-pair portfolio:
 
     a) out-of-sample trades per year      > 100   (every fill counts: entries, exits, flips, rebalances)
     b) out-of-sample Sharpe ratio         >= 1.5
     c) out-of-sample max drawdown         < 12 %
-    d) walk-forward efficiency (OOS/IS)   >= 0.60
+    d) walk-forward efficiency (OOS/IS)   > 0.50
     e) perturbation look-ahead test       passes
 
 and every integrity check passes (data validation, complexity audit, Nautilus-vs-reference parity, edge-case
@@ -18,10 +20,10 @@ tests). Any failure prints the exact reason and exits with status 1.
 
 Usage
 -----
-    python harness.py --hypothesis A1 --selftest   synthetic-data tests only (never a trial)
-    python harness.py --hypothesis A1              Stage 1: WFA on the development period (logs a trial)
-    python harness.py --hypothesis A1 --holdout    Stage 2: once, only after a logged Stage-1 pass
-    python harness.py --hypothesis A1 --data-dir D Stage 1 on other MT5 exports, no splice (never logged)
+    python harness.py --hypothesis C5-001 --selftest   synthetic-data tests only (never a trial)
+    python harness.py --hypothesis C5-001              Stage 1: WFA on the development period (logs a trial)
+    python harness.py --hypothesis C5-001 --holdout    Stage 2: once, only after a logged Stage-1 pass
+    python harness.py --hypothesis C5-001 --data-dir D Stage 1 on other MT5 exports, no splice (never logged)
     python harness.py --check-data                 splice and rate-table checks on the real data (no backtest)
 
 Data: OANDA 1-minute mids 2005-01 -> 2019-11 spliced with the user's MT5 M15 exports 2019-12 -> 2023-12 for
@@ -39,6 +41,7 @@ import json
 import math
 import multiprocessing as mp
 import re
+import statistics
 import sys
 import time
 from concurrent.futures import ProcessPoolExecutor
@@ -57,7 +60,8 @@ import backtest as B
 import hypotheses as H
 
 ROOT = Path(__file__).resolve().parent
-RESULTS_DIR = ROOT / "results" / "cycle4"
+RESULTS_DIR = ROOT / "results" / "cycle5"
+ARCHIVE_RESULTS = (ROOT / "research" / "cycle4" / "results",)   # earlier trials on the same data (for the DSR)
 TRIALS_LOG = ROOT / "trials.log"
 HOLDOUT_LOG = ROOT / "holdout.log"
 CODE_FILES = ("harness.py", "backtest.py", "hypotheses/academic_base.py")   # + the selected hypothesis module
@@ -76,8 +80,8 @@ def use_hypothesis(hid: str) -> None:
 MIN_TRADES_PER_YEAR = 100.0
 MIN_OOS_SHARPE = 1.5
 MAX_OOS_DRAWDOWN = 0.12
-MIN_WFE = 0.60
-MAX_TRIALS = 8
+MIN_WFE = 0.50                # gate (d) is strict: WFE > 0.50
+MAX_TRIALS = None             # cycle 5: no cap (your decision); every trial is logged and counted in the DSR
 
 # ----------------------------------------------------------------------------- WFA
 N_SPLITS = 5
@@ -354,6 +358,83 @@ def holdout_wfa_splits(index: pd.DatetimeIndex) -> list[dict]:
 
 def min_wfe() -> float:
     return float(getattr(S, "WFA_MIN_WFE", MIN_WFE))
+
+
+def trial_guard(hid: str, fp: str, trials: list[dict], active=None) -> str | None:
+    """Cycle-5 rules for an official Stage-1 run; returns the refusal reason, or None.
+    - only cycle-5 IDs run (earlier cycles are archived);
+    - an ID is immutable: once logged, it can only be reproduced with identical code (not logged again);
+    - no trial cap (MAX_TRIALS None), otherwise the cap applies."""
+    if hid not in (H.CYCLE5 if active is None else active):
+        return f"{hid} belongs to an archived cycle (reproduce at commit c447b91)"
+    same_id = [t for t in trials if t["hyp"] == hid]
+    if any(t["code"] == fp for t in same_id):
+        return None                                             # reproduction: runs, logs nothing
+    if same_id:
+        return f"{hid} is already logged with other code ({same_id[-1]['code']}); register the change as a new ID"
+    if MAX_TRIALS is not None and len(trials) >= MAX_TRIALS:
+        return f"trial budget exhausted ({len(trials)}/{MAX_TRIALS})"
+    return None
+
+
+_EULER_GAMMA = 0.5772156649015329
+
+
+def daily_returns(equity: pd.Series, start_nav: float) -> np.ndarray:
+    """Trading-day returns of an equity curve (the series perf_metrics' Sharpe uses)."""
+    if len(equity) == 0:
+        return np.zeros(0)
+    day = S.trading_day_ids(equity.index - pd.Timedelta(hours=1))
+    daily = equity.groupby(day).last()
+    r = daily.pct_change()
+    r.iloc[0] = daily.iloc[0] / start_nav - 1.0
+    return r.to_numpy(dtype=float)
+
+
+def expected_max_sharpe(n_trials: int, var_sharpe: float) -> float:
+    """E[max of n_trials zero-skill Sharpe estimates] (Bailey & Lopez de Prado 2014), same units as var_sharpe."""
+    if n_trials < 2 or not var_sharpe > 0:
+        return 0.0
+    z = statistics.NormalDist().inv_cdf
+    return math.sqrt(var_sharpe) * ((1 - _EULER_GAMMA) * z(1 - 1 / n_trials)
+                                    + _EULER_GAMMA * z(1 - 1 / (n_trials * math.e)))
+
+
+def deflated_sharpe(returns: np.ndarray, trial_sharpes_annual: list[float]) -> dict:
+    """Deflated Sharpe ratio (Bailey & Lopez de Prado 2014): the probability that the true Sharpe exceeds the
+    best Sharpe expected from len(trial_sharpes_annual) zero-skill trials, given the returns' length, skew and
+    kurtosis. Per-trading-day units inside; the benchmark is also reported annualised."""
+    r = np.asarray(returns, dtype=float)
+    r = r[np.isfinite(r)]
+    n = len(trial_sharpes_annual)
+    if len(r) < 30 or not r.std(ddof=1) > 0:
+        return {"dsr": None, "n_trials": n}
+    sr = r.mean() / r.std(ddof=1)
+    c = r - r.mean()
+    m2 = (c ** 2).mean()
+    skew, kurt = (c ** 3).mean() / m2 ** 1.5, (c ** 4).mean() / m2 ** 2
+    var_trials = float(np.var(np.asarray(trial_sharpes_annual, dtype=float), ddof=1)) / TRADING_DAYS_PER_YEAR \
+        if n >= 2 else 0.0
+    sr0 = expected_max_sharpe(n, var_trials)
+    denom = math.sqrt(max(1e-12, 1 - skew * sr + (kurt - 1) / 4 * sr * sr))
+    cdf = statistics.NormalDist().cdf
+    return {"dsr": round(cdf((sr - sr0) * math.sqrt(len(r) - 1) / denom), 4),
+            "psr_vs_zero": round(cdf(sr * math.sqrt(len(r) - 1) / denom), 4),
+            "sharpe_benchmark_annual": round(sr0 * math.sqrt(TRADING_DAYS_PER_YEAR), 4),
+            "n_trials": n, "skew": round(float(skew), 3), "kurtosis": round(float(kurt), 3), "days": int(len(r))}
+
+
+def all_trial_sharpes() -> list[float]:
+    """OOS Sharpe of every logged trial on this development data: archived cycle-4 reports + cycle-5 reports."""
+    out = []
+    for folder in ARCHIVE_RESULTS + (RESULTS_DIR,):
+        for f in sorted(Path(folder).glob("*.json")) if Path(folder).exists() else []:
+            if f.stem.endswith("_holdout"):
+                continue
+            d = json.loads(f.read_text())
+            if d.get("stage") == 1 and d.get("trial", {}).get("counts_as_trial"):
+                out.append(float(d["metrics"]["oos_sharpe"]))
+    return out
 
 
 def run_wfa(market: B.Market, pool: ProcessPoolExecutor, splits: list[dict] | None = None) -> dict:
@@ -751,9 +832,10 @@ def _positions_by_bar(res: B.RunResult, closes: np.ndarray) -> np.ndarray:
 
 
 def circuit_breaker_test() -> dict:
-    """A down-trend turning into an oscillating up-trend with periodic up-jumps (so any trend rule goes long
-    at some point); gap the market down right after a bar in which the strategy is long, sized off the
-    leverage it actually holds (legitimate because positions are causal)."""
+    """A down-trend turning into an oscillating up-trend with periodic up-jumps, so trend and reversion rules
+    both take positions; gap the market AGAINST the first position held through a bar near the equity peak
+    (down if long, up if short), sized off the leverage actually held (legitimate because positions are causal).
+    A 5 % loss must trip the 24-hour halt, a 15 % loss the permanent kill switch."""
     warm = S.warmup_bars(S.DEFAULT_PARAMS) + 50        # flat warm-up, then down 400 bars, then up with jumps
     n, turn = warm + 1600, warm + 400
     t = np.arange(n, dtype=float)
@@ -770,22 +852,23 @@ def circuit_breaker_test() -> dict:
     held = _positions_by_bar(pre, closes)
     eq = pre.equity.reindex(pd.to_datetime(closes, utc=True)).ffill().fillna(B.STARTING_NAV).to_numpy()
     near_peak = eq >= np.maximum.accumulate(np.maximum(eq, B.STARTING_NAV)) * 0.98
-    # long in bar k-1 and still holding the same position through the open of bar k (the gap bar), with the
-    # account within 2 % of its peak so that a 5 % loss trips the daily halt and not the 10 % kill switch
-    longs = [j for j in range(turn, len(closes) - 300)
-             if held[j - 1] > 0 and held[j] == held[j - 1] and near_peak[j - 1]]
-    if not longs:
-        return {"passed": False, "reason": "scenario never went long"}
-    k = longs[0]
+    # a position in bar k-1 still held unchanged through the open of bar k (the gap bar), with the account
+    # within 2 % of its peak so that a 5 % loss trips the daily halt and not the 10 % kill switch
+    holds = [j for j in range(warm, len(closes) - 300)
+             if held[j - 1] != 0 and held[j] == held[j - 1] and near_peak[j - 1]]
+    if not holds:
+        return {"passed": False, "reason": "scenario never held a position"}
+    k = holds[0]
+    side = 1.0 if held[k - 1] > 0 else -1.0
     eq_prev = float(pre.equity[pre.equity.index.as_unit("ns").asi8 <= closes[k - 1]].iloc[-1])
-    lev = held[k - 1] * mk.h1["EURUSD"]["close"].iloc[k - 1] / eq_prev
+    lev = abs(held[k - 1]) * mk.h1["EURUSD"]["close"].iloc[k - 1] / eq_prev
     if lev < 0.3:
         return {"passed": False, "reason": f"leverage {lev:.3f} too small for a clean gap scenario"}
     gap_start = mk.index[k]
 
     def gapped(loss: float) -> B.RunResult:
         d = base.copy()
-        f = 1.0 - loss / lev
+        f = 1.0 - side * loss / lev                    # against the position
         rows = d.index >= gap_start
         for c in ("open", "high", "low", "close"):
             d.loc[rows, c] = d.loc[rows, c] * f
@@ -804,7 +887,8 @@ def circuit_breaker_test() -> dict:
     kill = gapped(0.15)
     ko = kill.orders
     kill_ok = kill.killed and ((ko["ts"] == t_k) & (ko["reason"] == "kill")).any() and not (ko["ts"] > t_k).any()
-    return {"passed": bool(halt_ok and kill_ok), "gap_bar": str(gap_start), "leverage_before_gap": round(float(lev), 3),
+    return {"passed": bool(halt_ok and kill_ok), "gap_bar": str(gap_start), "position_side": int(side),
+            "leverage_before_gap": round(float(lev), 3),
             "daily_halt_ok": bool(halt_ok), "max_dd_kill_ok": bool(kill_ok)}
 
 
@@ -1066,9 +1150,12 @@ def complexity_audit() -> dict:
     src = "".join(f.read_text() for f in [H.path(HYP_ID), H.BASE_FILE] + H.depends(HYP_ID))
     hits = sorted({m.group(0) for m in CALENDAR_PATTERN.finditer(src)})
     grid_ok = set(S.PARAM_GRID) <= set(fields) and set(S.FEATURE_PARAMS) <= set(fields)
-    ok = len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and not hits and grid_ok
+    overrides = [a for a in ("WFA_MAX_OOS_DAYS", "WFA_MIN_WFE") if HYP_ID in H.CYCLE5 and hasattr(S, a)]
+    ok = (len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and not hits and grid_ok
+          and not overrides)
     return {"passed": bool(ok), "tunable_parameters": fields, "indicators": list(S.INDICATORS),
-            "optimised_in_wfa": list(S.PARAM_GRID), "calendar_filter_hits": hits}
+            "optimised_in_wfa": list(S.PARAM_GRID), "calendar_filter_hits": hits,
+            "protocol_overrides": overrides}
 
 
 # =============================================================================
@@ -1081,7 +1168,7 @@ def code_fingerprint(hid: str) -> str:
     return h.hexdigest()[:12]
 
 
-_ENTRY = re.compile(r"^=== (TRIAL|HOLDOUT) (\d+) \| (\S+) \| hyp ([AH]\d+[A-Z]?) \| code (\w+) \| (PASS|FAIL)")
+_ENTRY = re.compile(r"^=== (TRIAL|HOLDOUT) (\d+) \| (\S+) \| hyp ([A-Z][\w-]*) \| code (\w+) \| (PASS|FAIL)")
 
 
 def _entries(path: Path, kind: str) -> list[dict]:
@@ -1112,6 +1199,10 @@ def append_entry(path: Path, kind: str, n: int, fp: str, report: dict) -> None:
         f"oos_max_dd={o['oos_max_drawdown']} oos_trades_per_year={o['oos_trades_per_year']} "
         f"oos_total_return={o['oos_total_return']} leak_test={'PASS' if o['leak_test_passed'] else 'FAIL'}",
     ]
+    if o.get("oos_deflated_sharpe"):
+        ds = o["oos_deflated_sharpe"]
+        lines.append(f"deflated   : dsr={ds.get('dsr')} n_trials={ds.get('n_trials')} "
+                     f"benchmark_sharpe={ds.get('sharpe_benchmark_annual')} psr_vs_zero={ds.get('psr_vs_zero')}")
     for r in report["splits"]:
         lines.append(f"split {r['split']}    : OOS {r['oos_period'][0][:10]}..{r['oos_period'][1][:10]} "
                      f"params={ {k: r['chosen_params'][k] for k in S.PARAM_GRID} } IS_sh={r['is']['sharpe']} "
@@ -1125,6 +1216,40 @@ def append_entry(path: Path, kind: str, n: int, fp: str, report: dict) -> None:
 # =============================================================================
 # Main
 # =============================================================================
+def protocol_tests() -> dict:
+    """Cycle-5 protocol: deflated Sharpe behaviour, the trial guard, and gate (d) strictness."""
+    out = {}
+    rng = np.random.default_rng(3)
+    # E[max of N standard normals]: the formula vs Monte Carlo
+    mc = float(np.mean(rng.standard_normal((4000, 100)).max(axis=1)))
+    em = expected_max_sharpe(100, 1.0)
+    r = rng.normal(0.0008, 0.01, 2520)                          # ~1.27 annual Sharpe, 10 years
+    sr_ann = r.mean() / r.std(ddof=1) * math.sqrt(252)
+    one = deflated_sharpe(r, [sr_ann])
+    few = deflated_sharpe(r, [sr_ann, 0.3, -0.2, 0.1])
+    many = deflated_sharpe(r, [sr_ann] + list(rng.normal(0, 0.3, 99)))
+    wide = deflated_sharpe(r, [sr_ann] + list(rng.normal(0, 0.9, 99)))
+    at_bench = deflated_sharpe(np.concatenate([r, -r]) + r.mean(), [sr_ann])   # zero skew case
+    out["deflated_sharpe"] = {
+        "passed": bool(abs(em - mc) / mc < 0.03 and one["dsr"] == one["psr_vs_zero"]
+                       and one["dsr"] >= few["dsr"] >= many["dsr"] >= wide["dsr"] and one["dsr"] > 0.99
+                       and at_bench["dsr"] is not None),
+        "expected_max_formula_vs_mc": [round(em, 3), round(mc, 3)],
+        "dsr_n1_n4_n100_n100wide": [one["dsr"], few["dsr"], many["dsr"], wide["dsr"]]}
+    logged = [{"n": 1, "hyp": "C5-001", "code": "aaa", "status": "FAIL"}]
+    act = ("C5-001", "C5-002")
+    cases = {"new_id": trial_guard("C5-002", "bbb", logged, act) is None,
+             "reproduce_same_code": trial_guard("C5-001", "aaa", logged, act) is None,
+             "changed_code_same_id": trial_guard("C5-001", "ccc", logged, act) is not None,
+             "archived_id": trial_guard("A3", "ddd", logged, act) is not None}
+    out["trial_guard"] = {"passed": all(cases.values()), **cases}
+    base = {"oos": {"trades_per_year": 500, "sharpe": 2.0, "max_drawdown": 0.05}, "is_sharpe_mean": 4.0}
+    g = {w: _gate_failures({**base, "wfe": w}) for w in (0.5, 0.51, None)}
+    out["gate_d_strict"] = {"passed": bool(g[0.5] and not g[0.51] and g[None]),
+                            "wfe_0.50": g[0.5], "wfe_0.51": g[0.51]}
+    return out
+
+
 def selftest() -> dict:
     days = _syn_days(1500)
     syn = {"EURUSD": B.clean_m15(synthetic_m15("EURUSD", days=days, seed=1), "EURUSD"),
@@ -1133,7 +1258,7 @@ def selftest() -> dict:
     syn_long = {"EURUSD": B.clean_m15(synthetic_m15("EURUSD", days=long_days, seed=1), "EURUSD"),
                 "USDJPY": B.clean_m15(synthetic_m15("USDJPY", days=long_days, seed=2, price=110.0, spread_points=15.0),
                                       "USDJPY")}
-    return {"complexity": complexity_audit(), "edge_cases": edge_case_tests(),
+    return {"complexity": complexity_audit(), "protocol": protocol_tests(), "edge_cases": edge_case_tests(),
             "leak_synthetic": run_leak_suite(syn, S.DEFAULT_PARAMS, n_points=4),
             "rate_lag_synthetic": rate_lag_tests(syn_long, SYN_RATES, S.DEFAULT_PARAMS)}
 
@@ -1166,8 +1291,8 @@ def _gate_failures(wfa: dict) -> list[str]:
         out.append(f"(c) OOS max drawdown {o['max_drawdown']:.2%} >= {MAX_OOS_DRAWDOWN:.0%}")
     if wfa["wfe"] is None:
         out.append(f"(d) WFE undefined: mean IS Sharpe {wfa['is_sharpe_mean']} <= 0")
-    elif not wfa["wfe"] >= min_wfe():
-        out.append(f"(d) WFE {wfa['wfe']} < {min_wfe():.4g} (OOS Sharpe {o['sharpe']} / IS Sharpe "
+    elif not wfa["wfe"] > min_wfe():
+        out.append(f"(d) WFE {wfa['wfe']} <= {min_wfe():.4g} (OOS Sharpe {o['sharpe']} / IS Sharpe "
                    f"{wfa['is_sharpe_mean']})")
     return out
 
@@ -1294,16 +1419,10 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
     fp = code_fingerprint(HYP_ID)
     trials = logged_trials()
     rerun = next((t for t in trials if t["code"] == fp and t["hyp"] == HYP_ID), None)
-    if official and rerun is None:
-        if len(trials) >= MAX_TRIALS:
-            print(f"REFUSED: trial budget exhausted ({len(trials)}/{MAX_TRIALS})", file=sys.stderr)
-            return 1
-        # the pre-registered order (with its addenda): the first hypothesis with no logged trial. A logged
-        # hypothesis may only be reproduced with identical code (a re-run, never logged); re-running it with
-        # changed code would need another addendum. (Addendum 1's A1 re-run used a fingerprint-based rule.)
-        expected = next((h for h in H.ORDER if not any(t["hyp"] == h for t in trials)), None)
-        if HYP_ID != expected:
-            print(f"REFUSED: pre-registered order requires {expected} next, not {HYP_ID}", file=sys.stderr)
+    if official:
+        refusal = trial_guard(HYP_ID, fp, trials)
+        if refusal:
+            print(f"REFUSED: {refusal}", file=sys.stderr)
             return 1
 
     failures: list[str] = []
@@ -1347,6 +1466,10 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
               f"(split geometry from {pd.Timestamp(wfa['splits'][0]['is_period'][0]):%Y-%m-%d})")
     report = _report(1, "PASS" if not failures else "FAIL", failures, trial, provenance, data_info, period, wfa,
                      tests, tests["leak"]["passed"], t_start)
+    prior = all_trial_sharpes()
+    report["metrics"]["oos_deflated_sharpe"] = deflated_sharpe(
+        daily_returns(wfa["oos_result"].equity, wfa["oos_result"].start_nav),
+        prior + ([] if rerun else [wfa["oos"]["sharpe"]]))
     if not official:
         failed = {n: v for n, v in tests.items() if isinstance(v, dict) and not _all_passed(v)}
         print(json.dumps({**{k: report[k] for k in ("status", "failures", "trial", "metrics")}, "failed_tests": failed},
@@ -1361,6 +1484,9 @@ def run_stage1(data_dir: Path, official: bool, t_start: float) -> int:
 
 def run_stage2(data_dir: Path, official: bool, t_start: float) -> int:
     fp = code_fingerprint(HYP_ID)
+    if HYP_ID not in H.CYCLE5:
+        print(f"REFUSED: {HYP_ID} belongs to an archived cycle (reproduce at commit c447b91)", file=sys.stderr)
+        return 1
     if not official:
         print("REFUSED: the holdout is only evaluated on the official data (data/mt5)", file=sys.stderr)
         return 1
@@ -1398,7 +1524,7 @@ def run_stage2(data_dir: Path, official: bool, t_start: float) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--hypothesis", choices=H.ORDER, help="pre-registered hypothesis id")
+    ap.add_argument("--hypothesis", choices=tuple(H.REGISTRY), help="trial id (cycle 5: C5-xxx)")
     ap.add_argument("--selftest", action="store_true", help="synthetic tests only (no real-data metrics)")
     ap.add_argument("--holdout", action="store_true", help="Stage 2: evaluate a Stage-1 pass once on 2023")
     ap.add_argument("--check-data", action="store_true", help="splice and rate checks on the real data only")

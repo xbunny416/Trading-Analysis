@@ -3,5 +3,5 @@ __pycache__/
 data/*
 !data/rates/
 results/wfa_oos_equity.csv
-results/cycle3/*_equity.csv
-results/cycle4/*_equity.csv
+results/*/*_equity.csv
+research/*/results/*_equity.csv

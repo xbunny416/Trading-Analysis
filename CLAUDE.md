@@ -14,19 +14,21 @@ cross-sectional momentum; see `README.md`) plus Claude Code configuration
 | Purpose | Command or file |
 |---|---|
 | Install | `pip install -r requirements.txt` (NautilusTrader 1.221, pandas, pyarrow; Python 3.11+) |
-| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --hypothesis A1 --selftest` (one per hypothesis, A1..A6) |
+| Unit / integrity tests (synthetic data, not a trial) | `python harness.py --hypothesis C5-001 --selftest` (one per registered hypothesis) |
 | Real-data checks (splice, rate table; no backtest) | `python harness.py --check-data` |
-| Stage 1 walk-forward, development data (logs a trial) | `python harness.py --hypothesis A1` (or `scripts/eval_wfa.py`) |
-| Stage 2, locked 2023 holdout (once, after a Stage-1 pass) | `python harness.py --hypothesis A1 --holdout` |
-| Evaluate other data (never logged) | `python harness.py --hypothesis A1 --data-dir <folder of <PAIR>.csv>` |
+| Stage 1 walk-forward, development data (logs a trial) | `python harness.py --hypothesis C5-001` (or `scripts/eval_wfa.py`) |
+| Stage 2, locked 2023 holdout (once, after a Stage-1 pass) | `python harness.py --hypothesis C5-001 --holdout` |
+| Evaluate other data (never logged) | `python harness.py --hypothesis C5-001 --data-dir <folder of <PAIR>.csv>` |
+| Cycle-5 leaderboard | `python scripts/leaderboard.py` |
 | Nautilus plumbing, OANDA + MT5 splice, rates, financing | `backtest.py` |
-| Strategy logic | `hypotheses/` (pre-registered A1-A6 on the shared engine `academic_base.py`; `strategy.py` re-exports the registry) |
+| Strategy logic | `hypotheses/` (cycle-5 trials `c5_*.py` and the cycle-4 library on the shared engine `academic_base.py`; `strategy.py` re-exports the registry) |
 
 Real-data runs need the MT5 exports in `data/mt5/<PAIR>.csv` (git-ignored). The OANDA 2005-2019 history is fetched
 automatically (sparse git checkout into `../FutureSharks/financial-data`) and cached in `data/spliced/`; the rate
-tables in `data/rates/` are committed. Cycle 4 follows `PREREGISTRATION.md`: hypotheses run in the fixed order A1..A6,
-the harness refuses other orders and a second holdout run, and every completed real-data run with changed code counts
-against the 8-trial budget in `trials.log`. Iterate with `--selftest`. Cycles 1-3 are archived in `research/`.
+tables in `data/rates/` are committed. Cycle 5 is an adaptive search (README): every real-data run is a logged trial
+with an immutable ID registered in `hypotheses/__init__.py` (`CYCLE5_REGISTRY`) and committed before it runs; changed
+code needs a new ID; gate (d) is WFE > 0.5; reports carry a deflated Sharpe ratio; the holdout runs once per code
+fingerprint after a Stage-1 pass. Iterate with `--selftest`. Cycles 1-4 are archived in `research/`.
 
 When you add a dependency file or test runner, record the exact install and test
 commands here, so that "run the tests" works on the first try.

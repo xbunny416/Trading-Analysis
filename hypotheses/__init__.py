@@ -1,4 +1,8 @@
-"""Pre-registered cycle-4 hypotheses (see PREREGISTRATION.md): published FX factor strategies.
+"""Strategy registry.
+
+Cycle 4 (PREREGISTRATION.md, archived in research/cycle4): published FX factor strategies A1..A6 and A3F. Their
+modules stay as a library for later trials.
+Cycle 5 (README): an adaptive search; every trial has an immutable ID (C5-001, ...) and its own module.
 
 Each module defines its signal (vectorised ``signal_frame`` and event-driven ``Signals``) on top of the shared
 sizing / execution / risk engine in ``academic_base.py``. The cycle-3 hypotheses live in research/cycle3/.
@@ -19,7 +23,16 @@ REGISTRY = {
     # Addendum 2 (post-hoc, trial 8): A3 unchanged, re-evaluated with a fast rolling walk-forward
     "A3F": ("a3f_ewma_fast_wfa", "Baz et al. 2015 (Man AHL)", "A3 with <= 152-day rolling OOS windows, WFE >= 2/3"),
 }
-ORDER = tuple(REGISTRY)
+ORDER = tuple(REGISTRY)            # cycle 4, archived
+
+# Cycle 5: ID -> (module, family, parent trial or "")
+CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
+    "C5-001": ("c5_001_ts_meanrev", "time-series mean reversion (hourly z-score)", ""),
+    "C5-002": ("c5_002_xs_reversal", "cross-sectional short-term reversal", "A5"),
+    "C5-003": ("c5_003_a3_threshold", "trend: A3 with a signal-strength threshold", "A3"),
+}
+CYCLE5 = tuple(CYCLE5_REGISTRY)
+REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})
 BASE_FILE = Path(__file__).resolve().parent / "academic_base.py"
 
 

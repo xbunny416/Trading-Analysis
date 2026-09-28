@@ -34,9 +34,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-001 | time-series mean reversion (hourly z-score) | -0.38 | n/a | 10.0% | 132 | 0.0013 (9) | b, d |
 | C5-002 | cross-sectional short-term reversal | -0.78 | n/a | 10.0% | 640 | 0.0 (10) | b, d |
 | C5-003 | trend: A3 with a signal-strength threshold | 0.23 | 0.79 | 9.2% | 276 | 0.0999 (11) | b |
-| C5-004 | trend: A2 that refuses to pay carry | registered, not run yet | | | | | |
-| C5-005 | trend: A2 only in efficient (trending) regimes | registered, not run yet | | | | | |
-| C5-006 | trend: dollar consensus of A3 over the USD pairs | registered, not run yet | | | | | |
+| C5-004 | trend: A2 that refuses to pay carry | -0.05 | n/a | 10.0% | 494 | 0.0141 (12) | b, d |
+| C5-005 | trend: A2 only in efficient (trending) regimes | -0.09 | n/a | 10.0% | 482 | 0.0107 (13) | b, d |
+| C5-006 | trend: dollar consensus of A3 over the USD pairs | 0.25 | 1.04 | 6.2% | 585 | 0.114 (14) | b |
 
 ### Batch notes
 
@@ -60,6 +60,13 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Harness:** a new multi-pair signal-parity test checks that, at every decision, the signal the engine trades
     equals the vectorised one for every pair, cross-pair signals included. A deliberate bug in the ranking was
     caught 8,394 times.
+  - **Result:** all fail.
+    - **The carry filter (C5-004)** and **the regime filter (C5-005)** both turn a +$75k–81k edge before costs
+      negative. Switching positions on and off costs $82k–90k of spread, and both hit the kill switch.
+    - **The dollar consensus (C5-006)** is the most efficient trend book so far: 0.25 Sharpe, WFE 1.04, 6.2 %
+      drawdown, only $4k of spread. But its edge before costs (about $84k) is no bigger.
+  - **Lesson:** FX trend on these pairs is worth about 0.35 before costs and 0.25 after, however it is packaged.
+    Batch 3 leaves trend.
 
 ### Reproduce
 

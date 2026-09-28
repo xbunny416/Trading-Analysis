@@ -182,6 +182,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Value's daily returns are nearly uncorrelated with trend (−0.06 to −0.10), not the −0.5 AMP report.
   - **Lesson:** value is the second source with an edge before costs, and it is independent of trend. The rank
     weights waste it. Batch 9 keeps the signal and replaces the ranks with smooth weights.
+- **Batch 9 (C5-022…023), registered together:**
+  - **C5-022:** the same 3-year value signal, with dollar-neutral cross-sectional z-score weights
+    (−(x − mean) / 2σ) instead of ranks. A small move in prices now means a small trade, which the band absorbs.
+  - **C5-023:** 50/50 of the dollar trend and C5-022's smooth value, volatility-managed.
+  - Both selftests pass (signal parity max difference 5e-14; the harness is unchanged since batch 8's full run).
 
 ### Reproduce
 

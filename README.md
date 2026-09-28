@@ -52,6 +52,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-019 | trend: slow vol-managed dollar consensus (A3 spans x 1..2) | 0.41 | 1.78 | 5.1% | 390 | 0.1288 (27) | b |
 | C5-020 | value: 3-year cross-sectional reversal (nominal proxy), vol-managed | 0.03 | 3.05 | 9.3% | 414 | 0.0077 (28) | b |
 | C5-021 | ensemble: 50/50 dollar trend + currency value, vol-managed | 0.25 | 1.33 | 4.0% | 568 | 0.0484 (29) | b |
+| C5-022 | value: 3-year value with smooth z-score weights, vol-managed | 0.28 | 0.95 | 4.3% | 551 | 0.0569 (30) | b |
+| C5-023 | ensemble: 50/50 dollar trend + smooth value, vol-managed | 0.49 | 1.55 | 3.1% | 1013 | 0.1779 (31) | b |
 
 ### Batch notes
 
@@ -187,6 +189,15 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     (−(x − mean) / 2σ) instead of ranks. A small move in prices now means a small trade, which the band absorbs.
   - **C5-023:** 50/50 of the dollar trend and C5-022's smooth value, volatility-managed.
   - Both selftests pass (signal parity max difference 5e-14; the harness is unchanged since batch 8's full run).
+  - **Result:** both fail gate (b), but the combination is the best result of cycle 5.
+    - **Smooth value (C5-022)** reaches 0.28, up from 0.03. Spread falls from $59k to $8k, and it is positive in four
+      of five OOS splits, including 2016–20 when trend lost.
+    - **Value + trend (C5-023)** reaches **0.49**, with drawdown 3.1 %, WFE 1.55 and 1,013 fills a year. Gates (a),
+      (c), (d) and (e) pass; only (b) fails. The deflated Sharpe is 0.18, against a luck benchmark of 0.77 after 31
+      trials.
+  - **Lesson:** this is what two nearly uncorrelated sources should give. With trend at about 0.41 and value at
+    0.28, the best mix is about √(0.41² + 0.28²) ≈ 0.50. To reach 1.5 from sources of that size would take about
+    nine independent ones. Across 31 trials only two sources on these five pairs have an edge before costs.
 
 ### Reproduce
 

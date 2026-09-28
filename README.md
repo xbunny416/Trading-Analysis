@@ -147,7 +147,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     on offer every time.
   - **Harness:** the circuit-breaker test's scenario used constant rates, so a rate-change signal never held a
     position there. Its rate table now has a rising EUR rate. Carry rules still go long, and a mutation that
-    disables the daily halt is still caught. The full cycle-5 selftest suite is re-running on the new harness.
+    disables the daily halt is still caught. All nineteen cycle-5 selftests and `--check-data` pass.
 
 ### Reproduce
 

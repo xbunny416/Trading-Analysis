@@ -48,6 +48,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-015 | trend: fast vol-managed dollar consensus (A3 spans x 1/8..1/2) | 0.26 | 1.73 | 6.8% | 894 | 0.0517 (23) | b |
 | C5-016 | trend: Donchian / Turtle breakout, per pair | -0.10 | n/a | 10.0% | 168 | 0.0023 (24) | b, d |
 | C5-017 | carry: vol-managed dollar carry (LRV 2014) | -0.33 | n/a | 10.0% | 5 | 0.0001 (25) | a, b, d |
+| C5-018 | rate momentum: change in the known rate differential, vol-managed | -0.28 | n/a | 10.0% | 9 | 0.0003 (26) | a, b, d |
+| C5-019 | trend: slow vol-managed dollar consensus (A3 spans x 1..2) | 0.41 | 1.78 | 5.1% | 390 | 0.1288 (27) | b |
 
 ### Batch notes
 
@@ -148,6 +150,16 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Harness:** the circuit-breaker test's scenario used constant rates, so a rate-change signal never held a
     position there. Its rate table now has a rising EUR rate. Carry rules still go long, and a mutation that
     disables the daily halt is still caught. All nineteen cycle-5 selftests and `--check-data` pass.
+  - **Result:** both fail.
+    - **The slow dollar trend (C5-019)** reaches **0.41**, the best of cycle 5 (WFE 1.78, drawdown 5.1 %, about
+      +$133k before costs). The walk-forward chose speed 1 three times, 1.5 once and 2 once, so the gain over C5-010
+      (0.36) is mostly the grid, not a clear preference for slower trend. The deflated Sharpe is 0.13, against a
+      luck benchmark of 0.74 after 27 trials.
+    - **Rate momentum (C5-018)** loses (−0.28, about −$67k before costs). It trades 9 times a year (gate a), and the
+      kill switch fired in split 3.
+  - **Lesson:** 27 trials, best 0.41. Price trend is the only source with an edge on these pairs, and it is worth
+    about 0.4–0.5 before costs. Carry, rate momentum, breakouts, shocks, mean reversion and relative value are all
+    negative before costs.
 
 ### Reproduce
 

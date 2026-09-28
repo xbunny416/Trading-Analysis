@@ -42,6 +42,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-009 | large-shock reversal, bar-count hold | -0.87 | n/a | 10.0% | 92 | 0.0 (17) | a, b, d |
 | C5-010 | trend: volatility-managed dollar consensus | 0.36 | 1.36 | 5.2% | 344 | 0.1183 (18) | b |
 | C5-011 | trend: dollar consensus, de-risk-only volatility scaling | 0.28 | 1.07 | 6.0% | 405 | 0.0668 (19) | b |
+| C5-012 | trend: vol-managed blend of dollar consensus and per-pair A3 | 0.28 | 0.91 | 6.8% | 622 | 0.0607 (20) | b |
+| C5-013 | trend: vol-managed per-pair A3 | 0.33 | 1.03 | 7.9% | 251 | 0.0802 (21) | b |
+| C5-014 | trend: vol-managed dollar consensus of A2 TSMOM | -0.15 | n/a | 10.0% | 1164 | 0.0013 (22) | b, d |
+| C5-015 | trend: fast vol-managed dollar consensus (A3 spans x 1/8..1/2) | registered, not run yet | | | | | |
+| C5-016 | trend: Donchian / Turtle breakout, per pair | registered, not run yet | | | | | |
+| C5-017 | carry: vol-managed dollar carry (LRV 2014) | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -103,6 +109,15 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-013:** per-pair A3 trend, volatility-managed.
   - **C5-014:** a dollar consensus of the 1/3/12-month momentum blend (A2), volatility-managed.
   - All three reuse C5-010's grid (fast ATR 120–960 bars × band 0.1–0.5); all fourteen cycle-5 selftests pass.
+  - **Result:** all fail gate (b).
+    - **C5-013** (volatility-managed per-pair A3) reaches **0.33** (WFE 1.03, drawdown 7.9 %). It has the largest edge
+      before costs so far, about +$155k, but pays $27k of financing, and USDCAD and EURJPY lose.
+    - **C5-012** (the blend) lands between its parents at 0.28.
+    - **C5-014** (dollar consensus of A2's sign-based momentum) is negative (−0.15). Its sign signals flip the whole
+      dollar book often: 1,164 fills a year cost $62k of spread, and the kill switch fired.
+  - **Lesson:** volatility management adds about 0.1 to either form of trend (dollar 0.25 → 0.36, per pair 0.25 →
+    0.33). Every trend book earns in the same splits (2014–16 and 2020–22, OOS Sharpe about +1) and loses in
+    2018–20 (about −0.6). On these pairs the trend family looks capped near 0.35.
 - **Batch 6 (C5-015…017), registered:** three new directions, written while batch 5 ran.
   - **C5-015:** a faster dollar trend. Every A3 EWMA span is multiplied by 1/8, 1/4 or 1/2, and the walk-forward
     chooses the factor. Hourly mean reversion (C5-001) lost because 1–7-day deviations kept running, which is trend

@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 47 trials.** The best is C5-039 (value + dollar trend, trend normalised over 32/126 days), with OOS Sharpe 0.68, drawdown 2.0 % and WFE 1.78. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 48 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -70,6 +70,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-037 | mining (hindsight): C5-034 with JPY removed from the value leg | 0.47 | 1.67 | 2.8% | 916 | 0.0796 (45) | b |
 | C5-038 | mining: C5-034 with a capped linear trend response | 0.53 | 3.23 | 2.8% | 890 | 0.1128 (46) | b |
 | C5-039 | mining: C5-034 with A3 normalisation windows halved | 0.68 | 1.78 | 2.0% | 792 | 0.2248 (47) | b |
+| C5-040 | mining: value + trend with the normalisation-window scale in the grid | 0.69 | 1.86 | 2.2% | 809 | 0.2224 (48) | b |
 
 ### Batch notes
 
@@ -335,6 +336,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   windows × 1/4, 1/3 or 1/2), rather than me fixing another scale after seeing C5-039.
   - At scale 1/2 it reproduces C5-039 to 1e-16.
   - The selftest passes.
+  - **Result:** fail gate (b) at **0.69**, level with C5-039 and the best of cycle 5 (drawdown 2.2 %, WFE 1.86).
+    - The walk-forward chose scale 1/2 in four of five splits.
+    - The deflated Sharpe is 0.22, against a luck benchmark of 0.92 after 48 trials.
 
 ### Reproduce
 

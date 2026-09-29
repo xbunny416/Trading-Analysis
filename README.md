@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 39 trials.** The best is C5-031 (value + dollar trend, value averaged over 3 and 4 years), with OOS Sharpe 0.59, drawdown 2.3 % and WFE 2.04. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 41 trials.** The best is C5-031 (value + dollar trend, value averaged over 3 and 4 years), with OOS Sharpe 0.59, drawdown 2.3 % and WFE 2.04. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -62,6 +62,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-029 | ensemble: C5-027 with the grid extended past its edges | 0.50 | 1.62 | 3.5% | 1304 | 0.1598 (37) | b |
 | C5-030 | mining: value + trend with the blend weight in the grid | 0.45 | 1.51 | 3.1% | 1278 | 0.1142 (38) | b |
 | C5-031 | mining: value + trend, value averaged over 3 and 4 years | 0.59 | 2.04 | 2.3% | 946 | 0.216 (39) | b |
+| C5-032 | mining: value + trend, both legs horizon-averaged | 0.53 | 1.93 | 2.0% | 1177 | 0.1459 (40) | b |
+| C5-033 | mining: value + trend, value averaged over 2, 3 and 4 years | 0.53 | 2.34 | 2.4% | 709 | 0.1391 (41) | b |
 
 ### Batch notes
 
@@ -277,6 +279,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-032:** C5-031 with the trend leg also averaged, over A3 speeds ×1 and ×2.
   - **C5-033:** the value leg averaged over 2, 3 and 4 years, with the band grid moved up to 0.3–0.5.
   - Both selftests pass.
+  - **Result:** both fail at 0.53, below C5-031's 0.59. Averaging the trend leg, or adding the 2-year value
+    horizon, does not help. Every value + trend variant since C5-023 lands between 0.45 and 0.59, which is noise
+    around one underlying book.
 
 ### Reproduce
 

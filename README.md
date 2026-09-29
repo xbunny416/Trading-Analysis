@@ -54,6 +54,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-021 | ensemble: 50/50 dollar trend + currency value, vol-managed | 0.25 | 1.33 | 4.0% | 568 | 0.0484 (29) | b |
 | C5-022 | value: 3-year value with smooth z-score weights, vol-managed | 0.28 | 0.95 | 4.3% | 551 | 0.0569 (30) | b |
 | C5-023 | ensemble: 50/50 dollar trend + smooth value, vol-managed | 0.49 | 1.55 | 3.1% | 1013 | 0.1779 (31) | b |
+| C5-024 | XS momentum with smooth z-score weights, vol-managed | -0.17 | n/a | 6.9% | 2810 | 0.0008 (32) | b, d |
+| C5-025 | ensemble: dollar trend + smooth value + smooth XS momentum | 0.29 | 1.24 | 2.6% | 2419 | 0.0531 (33) | b |
 
 ### Batch notes
 
@@ -206,6 +208,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     momentum is dollar-neutral, so it should overlap less with the dollar trend than per-pair trend does.
   - **C5-025:** an equal three-way blend of the dollar trend, smooth value and smooth momentum, volatility-managed.
   - Both selftests pass; the harness is unchanged since batch 8's full run.
+  - **Result:** both fail.
+    - **Smooth momentum (C5-024)** is negative (−0.17). Even with smooth weights, the 1–6-month z-scores keep moving:
+      2,810 fills a year cost $40k of spread, against about +$25k before costs.
+    - **The three-way blend (C5-025)** reaches 0.29, below value + trend (0.49), because the momentum leg adds cost
+      and no edge.
+  - **Lesson:** cross-sectional momentum has no usable edge on five currencies, so C5-023 remains the best.
 
 ### Reproduce
 

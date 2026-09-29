@@ -359,6 +359,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       grid led it to 1/2.
     - The grid's composition alone moves the result by about 0.2, as much as every "improvement" in the
       data-mining phase. C5-040's 0.69 is partly the luck of its grid.
+- **Batch 23 (C5-044…045), data-mining phase:** which of C5-039's two halved windows matters?
+  - **C5-044:** only the price-σ window halved (32 / 252 days).
+  - **C5-045:** only the signal-σ window halved (63 / 126 days).
+  - Both selftests pass.
 
 ### Reproduce
 

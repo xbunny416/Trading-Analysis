@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 45 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 47 trials.** The best is C5-039 (value + dollar trend, trend normalised over 32/126 days), with OOS Sharpe 0.68, drawdown 2.0 % and WFE 1.78. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -68,6 +68,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-035 | mining: C5-031 without volatility scaling (control) | 0.50 | 1.89 | 2.7% | 2049 | 0.1032 (43) | b |
 | C5-036 | mining: value + trend with a Fisher-adjusted (real) value leg | 0.58 | 1.51 | 2.1% | 676 | 0.1558 (44) | b |
 | C5-037 | mining (hindsight): C5-034 with JPY removed from the value leg | 0.47 | 1.67 | 2.8% | 916 | 0.0796 (45) | b |
+| C5-038 | mining: C5-034 with a capped linear trend response | 0.53 | 3.23 | 2.8% | 890 | 0.1128 (46) | b |
+| C5-039 | mining: C5-034 with A3 normalisation windows halved | 0.68 | 1.78 | 2.0% | 792 | 0.2248 (47) | b |
 
 ### Batch notes
 
@@ -324,6 +326,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     trends.
   - **C5-039:** A3's normalisation windows halved, to a 32-day price σ and a 126-day signal σ.
   - Given A3's own kernel, the new trend code reproduces C5-034 to 1e-16. Both selftests pass.
+  - **Result:** both fail gate (b).
+    - **Halved windows (C5-039)** is the new best at **0.68** (drawdown 2.0 %, WFE 1.78). Its OOS Sharpe is
+      positive in four of five splits.
+    - **The linear response (C5-038)** reaches 0.53.
+    - The deflated Sharpe of C5-039 is 0.22, against a luck benchmark of 0.90 after 47 trials.
 
 ### Reproduce
 

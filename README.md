@@ -214,6 +214,13 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - **The three-way blend (C5-025)** reaches 0.29, below value + trend (0.49), because the momentum leg adds cost
       and no edge.
   - **Lesson:** cross-sectional momentum has no usable edge on five currencies, so C5-023 remains the best.
+- **Batch 11 (C5-026), registered:** cross-sectional carry, the canonical currency carry factor (HML_FX,
+  Lustig, Roussanov & Verdelhan 2011).
+  - Long the highest-yielding currencies, short the lowest, with dollar-neutral z-score weights on the known rates,
+    volatility-managed. It differs from the per-pair carry (A4) and the dollar carry (C5-017), which both lost: its
+    return comes from the gap between high and low yielders, not from the USD's direction.
+  - It runs alone. A blend is registered only if a leg earns, so failed legs do not inflate the trial count.
+  - The selftest passes, including the rate look-ahead canaries.
 
 ### Reproduce
 

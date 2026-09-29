@@ -56,6 +56,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-023 | ensemble: 50/50 dollar trend + smooth value, vol-managed | 0.49 | 1.55 | 3.1% | 1013 | 0.1779 (31) | b |
 | C5-024 | XS momentum with smooth z-score weights, vol-managed | -0.17 | n/a | 6.9% | 2810 | 0.0008 (32) | b, d |
 | C5-025 | ensemble: dollar trend + smooth value + smooth XS momentum | 0.29 | 1.24 | 2.6% | 2419 | 0.0531 (33) | b |
+| C5-026 | carry: cross-sectional HML_FX, smooth z-score weights, vol-managed | -0.29 | n/a | 8.6% | 123 | 0.0002 (34) | b, d |
 
 ### Batch notes
 
@@ -221,6 +222,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     return comes from the gap between high and low yielders, not from the USD's direction.
   - It runs alone. A blend is registered only if a leg earns, so failed legs do not inflate the trial count.
   - The selftest passes, including the rate look-ahead canaries.
+  - **Result:** fail (−0.29). Its in-sample Sharpe is negative in every split. It earns $12k of financing but loses
+    about $73k on price: high yielders fell against low yielders over 2006–22.
+  - **Lesson:** every canonical currency factor has now been tested on these five pairs.
+    - Time-series trend and value have an edge before costs.
+    - Carry (per pair, dollar and cross-sectional), cross-sectional momentum and rate momentum do not.
+    - Neither do hourly mean reversion, relative value, shocks and breakouts.
+    - From here the search can only refine C5-023, which is closer to data mining. The deflated Sharpe accounts for
+      that.
 
 ### Reproduce
 

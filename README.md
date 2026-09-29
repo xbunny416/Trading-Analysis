@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: running.** No strategy has passed yet. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 37 trials.** The best is C5-027 (value + dollar trend), with OOS Sharpe 0.56, drawdown 2.3 % and WFE 1.71. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -58,6 +58,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-025 | ensemble: dollar trend + smooth value + smooth XS momentum | 0.29 | 1.24 | 2.6% | 2419 | 0.0531 (33) | b |
 | C5-026 | carry: cross-sectional HML_FX, smooth z-score weights, vol-managed | -0.29 | n/a | 8.6% | 123 | 0.0002 (34) | b, d |
 | C5-027 | ensemble: value + trend with trend speed and value horizon in the grid | 0.56 | 1.71 | 2.2% | 1101 | 0.2181 (35) | b |
+| C5-028 | value: dollar value (USD long-horizon reversal), vol-managed | -0.14 | -0.29 | 10.0% | 44 | 0.0009 (36) | a, b, d |
+| C5-029 | ensemble: C5-027 with the grid extended past its edges | 0.50 | 1.62 | 3.5% | 1304 | 0.1598 (37) | b |
 
 ### Batch notes
 
@@ -248,6 +250,13 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     (AMP's 5), fast ATR of 60, 120 or 240 bars, trend speed ×1 or ×2.
     - A 5-year horizon starts trading only in 2010, which handicaps it in split 1's in-sample window.
   - Both selftests pass.
+  - **Result:** both fail.
+    - **Dollar value (C5-028)** looks good in-sample (0.49) but is negative out of sample (−0.14). The kill switch
+      fired in split 2, during the 2014–15 dollar rally.
+    - **The extended grid (C5-029)** reaches 0.50, below C5-027's 0.56. The 5-year horizon was never chosen, and
+      moving the fast ATR either way off 120 bars made it worse.
+  - **Lesson:** refinements of the value + trend book now move it by about ±0.05, which is within noise. There are
+    no principled hypotheses left for these five pairs.
 
 ### Reproduce
 

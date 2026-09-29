@@ -369,3 +369,31 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'speed': 2.0, 'value_years': 4, 
 split 5    : OOS 2020-09-30..2022-12-30 params={'speed': 2.0, 'value_years': 2, 'fast_bars': 120} IS_sh=0.4112 OOS_sh=0.9224 OOS_dd=0.01068 OOS_tr/yr=874.02
 failure    : (b) OOS Sharpe 0.556 < 1.5
 
+=== TRIAL 28 | 2026-09-29T05:13:19Z | hyp C5-028 | code 1002c02d1ee5 | FAIL ===
+hypothesis : C5-028 dollar value: buy the four foreign currencies against USD after they fell over L years, sell them after they rose (sign of their mean L-year log return, reversed); scaled by C5-010's ATR ratio.
+grid       : {"value_years": [3, 4], "fast_bars": [120, 960], "band": [0.2, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.1431 is_sharpe_mean=0.4931 wfe=-0.2902 oos_max_dd=0.10017 oos_trades_per_year=44.29 oos_total_return=-0.03748 leak_test=PASS
+deflated   : dsr=0.0009 n_trials=36 benchmark_sharpe=0.7775 psr_vs_zero=0.3132
+split 1    : OOS 2011-10-02..2013-12-31 params={'value_years': 3, 'fast_bars': 120, 'band': 0.2} IS_sh=1.2119 OOS_sh=0.5798 OOS_dd=0.04006 OOS_tr/yr=208.72
+split 2    : OOS 2013-12-31..2016-04-01 params={'value_years': 3, 'fast_bars': 120, 'band': 0.2} IS_sh=1.1833 OOS_sh=-1.479 OOS_dd=0.09869 OOS_tr/yr=12.89
+split 3    : OOS 2016-04-01..2018-07-01 params={'value_years': 3, 'fast_bars': 120, 'band': 0.2} IS_sh=0.2383 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 4    : OOS 2018-07-01..2020-09-30 params={'value_years': 3, 'fast_bars': 120, 'band': 0.2} IS_sh=-0.4363 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2020-09-30..2022-12-30 params={'value_years': 3, 'fast_bars': 120, 'band': 0.2} IS_sh=0.2683 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (a) OOS fills/year 44.29 <= 100
+failure    : (b) OOS Sharpe -0.1431 < 1.5
+failure    : (d) WFE -0.2902 <= 0.5 (OOS Sharpe -0.1431 / IS Sharpe 0.4931)
+
+=== TRIAL 29 | 2026-09-29T05:36:06Z | hyp C5-029 | code a259875613bd | FAIL ===
+hypothesis : C5-029 value + trend at the grid edges: C5-027 unchanged, with the value horizon (4, 5 years), the fast ATR (60, 120, 240 bars) and the trend speed (x1, x2) chosen in the walk-forward.
+grid       : {"speed": [1.0, 2.0], "value_years": [4, 5], "fast_bars": [60, 120, 240]}  fixed: {"band": 0.2}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.502 is_sharpe_mean=0.3094 wfe=1.6224 oos_max_dd=0.03513 oos_trades_per_year=1304.11 oos_total_return=0.07436 leak_test=PASS
+deflated   : dsr=0.1598 n_trials=37 benchmark_sharpe=0.7933 psr_vs_zero=0.9568
+split 1    : OOS 2011-10-02..2013-12-31 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 240} IS_sh=0.032 OOS_sh=-0.3964 OOS_dd=0.0168 OOS_tr/yr=1420.13
+split 2    : OOS 2013-12-31..2016-04-01 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 240} IS_sh=-0.1348 OOS_sh=1.5825 OOS_dd=0.01402 OOS_tr/yr=815.34
+split 3    : OOS 2016-04-01..2018-07-01 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 60} IS_sh=0.5445 OOS_sh=0.5076 OOS_dd=0.01607 OOS_tr/yr=1093.47
+split 4    : OOS 2018-07-01..2020-09-30 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 240} IS_sh=0.8178 OOS_sh=-0.6214 OOS_dd=0.03229 OOS_tr/yr=1306.34
+split 5    : OOS 2020-09-30..2022-12-30 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 60} IS_sh=0.2876 OOS_sh=1.1034 OOS_dd=0.01363 OOS_tr/yr=1885.41
+failure    : (b) OOS Sharpe 0.502 < 1.5
+

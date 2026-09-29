@@ -319,6 +319,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       3–4 pips a trade.
     - In the cross-section, the yen's value position was hedging the others. The per-pair losses that motivated the
       change were misleading.
+- **Batch 19 (C5-038…039), data-mining phase:** the trend kernel inside C5-034.
+  - **C5-038:** a capped linear response, clip(z/2, −1, 1), instead of A3's response, which fades the strongest
+    trends.
+  - **C5-039:** A3's normalisation windows halved, to a 32-day price σ and a 126-day signal σ.
+  - Given A3's own kernel, the new trend code reproduces C5-034 to 1e-16. Both selftests pass.
 
 ### Reproduce
 

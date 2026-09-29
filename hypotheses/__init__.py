@@ -54,6 +54,8 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-025": ("c5_025_trend_value_momentum", "ensemble: dollar trend + smooth value + smooth XS momentum", "C5-023"),
     "C5-026": ("c5_026_xs_carry", "carry: cross-sectional HML_FX, smooth z-score weights, vol-managed", "A4"),
     "C5-027": ("c5_027_value_trend_tuned", "ensemble: value + trend with trend speed and value horizon in the grid", "C5-023"),
+    "C5-028": ("c5_028_dollar_value", "value: dollar value (USD long-horizon reversal), vol-managed", "C5-022"),
+    "C5-029": ("c5_029_value_trend_edges", "ensemble: C5-027 with the grid extended past its edges", "C5-027"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

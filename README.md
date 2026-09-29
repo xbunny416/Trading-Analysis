@@ -240,6 +240,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - The walk-forward chose the 4-year value horizon in four of five splits, and the fastest volatility scale (120
       bars) in all five. Both are at the edge of the grid.
     - The deflated Sharpe is 0.22, against a luck benchmark of 0.78 after 35 trials.
+- **Batch 13 (C5-028…029), registered:**
+  - **C5-028:** dollar value, a new leg. Sell the dollar after it has risen against the other four currencies over
+    3–4 years, buy it after it has fallen. It is value's counterpart to the dollar-consensus trend and should run
+    against it.
+  - **C5-029:** C5-027 unchanged, with its grid extended past the two edges it chose: value horizon 4 or 5 years
+    (AMP's 5), fast ATR of 60, 120 or 240 bars, trend speed ×1 or ×2.
+    - A 5-year horizon starts trading only in 2010, which handicaps it in split 1's in-sample window.
+  - Both selftests pass.
 
 ### Reproduce
 

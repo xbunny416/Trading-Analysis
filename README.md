@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 44 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 45 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -67,6 +67,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-034 | mining: C5-031 with Moreira-Muir variance scaling | 0.60 | 1.79 | 2.3% | 789 | 0.1832 (42) | b |
 | C5-035 | mining: C5-031 without volatility scaling (control) | 0.50 | 1.89 | 2.7% | 2049 | 0.1032 (43) | b |
 | C5-036 | mining: value + trend with a Fisher-adjusted (real) value leg | 0.58 | 1.51 | 2.1% | 676 | 0.1558 (44) | b |
+| C5-037 | mining (hindsight): C5-034 with JPY removed from the value leg | 0.47 | 1.67 | 2.8% | 916 | 0.0796 (45) | b |
 
 ### Batch notes
 
@@ -313,6 +314,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     labelled as such in the module and the log. The deflated Sharpe counts it, and only the 2023 holdout could
     confirm it.
   - The selftest passes.
+  - **Result:** fail at 0.47, worse than C5-034's 0.60.
+    - Without the yen, USDJPY now earns (+87 pips a trade, trend only), but the other three pairs fall from 12–17 to
+      3–4 pips a trade.
+    - In the cross-section, the yen's value position was hedging the others. The per-pair losses that motivated the
+      change were misleading.
 
 ### Reproduce
 

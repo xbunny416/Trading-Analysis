@@ -488,3 +488,16 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.3} I
 split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.4924 OOS_sh=0.8754 OOS_dd=0.01728 OOS_tr/yr=628.18
 failure    : (b) OOS Sharpe 0.5831 < 1.5
 
+=== TRIAL 37 | 2026-09-29T09:22:07Z | hyp C5-037 | code d9b8581bedd5 | FAIL ===
+hypothesis : C5-037 C5-034 with JPY removed from the value leg (hindsight pair selection after USDJPY lost in every value + trend blend); data-mining phase.
+grid       : {"fast_bars": [60, 120, 240], "band": [0.1, 0.2, 0.3]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.4693 is_sharpe_mean=0.2816 wfe=1.6663 oos_max_dd=0.02824 oos_trades_per_year=916.36 oos_total_return=0.06721 leak_test=PASS
+deflated   : dsr=0.0796 n_trials=45 benchmark_sharpe=0.8818 psr_vs_zero=0.9454
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.2804 OOS_sh=-0.8752 OOS_dd=0.02223 OOS_tr/yr=815.32
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 240, 'band': 0.1} IS_sh=-0.0887 OOS_sh=1.2171 OOS_dd=0.01415 OOS_tr/yr=1401.72
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.4044 OOS_sh=0.2788 OOS_dd=0.01755 OOS_tr/yr=465.39
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.5337 OOS_sh=-0.0767 OOS_dd=0.01995 OOS_tr/yr=975.53
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.2784 OOS_sh=1.4086 OOS_dd=0.01208 OOS_tr/yr=923.81
+failure    : (b) OOS Sharpe 0.4693 < 1.5
+

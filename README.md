@@ -387,6 +387,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - The selftest passes.
   - **Result:** fail at 0.55. The walk-forward chose speed ×1, scale 1/3 and fast ATR 120 in every split, where
     C5-040's grid led to 1/2 and 240. Grid composition moves the result by 0.15 again.
+- **Batch 26 (C5-049…050), data-mining phase:**
+  - **C5-049:** C5-040 with one portfolio-level variance scale (the mean over the USD pairs), as Moreira & Muir scale
+    a factor portfolio, instead of one scale per pair.
+  - **C5-050:** C5-040 with the value anchor set to the mean log price 4 to 3 years ago (AMP-style), instead of two
+    point anchors.
+  - Both selftests pass.
 
 ### Reproduce
 

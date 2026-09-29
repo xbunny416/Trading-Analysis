@@ -282,6 +282,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Result:** both fail at 0.53, below C5-031's 0.59. Averaging the trend leg, or adding the 2-year value
     horizon, does not help. Every value + trend variant since C5-023 lands between 0.45 and 0.59, which is noise
     around one underlying book.
+- **Batch 16 (C5-034…035), data-mining phase:** the volatility scale, the one ingredient that helped trend, varied
+  on C5-031.
+  - **C5-034:** Moreira & Muir's variance form, (ATR₁₄₄₀ / ATR_F)² clipped to 0.25–4.
+  - **C5-035:** no scaling, the control. Given C5-031's own scale, the shared code reproduces C5-031 exactly.
+  - Both selftests pass.
 
 ### Reproduce
 

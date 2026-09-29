@@ -356,3 +356,16 @@ split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 240, 'band': 0.1} I
 failure    : (b) OOS Sharpe -0.2863 < 1.5
 failure    : (d) WFE undefined: mean IS Sharpe -0.6074 <= 0
 
+=== TRIAL 27 | 2026-09-29T04:53:36Z | hyp C5-027 | code a3713f4c61af | FAIL ===
+hypothesis : C5-027 value + trend, tuned: C5-023's 50/50 blend with the dollar-trend speed (x1, 1.5, 2) and the smooth value horizon (2, 3, 4 years) chosen in the walk-forward; scaled by C5-010's ATR ratio.
+grid       : {"speed": [1.0, 1.5, 2.0], "value_years": [2, 3, 4], "fast_bars": [120, 960]}  fixed: {"band": 0.2}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.556 is_sharpe_mean=0.3253 wfe=1.709 oos_max_dd=0.0225 oos_trades_per_year=1100.72 oos_total_return=0.08254 leak_test=PASS
+deflated   : dsr=0.2181 n_trials=35 benchmark_sharpe=0.7836 psr_vs_zero=0.9714
+split 1    : OOS 2011-10-02..2013-12-31 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 120} IS_sh=-0.0458 OOS_sh=-0.3955 OOS_dd=0.01701 OOS_tr/yr=1433.04
+split 2    : OOS 2013-12-31..2016-04-01 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 120} IS_sh=-0.1975 OOS_sh=1.6011 OOS_dd=0.0144 OOS_tr/yr=810.0
+split 3    : OOS 2016-04-01..2018-07-01 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 120} IS_sh=0.6019 OOS_sh=0.5885 OOS_dd=0.01426 OOS_tr/yr=1038.35
+split 4    : OOS 2018-07-01..2020-09-30 params={'speed': 2.0, 'value_years': 4, 'fast_bars': 120} IS_sh=0.8569 OOS_sh=-0.3317 OOS_dd=0.02027 OOS_tr/yr=1348.58
+split 5    : OOS 2020-09-30..2022-12-30 params={'speed': 2.0, 'value_years': 2, 'fast_bars': 120} IS_sh=0.4112 OOS_sh=0.9224 OOS_dd=0.01068 OOS_tr/yr=874.02
+failure    : (b) OOS Sharpe 0.556 < 1.5
+

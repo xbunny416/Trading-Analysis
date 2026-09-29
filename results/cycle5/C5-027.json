@@ -1,0 +1,2000 @@
+{
+  "stage": 1,
+  "status": "FAIL",
+  "failures": [
+    "(b) OOS Sharpe 0.556 < 1.5"
+  ],
+  "trial": {
+    "code_fingerprint": "a3713f4c61af",
+    "rerun_of_trial": null,
+    "trial_number": 27,
+    "budget": null,
+    "counts_as_trial": true,
+    "data_dir": "/home/user/Trading-Analysis/data/mt5"
+  },
+  "hypothesis_id": "C5-027",
+  "hypothesis": "C5-027 value + trend, tuned: C5-023's 50/50 blend with the dollar-trend speed (x1, 1.5, 2) and the smooth value horizon (2, 3, 4 years) chosen in the walk-forward; scaled by C5-010's ATR ratio.",
+  "period": "development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02)",
+  "engine": {
+    "nautilus_trader": "1.221.0",
+    "venue": "SIM NETTING MARGIN USD",
+    "latency_ns": 1,
+    "fees": 0,
+    "min_spread_pips": 1.0,
+    "slippage_pips_per_fill": 0.5,
+    "financing_markup": 0.005,
+    "risk_pct": 0.003,
+    "atr_mult": 10.0,
+    "atr_bars": 1440
+  },
+  "provenance": {
+    "mt5_EURUSD": "bc4b9cfd06f8c3dc",
+    "mt5_GBPUSD": "01e555bc13d01094",
+    "mt5_USDJPY": "1af85499df842f9b",
+    "mt5_USDCAD": "6f93d394bc220851",
+    "mt5_EURJPY": "99467048dc35ee9f",
+    "rates_oecd_short_term": "bfac90a21a3d8a14",
+    "rates_policy_rates": "a6db1f84c1a4f5de",
+    "oanda_commit": "7ba1d404aa8b",
+    "frame_EURUSD": "a44796505eb3e309",
+    "frame_GBPUSD": "facbbd724baca0f8",
+    "frame_USDJPY": "290d38bf151e6ed2",
+    "frame_USDCAD": "79a851f9aec35f49",
+    "frame_EURJPY": "b583721233caffb2"
+  },
+  "data": {
+    "EURUSD": {
+      "first": "2005-01-02 22:00:00+00:00",
+      "last": "2022-12-30 21:45:00+00:00",
+      "m15_bars": 447745,
+      "years": 17.99,
+      "spread_pips_median": 1.6,
+      "spread_pips_p99": 1.7
+    },
+    "GBPUSD": {
+      "first": "2005-01-02 22:00:00+00:00",
+      "last": "2022-12-30 21:45:00+00:00",
+      "m15_bars": 447778,
+      "years": 17.99,
+      "spread_pips_median": 1.9,
+      "spread_pips_p99": 3.4
+    },
+    "USDJPY": {
+      "first": "2005-01-02 22:00:00+00:00",
+      "last": "2022-12-30 21:45:00+00:00",
+      "m15_bars": 447702,
+      "years": 17.99,
+      "spread_pips_median": 1.5,
+      "spread_pips_p99": 1.7
+    },
+    "USDCAD": {
+      "first": "2005-01-02 22:00:00+00:00",
+      "last": "2022-12-30 21:45:00+00:00",
+      "m15_bars": 447668,
+      "years": 17.99,
+      "spread_pips_median": 1.8,
+      "spread_pips_p99": 3.2
+    },
+    "EURJPY": {
+      "first": "2005-01-02 22:00:00+00:00",
+      "last": "2022-12-30 21:45:00+00:00",
+      "m15_bars": 447824,
+      "years": 17.99,
+      "spread_pips_median": 2.0,
+      "spread_pips_p99": 3.8
+    }
+  },
+  "config": {
+    "param_grid": {
+      "speed": [
+        1.0,
+        1.5,
+        2.0
+      ],
+      "value_years": [
+        2,
+        3,
+        4
+      ],
+      "fast_bars": [
+        120,
+        960
+      ]
+    },
+    "defaults": {
+      "speed": 1.0,
+      "value_years": 3,
+      "fast_bars": 960,
+      "band": 0.2
+    },
+    "limits": {
+      "daily_loss_limit": 0.025,
+      "halt_hours": 24.0,
+      "max_drawdown_limit": 0.1,
+      "max_leverage": 10.0,
+      "lot": 1000
+    },
+    "n_splits": 5,
+    "is_fraction": 0.7,
+    "wfa_max_oos_days": null,
+    "min_wfe": 0.5,
+    "burn_in_months": 18,
+    "min_data_years": 3.0,
+    "dev_end": "2023-01-01 00:00:00+00:00"
+  },
+  "metrics": {
+    "oos_sharpe": 0.556,
+    "is_sharpe_mean": 0.3253,
+    "wfe": 1.709,
+    "oos_max_drawdown": 0.0225,
+    "oos_trades_per_year": 1100.72,
+    "oos_fills": 12377,
+    "oos_fills_by_role": {
+      "REBAL": 10663,
+      "ENTRY": 826,
+      "EXIT": 822,
+      "FLIP": 66
+    },
+    "oos_round_trips_per_year": 79.33,
+    "oos_total_return": 0.08254,
+    "oos_cagr": 0.00708,
+    "oos_ann_vol": 0.01247,
+    "oos_financing_usd": -11428.55,
+    "oos_spread_slippage_usd": 5698.01,
+    "oos_win_rate": 0.5056,
+    "oos_avg_trade_pips_net": 6.008,
+    "oos_years": 11.244,
+    "oos_halts_daily_loss": 0,
+    "oos_killed_max_dd": false,
+    "oos_per_pair": {
+      "EURUSD": {
+        "trades": 237,
+        "avg_pips": 12.42,
+        "win_rate": 0.485
+      },
+      "GBPUSD": {
+        "trades": 247,
+        "avg_pips": 2.64,
+        "win_rate": 0.543
+      },
+      "USDCAD": {
+        "trades": 226,
+        "avg_pips": 11.45,
+        "win_rate": 0.491
+      },
+      "USDJPY": {
+        "trades": 178,
+        "avg_pips": -4.76,
+        "win_rate": 0.5
+      }
+    },
+    "leak_test_passed": true,
+    "oos_deflated_sharpe": {
+      "dsr": 0.2181,
+      "psr_vs_zero": 0.9714,
+      "sharpe_benchmark_annual": 0.7836,
+      "n_trials": 35,
+      "skew": 0.38,
+      "kurtosis": 6.462,
+      "days": 2916
+    }
+  },
+  "splits": [
+    {
+      "split": 1,
+      "is_period": [
+        "2006-07-02 22:00:00+00:00",
+        "2011-10-02 21:00:00+00:00"
+      ],
+      "oos_period": [
+        "2011-10-02 21:00:00+00:00",
+        "2013-12-31 14:00:00+00:00"
+      ],
+      "chosen_params": {
+        "speed": 1.0,
+        "value_years": 4,
+        "fast_bars": 120,
+        "band": 0.2
+      },
+      "is_plateau_score": 0.0151,
+      "is": {
+        "sharpe": -0.0458,
+        "total_return": -0.00252,
+        "cagr": -0.00048,
+        "ann_vol": 0.00922,
+        "max_drawdown": 0.01819,
+        "years": 5.251,
+        "fills": 1627,
+        "trades_per_year": 309.84,
+        "round_trips": 116,
+        "round_trips_per_year": 22.09,
+        "fills_by_role": {
+          "REBAL": 1399,
+          "ENTRY": 116,
+          "EXIT": 112
+        },
+        "win_rate": 0.5179,
+        "avg_trade_pips_net": 24.733,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 34,
+            "avg_pips": 86.29,
+            "win_rate": 0.588
+          },
+          "USDCAD": {
+            "trades": 37,
+            "avg_pips": 20.71,
+            "win_rate": 0.514
+          },
+          "USDJPY": {
+            "trades": 41,
+            "avg_pips": -22.68,
+            "win_rate": 0.463
+          }
+        },
+        "desyncs": 0,
+        "financing_usd": -376.52
+      },
+      "oos": {
+        "sharpe": -0.3955,
+        "total_return": -0.01,
+        "cagr": -0.00446,
+        "ann_vol": 0.01082,
+        "max_drawdown": 0.01701,
+        "years": 2.247,
+        "fills": 3220,
+        "trades_per_year": 1433.04,
+        "round_trips": 276,
+        "round_trips_per_year": 122.83,
+        "fills_by_role": {
+          "REBAL": 2689,
+          "ENTRY": 259,
+          "EXIT": 255,
+          "FLIP": 17
+        },
+        "win_rate": 0.471,
+        "avg_trade_pips_net": -4.709,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 87,
+            "avg_pips": 11.05,
+            "win_rate": 0.552
+          },
+          "GBPUSD": {
+            "trades": 117,
+            "avg_pips": -4.18,
+            "win_rate": 0.453
+          },
+          "USDCAD": {
+            "trades": 13,
+            "avg_pips": -34.58,
+            "win_rate": 0.231
+          },
+          "USDJPY": {
+            "trades": 59,
+            "avg_pips": -22.41,
+            "win_rate": 0.441
+          }
+        }
+      },
+      "wfe": null,
+      "is_grid": [
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.0508,
+          "trades_per_year": 1304.87
+        },
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.0355,
+          "trades_per_year": 1287.73
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.1991,
+          "trades_per_year": 505.23
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.21,
+          "trades_per_year": 496.85
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.0458,
+          "trades_per_year": 309.84
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.0032,
+          "trades_per_year": 304.89
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.2252,
+          "trades_per_year": 1135.96
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.2674,
+          "trades_per_year": 1130.24
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.0757,
+          "trades_per_year": 520.27
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.1084,
+          "trades_per_year": 542.75
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.2397,
+          "trades_per_year": 370.21
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.1841,
+          "trades_per_year": 348.12
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.4044,
+          "trades_per_year": 1153.86
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.403,
+          "trades_per_year": 1143.76
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": -0.0974,
+          "trades_per_year": 480.28
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": -0.0667,
+          "trades_per_year": 478.19
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.342,
+          "trades_per_year": 354.21
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.2798,
+          "trades_per_year": 337.26
+        }
+      ]
+    },
+    {
+      "split": 2,
+      "is_period": [
+        "2008-10-01 13:00:00+00:00",
+        "2013-12-31 14:00:00+00:00"
+      ],
+      "oos_period": [
+        "2013-12-31 14:00:00+00:00",
+        "2016-04-01 04:00:00+00:00"
+      ],
+      "chosen_params": {
+        "speed": 1.0,
+        "value_years": 4,
+        "fast_bars": 120,
+        "band": 0.2
+      },
+      "is_plateau_score": -0.2477,
+      "is": {
+        "sharpe": -0.1975,
+        "total_return": -0.01271,
+        "cagr": -0.00243,
+        "ann_vol": 0.0116,
+        "max_drawdown": 0.02683,
+        "years": 5.249,
+        "fills": 4820,
+        "trades_per_year": 918.34,
+        "round_trips": 389,
+        "round_trips_per_year": 74.12,
+        "fills_by_role": {
+          "REBAL": 4063,
+          "ENTRY": 372,
+          "EXIT": 368,
+          "FLIP": 17
+        },
+        "win_rate": 0.4831,
+        "avg_trade_pips_net": 1.853,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 120,
+            "avg_pips": 35.58,
+            "win_rate": 0.567
+          },
+          "GBPUSD": {
+            "trades": 117,
+            "avg_pips": -14.23,
+            "win_rate": 0.453
+          },
+          "USDCAD": {
+            "trades": 49,
+            "avg_pips": -6.67,
+            "win_rate": 0.429
+          },
+          "USDJPY": {
+            "trades": 99,
+            "avg_pips": -15.8,
+            "win_rate": 0.444
+          }
+        },
+        "desyncs": 0,
+        "financing_usd": -4226.1
+      },
+      "oos": {
+        "sharpe": 1.6011,
+        "total_return": 0.05371,
+        "cagr": 0.02353,
+        "ann_vol": 0.01416,
+        "max_drawdown": 0.0144,
+        "years": 2.249,
+        "fills": 1822,
+        "trades_per_year": 810.0,
+        "round_trips": 128,
+        "round_trips_per_year": 56.9,
+        "fills_by_role": {
+          "REBAL": 1567,
+          "EXIT": 127,
+          "ENTRY": 127,
+          "FLIP": 1
+        },
+        "win_rate": 0.5625,
+        "avg_trade_pips_net": 33.867,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 30,
+            "avg_pips": 27.66,
+            "win_rate": 0.333
+          },
+          "GBPUSD": {
+            "trades": 10,
+            "avg_pips": -89.48,
+            "win_rate": 0.8
+          },
+          "USDCAD": {
+            "trades": 48,
+            "avg_pips": 94.76,
+            "win_rate": 0.708
+          },
+          "USDJPY": {
+            "trades": 40,
+            "avg_pips": -3.71,
+            "win_rate": 0.5
+          }
+        }
+      },
+      "wfe": null,
+      "is_grid": [
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.4539,
+          "trades_per_year": 1406.86
+        },
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.5369,
+          "trades_per_year": 1405.14
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": -0.1957,
+          "trades_per_year": 1009.42
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": -0.1938,
+          "trades_per_year": 991.32
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.1975,
+          "trades_per_year": 918.34
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.2303,
+          "trades_per_year": 913.2
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.5571,
+          "trades_per_year": 1282.63
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.6165,
+          "trades_per_year": 1250.43
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": -0.284,
+          "trades_per_year": 1016.09
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": -0.2687,
+          "trades_per_year": 995.7
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.3235,
+          "trades_per_year": 929.01
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.2883,
+          "trades_per_year": 913.2
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": -0.7019,
+          "trades_per_year": 1255.58
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": -0.681,
+          "trades_per_year": 1247.01
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": -0.4216,
+          "trades_per_year": 909.58
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": -0.3264,
+          "trades_per_year": 909.96
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": -0.3503,
+          "trades_per_year": 873.38
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": -0.3264,
+          "trades_per_year": 859.28
+        }
+      ]
+    },
+    {
+      "split": 3,
+      "is_period": [
+        "2011-01-02 22:00:00+00:00",
+        "2016-04-01 04:00:00+00:00"
+      ],
+      "oos_period": [
+        "2016-04-01 04:00:00+00:00",
+        "2018-07-01 21:00:00+00:00"
+      ],
+      "chosen_params": {
+        "speed": 1.0,
+        "value_years": 4,
+        "fast_bars": 120,
+        "band": 0.2
+      },
+      "is_plateau_score": 0.5785,
+      "is": {
+        "sharpe": 0.6019,
+        "total_return": 0.04264,
+        "cagr": 0.008,
+        "ann_vol": 0.01298,
+        "max_drawdown": 0.02788,
+        "years": 5.244,
+        "fills": 5352,
+        "trades_per_year": 1020.66,
+        "round_trips": 429,
+        "round_trips_per_year": 81.81,
+        "fills_by_role": {
+          "REBAL": 4516,
+          "ENTRY": 411,
+          "EXIT": 407,
+          "FLIP": 18
+        },
+        "win_rate": 0.5012,
+        "avg_trade_pips_net": 7.298,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 118,
+            "avg_pips": 22.79,
+            "win_rate": 0.5
+          },
+          "GBPUSD": {
+            "trades": 126,
+            "avg_pips": -1.83,
+            "win_rate": 0.484
+          },
+          "USDCAD": {
+            "trades": 80,
+            "avg_pips": 49.49,
+            "win_rate": 0.588
+          },
+          "USDJPY": {
+            "trades": 101,
+            "avg_pips": -32.83,
+            "win_rate": 0.455
+          }
+        },
+        "desyncs": 0,
+        "financing_usd": -7139.0
+      },
+      "oos": {
+        "sharpe": 0.5885,
+        "total_return": 0.01888,
+        "cagr": 0.00835,
+        "ann_vol": 0.01393,
+        "max_drawdown": 0.01426,
+        "years": 2.25,
+        "fills": 2336,
+        "trades_per_year": 1038.35,
+        "round_trips": 154,
+        "round_trips_per_year": 68.45,
+        "fills_by_role": {
+          "REBAL": 2032,
+          "EXIT": 150,
+          "ENTRY": 150,
+          "FLIP": 4
+        },
+        "win_rate": 0.4935,
+        "avg_trade_pips_net": 17.177,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 44,
+            "avg_pips": 41.18,
+            "win_rate": 0.386
+          },
+          "GBPUSD": {
+            "trades": 35,
+            "avg_pips": -20.4,
+            "win_rate": 0.543
+          },
+          "USDCAD": {
+            "trades": 22,
+            "avg_pips": 14.29,
+            "win_rate": 0.318
+          },
+          "USDJPY": {
+            "trades": 53,
+            "avg_pips": 23.27,
+            "win_rate": 0.623
+          }
+        }
+      },
+      "wfe": 0.9777,
+      "is_grid": [
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.3012,
+          "trades_per_year": 1481.98
+        },
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.2633,
+          "trades_per_year": 1498.0
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.5037,
+          "trades_per_year": 983.09
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5367,
+          "trades_per_year": 967.83
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.6019,
+          "trades_per_year": 1020.66
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.5894,
+          "trades_per_year": 997.2
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.3416,
+          "trades_per_year": 1364.12
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.3448,
+          "trades_per_year": 1350.2
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.5504,
+          "trades_per_year": 1005.98
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5729,
+          "trades_per_year": 973.17
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.6302,
+          "trades_per_year": 853.6
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.6428,
+          "trades_per_year": 836.44
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.2847,
+          "trades_per_year": 1237.68
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.2825,
+          "trades_per_year": 1232.72
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.4572,
+          "trades_per_year": 936.75
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5062,
+          "trades_per_year": 912.72
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.5564,
+          "trades_per_year": 807.45
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.5897,
+          "trades_per_year": 795.05
+        }
+      ]
+    },
+    {
+      "split": 4,
+      "is_period": [
+        "2013-04-01 17:00:00+00:00",
+        "2018-07-01 21:00:00+00:00"
+      ],
+      "oos_period": [
+        "2018-07-01 21:00:00+00:00",
+        "2020-09-30 08:00:00+00:00"
+      ],
+      "chosen_params": {
+        "speed": 2.0,
+        "value_years": 4,
+        "fast_bars": 120,
+        "band": 0.2
+      },
+      "is_plateau_score": 0.7119,
+      "is": {
+        "sharpe": 0.8569,
+        "total_return": 0.05897,
+        "cagr": 0.01098,
+        "ann_vol": 0.01248,
+        "max_drawdown": 0.01759,
+        "years": 5.249,
+        "fills": 4122,
+        "trades_per_year": 785.3,
+        "round_trips": 250,
+        "round_trips_per_year": 47.63,
+        "fills_by_role": {
+          "REBAL": 3632,
+          "ENTRY": 244,
+          "EXIT": 240,
+          "FLIP": 6
+        },
+        "win_rate": 0.5407,
+        "avg_trade_pips_net": 30.329,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 63,
+            "avg_pips": 36.99,
+            "win_rate": 0.413
+          },
+          "GBPUSD": {
+            "trades": 52,
+            "avg_pips": -24.26,
+            "win_rate": 0.577
+          },
+          "USDCAD": {
+            "trades": 34,
+            "avg_pips": 143.43,
+            "win_rate": 0.676
+          },
+          "USDJPY": {
+            "trades": 97,
+            "avg_pips": 15.62,
+            "win_rate": 0.557
+          }
+        },
+        "desyncs": 0,
+        "financing_usd": -9722.95
+      },
+      "oos": {
+        "sharpe": -0.3317,
+        "total_return": -0.00812,
+        "cagr": -0.00362,
+        "ann_vol": 0.01044,
+        "max_drawdown": 0.02027,
+        "years": 2.249,
+        "fills": 3033,
+        "trades_per_year": 1348.58,
+        "round_trips": 238,
+        "round_trips_per_year": 105.82,
+        "fills_by_role": {
+          "REBAL": 2589,
+          "EXIT": 206,
+          "ENTRY": 206,
+          "FLIP": 32
+        },
+        "win_rate": 0.5126,
+        "avg_trade_pips_net": -0.738,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 62,
+            "avg_pips": -19.22,
+            "win_rate": 0.5
+          },
+          "GBPUSD": {
+            "trades": 51,
+            "avg_pips": 45.64,
+            "win_rate": 0.608
+          },
+          "USDCAD": {
+            "trades": 103,
+            "avg_pips": -8.5,
+            "win_rate": 0.485
+          },
+          "USDJPY": {
+            "trades": 22,
+            "avg_pips": -19.84,
+            "win_rate": 0.455
+          }
+        }
+      },
+      "wfe": -0.3871,
+      "is_grid": [
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.4462,
+          "trades_per_year": 1024.4
+        },
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.4456,
+          "trades_per_year": 1034.12
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.5237,
+          "trades_per_year": 746.82
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5587,
+          "trades_per_year": 728.91
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.8223,
+          "trades_per_year": 1084.99
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.8233,
+          "trades_per_year": 1072.22
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.5425,
+          "trades_per_year": 980.01
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.5202,
+          "trades_per_year": 958.1
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.6072,
+          "trades_per_year": 846.27
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5824,
+          "trades_per_year": 818.65
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.9069,
+          "trades_per_year": 882.47
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.8493,
+          "trades_per_year": 879.23
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.5153,
+          "trades_per_year": 1004.78
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.4531,
+          "trades_per_year": 983.25
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.5665,
+          "trades_per_year": 899.23
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.5329,
+          "trades_per_year": 893.71
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.8569,
+          "trades_per_year": 785.3
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.7928,
+          "trades_per_year": 786.64
+        }
+      ]
+    },
+    {
+      "split": 5,
+      "is_period": [
+        "2015-07-02 07:00:00+00:00",
+        "2020-09-30 08:00:00+00:00"
+      ],
+      "oos_period": [
+        "2020-09-30 08:00:00+00:00",
+        "2022-12-30 22:00:00+00:00"
+      ],
+      "chosen_params": {
+        "speed": 2.0,
+        "value_years": 2,
+        "fast_bars": 120,
+        "band": 0.2
+      },
+      "is_plateau_score": 0.3733,
+      "is": {
+        "sharpe": 0.4112,
+        "total_return": 0.0263,
+        "cagr": 0.00496,
+        "ann_vol": 0.01187,
+        "max_drawdown": 0.01442,
+        "years": 5.249,
+        "fills": 8339,
+        "trades_per_year": 1588.81,
+        "round_trips": 658,
+        "round_trips_per_year": 125.37,
+        "fills_by_role": {
+          "REBAL": 7157,
+          "ENTRY": 528,
+          "EXIT": 524,
+          "FLIP": 130
+        },
+        "win_rate": 0.5474,
+        "avg_trade_pips_net": 0.3,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 193,
+            "avg_pips": -2.5,
+            "win_rate": 0.513
+          },
+          "GBPUSD": {
+            "trades": 105,
+            "avg_pips": 6.18,
+            "win_rate": 0.571
+          },
+          "USDCAD": {
+            "trades": 251,
+            "avg_pips": 2.14,
+            "win_rate": 0.566
+          },
+          "USDJPY": {
+            "trades": 105,
+            "avg_pips": -4.84,
+            "win_rate": 0.543
+          }
+        },
+        "desyncs": 0,
+        "financing_usd": -1079.92
+      },
+      "oos": {
+        "sharpe": 0.9224,
+        "total_return": 0.02685,
+        "cagr": 0.01185,
+        "ann_vol": 0.01246,
+        "max_drawdown": 0.01068,
+        "years": 2.249,
+        "fills": 1966,
+        "trades_per_year": 874.02,
+        "round_trips": 96,
+        "round_trips_per_year": 42.68,
+        "fills_by_role": {
+          "REBAL": 1786,
+          "EXIT": 84,
+          "ENTRY": 84,
+          "FLIP": 12
+        },
+        "win_rate": 0.5326,
+        "avg_trade_pips_net": -1.846,
+        "per_pair": {
+          "EURUSD": {
+            "trades": 14,
+            "avg_pips": 37.97,
+            "win_rate": 0.643
+          },
+          "GBPUSD": {
+            "trades": 34,
+            "avg_pips": 12.43,
+            "win_rate": 0.676
+          },
+          "USDCAD": {
+            "trades": 40,
+            "avg_pips": -23.76,
+            "win_rate": 0.425
+          },
+          "USDJPY": {
+            "trades": 4,
+            "avg_pips": -43.45,
+            "win_rate": 0.0
+          }
+        }
+      },
+      "wfe": 2.2432,
+      "is_grid": [
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.2893,
+          "trades_per_year": 1483.07
+        },
+        {
+          "speed": 1.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.2437,
+          "trades_per_year": 1452.97
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.4072,
+          "trades_per_year": 1296.16
+        },
+        {
+          "speed": 1.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.3135,
+          "trades_per_year": 1280.54
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.3209,
+          "trades_per_year": 1138.21
+        },
+        {
+          "speed": 1.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.1809,
+          "trades_per_year": 1116.3
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.3753,
+          "trades_per_year": 1491.45
+        },
+        {
+          "speed": 1.5,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.2292,
+          "trades_per_year": 1460.78
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.4542,
+          "trades_per_year": 1390.47
+        },
+        {
+          "speed": 1.5,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.3564,
+          "trades_per_year": 1368.94
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.3255,
+          "trades_per_year": 1106.97
+        },
+        {
+          "speed": 1.5,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.2215,
+          "trades_per_year": 1105.06
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 120,
+          "sharpe": 0.4112,
+          "trades_per_year": 1588.81
+        },
+        {
+          "speed": 2.0,
+          "value_years": 2,
+          "fast_bars": 960,
+          "sharpe": 0.3189,
+          "trades_per_year": 1585.38
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 120,
+          "sharpe": 0.4399,
+          "trades_per_year": 1503.65
+        },
+        {
+          "speed": 2.0,
+          "value_years": 3,
+          "fast_bars": 960,
+          "sharpe": 0.4013,
+          "trades_per_year": 1469.92
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 120,
+          "sharpe": 0.3556,
+          "trades_per_year": 1020.47
+        },
+        {
+          "speed": 2.0,
+          "value_years": 4,
+          "fast_bars": 960,
+          "sharpe": 0.2401,
+          "trades_per_year": 1001.03
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "complexity": {
+      "passed": true,
+      "tunable_parameters": [
+        "speed",
+        "value_years",
+        "fast_bars",
+        "band"
+      ],
+      "indicators": [
+        "EWMA trend (normalised by price standard deviation)",
+        "past returns (cross-sectional z-score)",
+        "ATR"
+      ],
+      "optimised_in_wfa": [
+        "speed",
+        "value_years",
+        "fast_bars"
+      ],
+      "calendar_filter_hits": [],
+      "protocol_overrides": []
+    },
+    "protocol": {
+      "deflated_sharpe": {
+        "passed": true,
+        "expected_max_formula_vs_mc": [
+          2.531,
+          2.507
+        ],
+        "dsr_n1_n4_n100_n100wide": [
+          1.0,
+          0.9924,
+          0.9893,
+          0.0363
+        ]
+      },
+      "trial_guard": {
+        "passed": true,
+        "new_id": true,
+        "reproduce_same_code": true,
+        "changed_code_same_id": true,
+        "archived_id": true
+      },
+      "gate_d_strict": {
+        "passed": true,
+        "wfe_0.50": [
+          "(d) WFE 0.5 <= 0.5 (OOS Sharpe 2.0 / IS Sharpe 4.0)"
+        ],
+        "wfe_0.51": []
+      }
+    },
+    "edge_cases": {
+      "zero_division_sizing": {
+        "passed": true,
+        "sizes": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          9090000
+        ]
+      },
+      "flat_prices_zero_atr": {
+        "passed": true
+      },
+      "missing_and_corrupt_bars": {
+        "passed": true,
+        "rows_in": 76745,
+        "rows_clean": 76680,
+        "parity": {
+          "passed": true,
+          "orders": 91,
+          "fills": 91,
+          "orders_identical": true,
+          "fills_by_role": {
+            "REBAL": 83,
+            "ENTRY": 3,
+            "FLIP": 3,
+            "EXIT": 2
+          },
+          "financing_bookings": 103,
+          "financing_usd": -199.86,
+          "max_fill_px_diff": 0.0,
+          "max_equity_abs_diff_usd": 0.02900000032968819,
+          "desyncs": 0
+        }
+      },
+      "volatility_spike": {
+        "passed": true,
+        "max_leverage_seen": 0.14,
+        "parity": {
+          "passed": true,
+          "orders": 69,
+          "fills": 69,
+          "orders_identical": true,
+          "fills_by_role": {
+            "REBAL": 65,
+            "ENTRY": 2,
+            "EXIT": 2
+          },
+          "financing_bookings": 152,
+          "financing_usd": 150.43,
+          "max_fill_px_diff": 0.0,
+          "max_equity_abs_diff_usd": 0.028000000515021384,
+          "desyncs": 0
+        }
+      },
+      "parity_segmented": {
+        "passed": true,
+        "orders": 30,
+        "fills": 30,
+        "orders_identical": true,
+        "fills_by_role": {
+          "REBAL": 25,
+          "ENTRY": 3,
+          "EXIT": 2
+        },
+        "financing_bookings": 148,
+        "financing_usd": 277.53,
+        "max_fill_px_diff": 0.0,
+        "max_equity_abs_diff_usd": 0.012999999686144292,
+        "desyncs": 0
+      },
+      "parity_active": {
+        "passed": true,
+        "orders": 62,
+        "fills": 62,
+        "orders_identical": true,
+        "fills_by_role": {
+          "REBAL": 59,
+          "ENTRY": 2,
+          "EXIT": 1
+        },
+        "financing_bookings": 304,
+        "financing_usd": 854.71,
+        "max_fill_px_diff": 0.0,
+        "max_equity_abs_diff_usd": 0.023000000044703484,
+        "desyncs": 0
+      },
+      "parity_late_start": {
+        "passed": true,
+        "orders": 85,
+        "fills": 85,
+        "orders_identical": true,
+        "fills_by_role": {
+          "REBAL": 72,
+          "ENTRY": 7,
+          "EXIT": 6
+        },
+        "financing_bookings": 418,
+        "financing_usd": -924.04,
+        "max_fill_px_diff": 0.0,
+        "max_equity_abs_diff_usd": 0.019000002299435437,
+        "desyncs": 0
+      },
+      "fill_timing_multi_pair": {
+        "passed": true,
+        "fills_checked": 366,
+        "pairs_filled": [
+          "EURUSD",
+          "GBPUSD",
+          "USDCAD",
+          "USDJPY"
+        ],
+        "tradeable": [
+          "EURUSD",
+          "GBPUSD",
+          "USDCAD",
+          "USDJPY"
+        ],
+        "roles": [
+          "ENTRY",
+          "EXIT",
+          "REBAL"
+        ],
+        "desyncs": 0,
+        "bad_fills": [],
+        "n_bad": 0
+      },
+      "parity_coverage": {
+        "passed": true,
+        "roles_exercised": [
+          "ENTRY",
+          "EXIT",
+          "FLIP",
+          "REBAL"
+        ],
+        "required": [
+          "ENTRY",
+          "REBAL",
+          "FLIP|EXIT"
+        ]
+      },
+      "circuit_breakers": {
+        "passed": true,
+        "gap_bar": "2023-03-29 04:00:00+00:00",
+        "position_side": -1,
+        "leverage_before_gap": 0.373,
+        "daily_halt_ok": true,
+        "max_dd_kill_ok": true
+      },
+      "friction": {
+        "usd_pair": {
+          "passed": true,
+          "cost_usd": [
+            -26.0,
+            -26.0
+          ],
+          "expected": -26.0
+        },
+        "jpy_cross_to_usd": {
+          "passed": true,
+          "cost_usd": [
+            -27.270000000018626,
+            -27.270000000018626
+          ],
+          "expected": -27.272727272727273
+        }
+      },
+      "financing": {
+        "long_eurusd": {
+          "passed": true,
+          "rolls": 10,
+          "expected_financing_usd": 452.05,
+          "engine_financing_usd": [
+            452.1,
+            452.1
+          ],
+          "bookings": 9,
+          "expected_balance_change_usd": 192.05,
+          "engine_balance_change_usd": [
+            192.1,
+            192.1
+          ]
+        },
+        "short_eurusd": {
+          "passed": true,
+          "rolls": 10,
+          "expected_financing_usd": -753.42,
+          "engine_financing_usd": [
+            -753.5,
+            -753.5
+          ],
+          "bookings": 9,
+          "expected_balance_change_usd": -1013.42,
+          "engine_balance_change_usd": [
+            -1013.5,
+            -1013.5
+          ]
+        },
+        "opposite_signs": {
+          "passed": true
+        },
+        "long_eurjpy_to_usd": {
+          "passed": true,
+          "rolls": 10,
+          "expected_financing_usd": 77.71,
+          "engine_financing_usd": [
+            77.7,
+            77.7
+          ],
+          "bookings": 9,
+          "expected_balance_change_usd": 50.44,
+          "engine_balance_change_usd": [
+            50.43,
+            50.43
+          ]
+        },
+        "flat_book_no_charge": {
+          "passed": true
+        }
+      },
+      "execution_rule": {
+        "passed": true,
+        "rule_mismatches": [],
+        "targets": {
+          "nan": 0,
+          "zero": 0,
+          "long": 300000,
+          "short": -300000,
+          "half": 150000,
+          "over": 300000
+        }
+      },
+      "rolling_splits": {
+        "passed": true,
+        "n_splits": 28,
+        "oos_days_min_max": [
+          144.8,
+          147.0
+        ],
+        "is_days_min_max": [
+          340.4,
+          342.2
+        ],
+        "holdout_splits": 3
+      },
+      "signal_parity_multi_pair": {
+        "passed": true,
+        "compared": 98135,
+        "nonzero_signals": 6332,
+        "max_abs_diff": 4.896430483292136e-14,
+        "n_bad": 0,
+        "bad": []
+      }
+    },
+    "leak_synthetic": {
+      "points": [
+        18186,
+        19205,
+        19416,
+        19421
+      ],
+      "signals_perturb_t+1": [],
+      "signals_perturb_t": [],
+      "nautilus_perturb_from_bar_boundary": [],
+      "nautilus_perturb_from_mid_bar": [],
+      "canary_future_detected": true,
+      "canary_same_bar_detected": true,
+      "passed": true
+    },
+    "rate_lag_synthetic": {
+      "cuts": [
+        "2021-05-01",
+        "2021-06-01",
+        "2021-08-01",
+        "2021-10-01",
+        "2022-01-01"
+      ],
+      "policy_decisions_known_next_day": true,
+      "known_rates_changed_before_cut": [],
+      "signals_changed_before_cut": [],
+      "canary_known_detected": true,
+      "uses_carry": false,
+      "passed": true
+    },
+    "holdout_locked": {
+      "passed": true,
+      "last_bar_loaded": "2022-12-30 21:00:00+00:00",
+      "rate_rows_on_or_after_dev_end": 0
+    },
+    "splice": {
+      "EURUSD": {
+        "passed": true,
+        "overlap_hours": 2766,
+        "median_abs_diff_pips": 0.1,
+        "p95_abs_diff_pips": 1.1,
+        "mean_diff_pips": 0.21,
+        "median_abs_diff_one_hour_shifted_pips": 4.5,
+        "median_range_ratio_oanda_vs_mt5": 1.004,
+        "gap_at_splice_hours": 48.02,
+        "spread_profile_pips_by_utc_hour": [
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.6,
+          1.7,
+          1.6,
+          1.6
+        ]
+      },
+      "GBPUSD": {
+        "passed": true,
+        "overlap_hours": 2766,
+        "median_abs_diff_pips": 0.35,
+        "p95_abs_diff_pips": 2.3,
+        "mean_diff_pips": 0.555,
+        "median_abs_diff_one_hour_shifted_pips": 7.15,
+        "median_range_ratio_oanda_vs_mt5": 1.002,
+        "gap_at_splice_hours": 48.02,
+        "spread_profile_pips_by_utc_hour": [
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          1.9,
+          3.4,
+          2.3,
+          1.9
+        ]
+      },
+      "USDJPY": {
+        "passed": true,
+        "overlap_hours": 2766,
+        "median_abs_diff_pips": 0.2,
+        "p95_abs_diff_pips": 2.8,
+        "mean_diff_pips": 0.443,
+        "median_abs_diff_one_hour_shifted_pips": 4.5,
+        "median_range_ratio_oanda_vs_mt5": 1.063,
+        "gap_at_splice_hours": 48.02,
+        "spread_profile_pips_by_utc_hour": [
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.5,
+          1.7,
+          1.5,
+          1.5
+        ]
+      },
+      "USDCAD": {
+        "passed": true,
+        "overlap_hours": 2766,
+        "median_abs_diff_pips": 0.2,
+        "p95_abs_diff_pips": 1.587,
+        "mean_diff_pips": 0.343,
+        "median_abs_diff_one_hour_shifted_pips": 5.7,
+        "median_range_ratio_oanda_vs_mt5": 1.0,
+        "gap_at_splice_hours": 48.02,
+        "spread_profile_pips_by_utc_hour": [
+          1.8,
+          1.8,
+          1.8,
+          1.9,
+          1.9,
+          1.9,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          1.8,
+          3.2,
+          2.2,
+          1.9
+        ]
+      },
+      "EURJPY": {
+        "passed": true,
+        "overlap_hours": 2766,
+        "median_abs_diff_pips": 0.25,
+        "p95_abs_diff_pips": 2.15,
+        "mean_diff_pips": 0.49,
+        "median_abs_diff_one_hour_shifted_pips": 5.95,
+        "median_range_ratio_oanda_vs_mt5": 0.991,
+        "gap_at_splice_hours": 48.02,
+        "spread_profile_pips_by_utc_hour": [
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          2.0,
+          3.8,
+          2.3,
+          2.0
+        ]
+      },
+      "spread_profile_development_only": {
+        "passed": true
+      },
+      "policy_vs_oecd_2020H1": {
+        "passed": true,
+        "oecd_minus_policy_pp": {
+          "USD": [
+            0.025,
+            -0.035,
+            0.693,
+            null,
+            0.045,
+            0.075
+          ],
+          "EUR": [
+            0.109,
+            0.091,
+            0.083,
+            0.246,
+            0.23,
+            0.124
+          ],
+          "GBP": [
+            -0.01,
+            0.0,
+            0.182,
+            0.55,
+            0.23,
+            0.09
+          ],
+          "JPY": [
+            0.121,
+            0.121,
+            0.106,
+            0.061,
+            0.058,
+            null
+          ],
+          "CAD": [
+            0.16,
+            0.05,
+            0.359,
+            0.23,
+            0.09,
+            0.06
+          ]
+        },
+        "median_abs_pp": {
+          "USD": 0.045,
+          "EUR": 0.116,
+          "GBP": 0.136,
+          "JPY": 0.106,
+          "CAD": 0.125
+        },
+        "max_abs_pp": 0.693
+      },
+      "passed": true
+    },
+    "leak": {
+      "points": [
+        24282,
+        25930,
+        26101,
+        26675,
+        27171,
+        27181
+      ],
+      "signals_perturb_t+1": [],
+      "signals_perturb_t": [],
+      "nautilus_perturb_from_bar_boundary": [],
+      "nautilus_perturb_from_mid_bar": [],
+      "canary_future_detected": true,
+      "canary_same_bar_detected": true,
+      "passed": true
+    },
+    "rate_lag_real": {
+      "cuts": [
+        "2005-08-01",
+        "2005-11-01",
+        "2008-03-01",
+        "2008-09-01"
+      ],
+      "policy_decisions_known_next_day": true,
+      "known_rates_changed_before_cut": [],
+      "signals_changed_before_cut": [],
+      "canary_known_detected": true,
+      "uses_carry": false,
+      "passed": true
+    },
+    "rate_lag_real_policy_handover": {
+      "cuts": [
+        "2019-04-01",
+        "2019-05-01",
+        "2019-12-01",
+        "2020-02-01",
+        "2020-07-01"
+      ],
+      "policy_decisions_known_next_day": true,
+      "known_rates_changed_before_cut": [],
+      "signals_changed_before_cut": [],
+      "canary_known_detected": true,
+      "uses_carry": false,
+      "passed": true
+    },
+    "parity_real_eurusd": {
+      "passed": true,
+      "orders": 1492,
+      "fills": 1492,
+      "orders_identical": true,
+      "fills_by_role": {
+        "REBAL": 1245,
+        "FLIP": 154,
+        "ENTRY": 47,
+        "EXIT": 46
+      },
+      "financing_bookings": 3454,
+      "financing_usd": -3001.5,
+      "max_fill_px_diff": 0.0,
+      "max_equity_abs_diff_usd": 0.1000000003259629,
+      "desyncs": 0
+    },
+    "no_order_desyncs": {
+      "passed": true,
+      "oos": 0,
+      "is": 0
+    }
+  },
+  "runtime_seconds": 1582.6
+}

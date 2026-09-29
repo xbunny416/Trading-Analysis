@@ -57,6 +57,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-024 | XS momentum with smooth z-score weights, vol-managed | -0.17 | n/a | 6.9% | 2810 | 0.0008 (32) | b, d |
 | C5-025 | ensemble: dollar trend + smooth value + smooth XS momentum | 0.29 | 1.24 | 2.6% | 2419 | 0.0531 (33) | b |
 | C5-026 | carry: cross-sectional HML_FX, smooth z-score weights, vol-managed | -0.29 | n/a | 8.6% | 123 | 0.0002 (34) | b, d |
+| C5-027 | ensemble: value + trend with trend speed and value horizon in the grid | 0.56 | 1.71 | 2.2% | 1101 | 0.2181 (35) | b |
 
 ### Batch notes
 
@@ -235,6 +236,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   (2, 3 or 4 years; AMP use 5, and 3 was set by the data length).
   - At speed 1 and a 3-year horizon it reproduces C5-023's signals exactly.
   - The selftest passes.
+  - **Result:** fail gate (b), but the best of cycle 5 at **0.56** (drawdown 2.3 %, WFE 1.71, 1,101 fills a year).
+    - The walk-forward chose the 4-year value horizon in four of five splits, and the fastest volatility scale (120
+      bars) in all five. Both are at the edge of the grid.
+    - The deflated Sharpe is 0.22, against a luck benchmark of 0.78 after 35 trials.
 
 ### Reproduce
 

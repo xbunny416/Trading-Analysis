@@ -475,3 +475,16 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.1} IS_sh=0.6732 OOS_sh
 split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.1} IS_sh=0.2468 OOS_sh=0.9815 OOS_dd=0.01122 OOS_tr/yr=2714.09
 failure    : (b) OOS Sharpe 0.4967 < 1.5
 
+=== TRIAL 36 | 2026-09-29T08:50:49Z | hyp C5-036 | code 6167926d5a5a | FAIL ===
+hypothesis : C5-036 value + trend with a Fisher-adjusted value leg (3/4-year excess-return reversal, smooth weights), variance-scaled as C5-034; data-mining phase.
+grid       : {"fast_bars": [60, 120, 240], "band": [0.1, 0.2, 0.3]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.5831 is_sharpe_mean=0.3855 wfe=1.5125 oos_max_dd=0.02132 oos_trades_per_year=676.24 oos_total_return=0.08991 leak_test=PASS
+deflated   : dsr=0.1558 n_trials=44 benchmark_sharpe=0.8785 psr_vs_zero=0.9771
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.1569 OOS_sh=-0.4457 OOS_dd=0.02104 OOS_tr/yr=809.98
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 240, 'band': 0.3} IS_sh=-0.0625 OOS_sh=1.5855 OOS_dd=0.01412 OOS_tr/yr=556.16
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.6189 OOS_sh=0.6217 OOS_dd=0.01453 OOS_tr/yr=478.28
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.7219 OOS_sh=-0.0182 OOS_dd=0.01921 OOS_tr/yr=908.84
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.4924 OOS_sh=0.8754 OOS_dd=0.01728 OOS_tr/yr=628.18
+failure    : (b) OOS Sharpe 0.5831 < 1.5
+

@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 51 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 53 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -74,6 +74,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-041 | mining: dollar trend alone with C5-040's normalisation grid | 0.49 | 1.39 | 5.3% | 398 | 0.0743 (49) | b |
 | C5-042 | mining: C5-040 with the Fisher-adjusted value leg | 0.56 | 1.32 | 2.0% | 724 | 0.1052 (50) | b |
 | C5-043 | mining: C5-040 with the fast-ATR grid moved past its edge | 0.50 | 1.56 | 2.2% | 864 | 0.0751 (51) | b |
+| C5-044 | mining: value + trend, only the price-std window halved | 0.61 | 2.12 | 2.2% | 777 | 0.1358 (52) | b |
+| C5-045 | mining: value + trend, only the signal-std window halved | 0.59 | 1.76 | 2.3% | 1264 | 0.1212 (53) | b |
 
 ### Batch notes
 
@@ -363,6 +365,9 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-044:** only the price-σ window halved (32 / 252 days).
   - **C5-045:** only the signal-σ window halved (63 / 126 days).
   - Both selftests pass.
+  - **Result:** both fail, at 0.61 (price σ halved) and 0.59 (signal σ halved). Neither alone reproduces C5-039's
+    0.68, and both sit in the 0.5–0.6 band of every value + trend variant. C5-039's 0.68 was more likely a lucky
+    draw than a finding.
 
 ### Reproduce
 

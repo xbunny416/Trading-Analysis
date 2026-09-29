@@ -198,6 +198,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Lesson:** this is what two nearly uncorrelated sources should give. With trend at about 0.41 and value at
     0.28, the best mix is about √(0.41² + 0.28²) ≈ 0.50. To reach 1.5 from sources of that size would take about
     nine independent ones. Across 31 trials only two sources on these five pairs have an edge before costs.
+  - **Checkpoint:** you chose to keep searching the five pairs with the 1.5 gate, knowing that each extra trial
+    raises the deflated-Sharpe luck benchmark and that a pass would more likely be luck.
+- **Batch 10 (C5-024…025), registered together:** a third leg for the blend.
+  - **C5-024:** cross-sectional momentum (A5, Menkhoff et al. 2012) with C5-022's smooth z-score weights over 1–12
+    months, volatility-managed. A5's rank weights made about +$23k before costs and paid $55k of spread. The
+    momentum is dollar-neutral, so it should overlap less with the dollar trend than per-pair trend does.
+  - **C5-025:** an equal three-way blend of the dollar trend, smooth value and smooth momentum, volatility-managed.
+  - Both selftests pass; the harness is unchanged since batch 8's full run.
 
 ### Reproduce
 

@@ -56,6 +56,9 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-027": ("c5_027_value_trend_tuned", "ensemble: value + trend with trend speed and value horizon in the grid", "C5-023"),
     "C5-028": ("c5_028_dollar_value", "value: dollar value (USD long-horizon reversal), vol-managed", "C5-022"),
     "C5-029": ("c5_029_value_trend_edges", "ensemble: C5-027 with the grid extended past its edges", "C5-027"),
+    # data-mining phase (the user chose to keep searching the five pairs with variations)
+    "C5-030": ("c5_030_value_trend_weight", "mining: value + trend with the blend weight in the grid", "C5-027"),
+    "C5-031": ("c5_031_value_horizon_blend", "mining: value + trend, value averaged over 3 and 4 years", "C5-027"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

@@ -257,6 +257,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       moving the fast ATR either way off 120 bars made it worse.
   - **Lesson:** refinements of the value + trend book now move it by about ±0.05, which is within noise. There are
     no principled hypotheses left for these five pairs.
+  - **Checkpoint 2:** asked again, you chose to keep fishing on the five pairs. From here the trials are a
+    **data-mining phase** and are labelled as such. They are still logged, registered before they run and deflated.
+    A Stage-1 pass would still have to pass the untouched 2023 holdout.
+- **Batch 14 (C5-030…031), data-mining phase:**
+  - **C5-030:** value + trend with the trend weight (1/3, 1/2, 2/3), value horizon (3, 4 years) and fast ATR (120,
+    240) in the grid.
+  - **C5-031:** value + trend with the value leg averaged over the 3- and 4-year horizons, instead of choosing one.
+  - Both selftests pass.
 
 ### Reproduce
 

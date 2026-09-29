@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 48 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 50 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -71,6 +71,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-038 | mining: C5-034 with a capped linear trend response | 0.53 | 3.23 | 2.8% | 890 | 0.1128 (46) | b |
 | C5-039 | mining: C5-034 with A3 normalisation windows halved | 0.68 | 1.78 | 2.0% | 792 | 0.2248 (47) | b |
 | C5-040 | mining: value + trend with the normalisation-window scale in the grid | 0.69 | 1.86 | 2.2% | 809 | 0.2224 (48) | b |
+| C5-041 | mining: dollar trend alone with C5-040's normalisation grid | 0.49 | 1.39 | 5.3% | 398 | 0.0743 (49) | b |
+| C5-042 | mining: C5-040 with the Fisher-adjusted value leg | 0.56 | 1.32 | 2.0% | 724 | 0.1052 (50) | b |
 
 ### Batch notes
 
@@ -344,6 +346,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     trend timing, or only from how the legs combine?
   - **C5-042:** C5-040 with C5-036's Fisher-adjusted value leg.
   - Both selftests pass.
+  - **Result:** both fail gate (b).
+    - **Trend alone (C5-041)** reaches 0.49, up from 0.41 for C5-019. Faster normalisation improves the trend timing
+      itself (+$135k before costs, the most of any trial).
+    - **With the real value leg (C5-042)** it reaches 0.56, below C5-040's 0.69. The real-rate adjustment still does
+      not help.
 
 ### Reproduce
 

@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 43 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 44 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -66,6 +66,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-033 | mining: value + trend, value averaged over 2, 3 and 4 years | 0.53 | 2.34 | 2.4% | 709 | 0.1391 (41) | b |
 | C5-034 | mining: C5-031 with Moreira-Muir variance scaling | 0.60 | 1.79 | 2.3% | 789 | 0.1832 (42) | b |
 | C5-035 | mining: C5-031 without volatility scaling (control) | 0.50 | 1.89 | 2.7% | 2049 | 0.1032 (43) | b |
+| C5-036 | mining: value + trend with a Fisher-adjusted (real) value leg | 0.58 | 1.51 | 2.1% | 676 | 0.1558 (44) | b |
 
 ### Batch notes
 
@@ -302,6 +303,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Dropped before registration:** a value-only companion. In the one-pair parity test, its two horizons can
     cancel exactly (two currencies give weights of ±0.5), so it never traded there. Nothing was run on real data.
   - The selftest passes, including the rate look-ahead canaries.
+  - **Result:** fail at 0.58 (drawdown 2.1 %, WFE 1.51), in the same 0.53–0.60 range as the nominal-value blends.
+    The real-rate adjustment does not move it.
 
 ### Reproduce
 

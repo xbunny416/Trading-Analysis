@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 55 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 56 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -78,6 +78,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-045 | mining: value + trend, only the signal-std window halved | 0.59 | 1.76 | 2.3% | 1264 | 0.1212 (53) | b |
 | C5-046 | mining: C5-040 with the trend weight fixed at 2/3 | 0.56 | 1.88 | 2.5% | 535 | 0.0992 (54) | b |
 | C5-047 | mining: C5-040 with the variance-scale clip widened to 0.1-10 | 0.69 | 1.87 | 2.2% | 808 | 0.1941 (55) | b |
+| C5-048 | mining: C5-040 with the trend speed added to the grid | 0.55 | 1.88 | 2.3% | 879 | 0.0872 (56) | b |
 
 ### Batch notes
 
@@ -384,6 +385,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   normalisation scale 1/3 or 1/2, fast ATR 120 or 240).
   - At speed ×1 and scale 1/2 it reproduces C5-040 exactly.
   - The selftest passes.
+  - **Result:** fail at 0.55. The walk-forward chose speed ×1, scale 1/3 and fast ATR 120 in every split, where
+    C5-040's grid led to 1/2 and 240. Grid composition moves the result by 0.15 again.
 
 ### Reproduce
 

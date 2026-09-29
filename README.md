@@ -339,6 +339,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Result:** fail gate (b) at **0.69**, level with C5-039 and the best of cycle 5 (drawdown 2.2 %, WFE 1.86).
     - The walk-forward chose scale 1/2 in four of five splits.
     - The deflated Sharpe is 0.22, against a luck benchmark of 0.92 after 48 trials.
+- **Batch 21 (C5-041…042), data-mining phase:**
+  - **C5-041:** the dollar trend alone, with C5-040's normalisation grid and variance scaling. Does the gain come from
+    trend timing, or only from how the legs combine?
+  - **C5-042:** C5-040 with C5-036's Fisher-adjusted value leg.
+  - Both selftests pass.
 
 ### Reproduce
 

@@ -67,6 +67,7 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-037": ("c5_037_value_ex_jpy", "mining (hindsight): C5-034 with JPY removed from the value leg", "C5-034"),
     "C5-038": ("c5_038_linear_trend_value", "mining: C5-034 with a capped linear trend response", "C5-034"),
     "C5-039": ("c5_039_fast_norm_trend_value", "mining: C5-034 with A3 normalisation windows halved", "C5-034"),
+    "C5-040": ("c5_040_norm_scale_grid", "mining: value + trend with the normalisation-window scale in the grid", "C5-039"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

@@ -331,6 +331,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       positive in four of five splits.
     - **The linear response (C5-038)** reaches 0.53.
     - The deflated Sharpe of C5-039 is 0.22, against a luck benchmark of 0.90 after 47 trials.
+- **Batch 20 (C5-040), data-mining phase:** the normalisation-window scale goes into the walk-forward grid (A3's
+  windows × 1/4, 1/3 or 1/2), rather than me fixing another scale after seeing C5-039.
+  - At scale 1/2 it reproduces C5-039 to 1e-16.
+  - The selftest passes.
 
 ### Reproduce
 

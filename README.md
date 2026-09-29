@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 37 trials.** The best is C5-027 (value + dollar trend), with OOS Sharpe 0.56, drawdown 2.3 % and WFE 1.71. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 39 trials.** The best is C5-031 (value + dollar trend, value averaged over 3 and 4 years), with OOS Sharpe 0.59, drawdown 2.3 % and WFE 2.04. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -60,6 +60,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-027 | ensemble: value + trend with trend speed and value horizon in the grid | 0.56 | 1.71 | 2.2% | 1101 | 0.2181 (35) | b |
 | C5-028 | value: dollar value (USD long-horizon reversal), vol-managed | -0.14 | -0.29 | 10.0% | 44 | 0.0009 (36) | a, b, d |
 | C5-029 | ensemble: C5-027 with the grid extended past its edges | 0.50 | 1.62 | 3.5% | 1304 | 0.1598 (37) | b |
+| C5-030 | mining: value + trend with the blend weight in the grid | 0.45 | 1.51 | 3.1% | 1278 | 0.1142 (38) | b |
+| C5-031 | mining: value + trend, value averaged over 3 and 4 years | 0.59 | 2.04 | 2.3% | 946 | 0.216 (39) | b |
 
 ### Batch notes
 
@@ -265,6 +267,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     240) in the grid.
   - **C5-031:** value + trend with the value leg averaged over the 3- and 4-year horizons, instead of choosing one.
   - Both selftests pass.
+  - **Result:** both fail gate (b).
+    - **C5-031** is the new best at **0.59** (drawdown 2.3 %, WFE 2.04): averaging the value horizons beats choosing
+      one.
+    - **C5-030** reaches 0.45. The walk-forward flipped between trend weights 2/3 and 1/3, which costs more than it
+      gains.
+    - The deflated Sharpe of C5-031 is 0.22, against a luck benchmark of 0.82 after 39 trials.
 
 ### Reproduce
 

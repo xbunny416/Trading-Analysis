@@ -397,3 +397,29 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'speed': 1.0, 'value_years': 4, 
 split 5    : OOS 2020-09-30..2022-12-30 params={'speed': 1.0, 'value_years': 4, 'fast_bars': 60} IS_sh=0.2876 OOS_sh=1.1034 OOS_dd=0.01363 OOS_tr/yr=1885.41
 failure    : (b) OOS Sharpe 0.502 < 1.5
 
+=== TRIAL 30 | 2026-09-29T06:07:26Z | hyp C5-030 | code dfc3773d170b | FAIL ===
+hypothesis : C5-030 value + trend with the trend weight (1/3, 1/2, 2/3), value horizon (3, 4 years) and fast ATR (120, 240) chosen in the walk-forward; data-mining phase.
+grid       : {"w_trend": [0.3333333333333333, 0.5, 0.6666666666666666], "value_years": [3, 4], "fast_bars": [120, 240]}  fixed: {"band": 0.2}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.449 is_sharpe_mean=0.2971 wfe=1.5114 oos_max_dd=0.03059 oos_trades_per_year=1277.87 oos_total_return=0.06716 leak_test=PASS
+deflated   : dsr=0.1142 n_trials=38 benchmark_sharpe=0.8032 psr_vs_zero=0.9366
+split 1    : OOS 2011-10-02..2013-12-31 params={'w_trend': 0.6666666666666666, 'value_years': 3, 'fast_bars': 120} IS_sh=0.2382 OOS_sh=-0.8091 OOS_dd=0.03003 OOS_tr/yr=1096.58
+split 2    : OOS 2013-12-31..2016-04-01 params={'w_trend': 0.3333333333333333, 'value_years': 3, 'fast_bars': 120} IS_sh=-0.2524 OOS_sh=1.3826 OOS_dd=0.0135 OOS_tr/yr=897.58
+split 3    : OOS 2016-04-01..2018-07-01 params={'w_trend': 0.3333333333333333, 'value_years': 3, 'fast_bars': 120} IS_sh=0.4411 OOS_sh=0.7169 OOS_dd=0.01593 OOS_tr/yr=1096.14
+split 4    : OOS 2018-07-01..2020-09-30 params={'w_trend': 0.3333333333333333, 'value_years': 3, 'fast_bars': 120} IS_sh=0.448 OOS_sh=0.2115 OOS_dd=0.01343 OOS_tr/yr=1747.86
+split 5    : OOS 2020-09-30..2022-12-30 params={'w_trend': 0.3333333333333333, 'value_years': 3, 'fast_bars': 120} IS_sh=0.6105 OOS_sh=0.8879 OOS_dd=0.01501 OOS_tr/yr=1551.1
+failure    : (b) OOS Sharpe 0.449 < 1.5
+
+=== TRIAL 31 | 2026-09-29T06:30:09Z | hyp C5-031 | code 28f044423bd4 | FAIL ===
+hypothesis : C5-031 value + trend with the value leg averaged over the 3- and 4-year horizons; fast ATR and band chosen in the walk-forward; data-mining phase.
+grid       : {"fast_bars": [60, 120, 240], "band": [0.1, 0.2, 0.3]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.593 is_sharpe_mean=0.2905 wfe=2.041 oos_max_dd=0.02318 oos_trades_per_year=945.8 oos_total_return=0.08877 leak_test=PASS
+deflated   : dsr=0.216 n_trials=39 benchmark_sharpe=0.8231 psr_vs_zero=0.9786
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.0211 OOS_sh=-0.7048 OOS_dd=0.02182 OOS_tr/yr=812.65
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 240, 'band': 0.1} IS_sh=-0.2002 OOS_sh=1.541 OOS_dd=0.0151 OOS_tr/yr=1363.49
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 120, 'band': 0.3} IS_sh=0.4991 OOS_sh=0.5809 OOS_dd=0.01367 OOS_tr/yr=528.96
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.7504 OOS_sh=-0.099 OOS_dd=0.02173 OOS_tr/yr=1033.78
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.3823 OOS_sh=1.1907 OOS_dd=0.00979 OOS_tr/yr=990.05
+failure    : (b) OOS Sharpe 0.593 < 1.5
+

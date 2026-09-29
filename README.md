@@ -305,6 +305,14 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - The selftest passes, including the rate look-ahead canaries.
   - **Result:** fail at 0.58 (drawdown 2.1 %, WFE 1.51), in the same 0.53–0.60 range as the nominal-value blends.
     The real-rate adjustment does not move it.
+- **Batch 18 (C5-037), data-mining phase, hindsight:** JPY is removed from the value leg of C5-034; the trend leg
+  keeps USDJPY.
+  - USDJPY lost in every value + trend blend (−8 to −15 pips a trade), although trend alone made money on it. The
+    value leg kept buying the yen while it fell in 2012–15 and 2021–22.
+  - This is pair selection after seeing the results, the kind of choice most likely to fail out of sample. It is
+    labelled as such in the module and the log. The deflated Sharpe counts it, and only the 2023 holdout could
+    confirm it.
+  - The selftest passes.
 
 ### Reproduce
 

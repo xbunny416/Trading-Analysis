@@ -273,6 +273,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - **C5-030** reaches 0.45. The walk-forward flipped between trend weights 2/3 and 1/3, which costs more than it
       gains.
     - The deflated Sharpe of C5-031 is 0.22, against a luck benchmark of 0.82 after 39 trials.
+- **Batch 15 (C5-032…033), data-mining phase:** more horizon averaging, the one change that helped.
+  - **C5-032:** C5-031 with the trend leg also averaged, over A3 speeds ×1 and ×2.
+  - **C5-033:** the value leg averaged over 2, 3 and 4 years, with the band grid moved up to 0.3–0.5.
+  - Both selftests pass.
 
 ### Reproduce
 

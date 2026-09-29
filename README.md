@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 53 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 55 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -76,6 +76,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-043 | mining: C5-040 with the fast-ATR grid moved past its edge | 0.50 | 1.56 | 2.2% | 864 | 0.0751 (51) | b |
 | C5-044 | mining: value + trend, only the price-std window halved | 0.61 | 2.12 | 2.2% | 777 | 0.1358 (52) | b |
 | C5-045 | mining: value + trend, only the signal-std window halved | 0.59 | 1.76 | 2.3% | 1264 | 0.1212 (53) | b |
+| C5-046 | mining: C5-040 with the trend weight fixed at 2/3 | 0.56 | 1.88 | 2.5% | 535 | 0.0992 (54) | b |
+| C5-047 | mining: C5-040 with the variance-scale clip widened to 0.1-10 | 0.69 | 1.87 | 2.2% | 808 | 0.1941 (55) | b |
 
 ### Batch notes
 
@@ -374,6 +376,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     is fixed.
   - **C5-047:** C5-040 with the variance-scale clip widened from 0.25–4 to 0.1–10.
   - At weight 1/2 the shared code reproduces C5-040 exactly. Both selftests pass.
+  - **Result:** both fail gate (b).
+    - **The wider clip (C5-047)** reaches 0.6937, the same as C5-040 (0.6935). The 0.25–4 clip almost never binds.
+    - **Trend weight 2/3 (C5-046)** reaches 0.56. More trend makes split 1 (2011–13) worse, which cancels the gain
+      elsewhere.
 
 ### Reproduce
 

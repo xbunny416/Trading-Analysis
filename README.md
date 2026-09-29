@@ -368,6 +368,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Result:** both fail, at 0.61 (price σ halved) and 0.59 (signal σ halved). Neither alone reproduces C5-039's
     0.68, and both sit in the 0.5–0.6 band of every value + trend variant. C5-039's 0.68 was more likely a lucky
     draw than a finding.
+- **Batch 24 (C5-046…047), data-mining phase:**
+  - **C5-046:** C5-040 with the trend weight fixed at 2/3. Trend (0.49) and value (0.28) are nearly uncorrelated, and
+    Sharpe-proportional weights would put about 0.64 on trend. C5-030 showed that tuning the weight flip-flops, so it
+    is fixed.
+  - **C5-047:** C5-040 with the variance-scale clip widened from 0.25–4 to 0.1–10.
+  - At weight 1/2 the shared code reproduces C5-040 exactly. Both selftests pass.
 
 ### Reproduce
 

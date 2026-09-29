@@ -230,6 +230,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Neither do hourly mean reversion, relative value, shocks and breakouts.
     - From here the search can only refine C5-023, which is closer to data mining. The deflated Sharpe accounts for
       that.
+- **Batch 12 (C5-027), registered:** C5-023 refined. Its two fixed choices go into the walk-forward grid in a
+  single trial: the trend speed (A3 spans × 1, 1.5 or 2; C5-019 sometimes preferred slower) and the value horizon
+  (2, 3 or 4 years; AMP use 5, and 3 was set by the data length).
+  - At speed 1 and a 3-year horizon it reproduces C5-023's signals exactly.
+  - The selftest passes.
 
 ### Reproduce
 

@@ -351,6 +351,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
       itself (+$135k before costs, the most of any trial).
     - **With the real value leg (C5-042)** it reaches 0.56, below C5-040's 0.69. The real-rate adjustment still does
       not help.
+- **Batch 22 (C5-043), data-mining phase:** C5-040 unchanged, with the fast-ATR grid moved past its edge (240, 480,
+  960 bars). C5-040 chose 240, the largest on offer, in four of five splits. The selftest passes.
 
 ### Reproduce
 

@@ -293,6 +293,15 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - **Variance scaling (C5-034)** reaches 0.597, level with C5-031 (0.593) and the best of cycle 5 by a hair
       (drawdown 2.3 %, WFE 1.79).
     - **No scaling (C5-035)** reaches 0.50, so volatility management adds about 0.1 to the blend, as it did to trend.
+- **Batch 17 (C5-036), data-mining phase:** a better value signal.
+  - AMP's value uses the real exchange rate, which needs CPI data that the network policy blocks. The Fisher relation
+    gives a proxy: inflation differentials track interest differentials. So each currency's 3- and 4-year spot
+    change is adjusted by its average known rate differential against the USD. That is the same as long-horizon
+    reversal of its excess return.
+  - Blended 50/50 with the dollar trend and variance-scaled, as in C5-034.
+  - **Dropped before registration:** a value-only companion. In the one-pair parity test, its two horizons can
+    cancel exactly (two currencies give weights of ±0.5), so it never traded there. Nothing was run on real data.
+  - The selftest passes, including the rate look-ahead canaries.
 
 ### Reproduce
 

@@ -380,6 +380,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - **The wider clip (C5-047)** reaches 0.6937, the same as C5-040 (0.6935). The 0.25–4 clip almost never binds.
     - **Trend weight 2/3 (C5-046)** reaches 0.56. More trend makes split 1 (2011–13) worse, which cancels the gain
       elsewhere.
+- **Batch 25 (C5-048), data-mining phase:** C5-040 with the trend speed added to the grid (speed ×1 or ×2,
+  normalisation scale 1/3 or 1/2, fast ATR 120 or 240).
+  - At speed ×1 and scale 1/2 it reproduces C5-040 exactly.
+  - The selftest passes.
 
 ### Reproduce
 

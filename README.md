@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 41 trials.** The best is C5-031 (value + dollar trend, value averaged over 3 and 4 years), with OOS Sharpe 0.59, drawdown 2.3 % and WFE 2.04. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 43 trials.** The best is C5-034 (value + dollar trend, variance-scaled), with OOS Sharpe 0.60, drawdown 2.3 % and WFE 1.79. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -64,6 +64,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-031 | mining: value + trend, value averaged over 3 and 4 years | 0.59 | 2.04 | 2.3% | 946 | 0.216 (39) | b |
 | C5-032 | mining: value + trend, both legs horizon-averaged | 0.53 | 1.93 | 2.0% | 1177 | 0.1459 (40) | b |
 | C5-033 | mining: value + trend, value averaged over 2, 3 and 4 years | 0.53 | 2.34 | 2.4% | 709 | 0.1391 (41) | b |
+| C5-034 | mining: C5-031 with Moreira-Muir variance scaling | 0.60 | 1.79 | 2.3% | 789 | 0.1832 (42) | b |
+| C5-035 | mining: C5-031 without volatility scaling (control) | 0.50 | 1.89 | 2.7% | 2049 | 0.1032 (43) | b |
 
 ### Batch notes
 
@@ -287,6 +289,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-034:** Moreira & Muir's variance form, (ATR₁₄₄₀ / ATR_F)² clipped to 0.25–4.
   - **C5-035:** no scaling, the control. Given C5-031's own scale, the shared code reproduces C5-031 exactly.
   - Both selftests pass.
+  - **Result:** both fail gate (b).
+    - **Variance scaling (C5-034)** reaches 0.597, level with C5-031 (0.593) and the best of cycle 5 by a hair
+      (drawdown 2.3 %, WFE 1.79).
+    - **No scaling (C5-035)** reaches 0.50, so volatility management adds about 0.1 to the blend, as it did to trend.
 
 ### Reproduce
 

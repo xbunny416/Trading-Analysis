@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 61 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 62 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -84,6 +84,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-051 | mining: C5-050 with the value anchor widened to 4-2 years ago | 0.67 | 1.85 | 2.3% | 613 | 0.1625 (59) | b |
 | C5-052 | mining: C5-050 with the normalisation scale fixed at 1/2 | 0.75 | 2.11 | 2.2% | 902 | 0.2236 (60) | b |
 | C5-053 | mining: C5-050 with the value anchor at 4.5-3.5 years ago | 0.48 | 1.17 | 2.8% | 617 | 0.0492 (61) | b |
+| C5-054 | mining: C5-052 with the value anchor at 3.5-2.5 years ago | 0.67 | 1.66 | 2.5% | 497 | 0.1546 (62) | b |
+| C5-055 | mining: C5-052 with the fast-ATR and band grids moved up | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -426,6 +428,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **C5-055:** C5-052 with the fast-ATR grid (240, 360, 480) and band grid (0.3, 0.4, 0.5) moved past the edges it
     chose.
   - Both selftests pass.
+  - **Result, C5-054:** fail at 0.67.
+  - **C5-055:** running.
 
 ### Reproduce
 

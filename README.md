@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 62 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 63 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -85,7 +85,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-052 | mining: C5-050 with the normalisation scale fixed at 1/2 | 0.75 | 2.11 | 2.2% | 902 | 0.2236 (60) | b |
 | C5-053 | mining: C5-050 with the value anchor at 4.5-3.5 years ago | 0.48 | 1.17 | 2.8% | 617 | 0.0492 (61) | b |
 | C5-054 | mining: C5-052 with the value anchor at 3.5-2.5 years ago | 0.67 | 1.66 | 2.5% | 497 | 0.1546 (62) | b |
-| C5-055 | mining: C5-052 with the fast-ATR and band grids moved up | registered, not run yet | | | | | |
+| C5-055 | mining: C5-052 with the fast-ATR and band grids moved up | 0.70 | 1.65 | 2.2% | 391 | 0.1706 (63) | b |
 
 ### Batch notes
 
@@ -429,7 +429,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     chose.
   - Both selftests pass.
   - **Result, C5-054:** fail at 0.67.
-  - **C5-055:** running.
+  - **Result, C5-055:** fail at 0.70. Moving the grids past their edges does not beat C5-052 (0.75).
+  - **Lesson, the data-mining phase so far (C5-030…055, 26 trials):**
+    - The best rose from 0.56 to 0.75.
+    - Trivial changes move results by ±0.25: a half-year shift of the value anchor gives 0.48 / 0.75 / 0.67, and
+      the grid composition alone moves results by 0.15–0.2.
+    - The deflated Sharpe of the best stays near 0.2, while the luck benchmark has risen to 0.97.
 
 ### Reproduce
 

@@ -722,3 +722,16 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.3} I
 split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 60, 'band': 0.3} IS_sh=0.5827 OOS_sh=1.54 OOS_dd=0.01345 OOS_tr/yr=697.53
 failure    : (b) OOS Sharpe 0.6709 < 1.5
 
+=== TRIAL 55 | 2026-10-01T16:51:44Z | hyp C5-055 | code b32367109dae | FAIL ===
+hypothesis : C5-055 C5-052 unchanged with fast ATR (240, 360, 480) and band (0.3, 0.4, 0.5) chosen in the walk-forward; data-mining phase.
+grid       : {"fast_bars": [240, 360, 480], "band": [0.3, 0.4, 0.5]}  fixed: {"norm_scale": 0.5}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.6956 is_sharpe_mean=0.4215 wfe=1.6504 oos_max_dd=0.02151 oos_trades_per_year=391.21 oos_total_return=0.09688 leak_test=PASS
+deflated   : dsr=0.1706 n_trials=63 benchmark_sharpe=0.9741 psr_vs_zero=0.9913
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 480, 'band': 0.3} IS_sh=0.1 OOS_sh=-0.4527 OOS_dd=0.01945 OOS_tr/yr=502.01
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 480, 'band': 0.3} IS_sh=-0.0372 OOS_sh=1.4272 OOS_dd=0.01201 OOS_tr/yr=213.84
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 360, 'band': 0.5} IS_sh=0.5904 OOS_sh=0.5644 OOS_dd=0.01295 OOS_tr/yr=290.26
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.5} IS_sh=0.7993 OOS_sh=0.1109 OOS_dd=0.02151 OOS_tr/yr=449.08
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 240, 'band': 0.5} IS_sh=0.6549 OOS_sh=1.5037 OOS_dd=0.01034 OOS_tr/yr=501.03
+failure    : (b) OOS Sharpe 0.6956 < 1.5
+

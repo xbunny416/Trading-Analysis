@@ -81,6 +81,8 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-051": ("c5_051_wide_value_anchor", "mining: C5-050 with the value anchor widened to 4-2 years ago", "C5-050"),
     "C5-052": ("c5_052_value_anchor_fixed_norm", "mining: C5-050 with the normalisation scale fixed at 1/2", "C5-050"),
     "C5-053": ("c5_053_older_value_anchor", "mining: C5-050 with the value anchor at 4.5-3.5 years ago", "C5-050"),
+    "C5-054": ("c5_054_younger_value_anchor", "mining: C5-052 with the value anchor at 3.5-2.5 years ago", "C5-052"),
+    "C5-055": ("c5_055_slower_atr_wider_band", "mining: C5-052 with the fast-ATR and band grids moved up", "C5-052"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

@@ -420,6 +420,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     against a luck benchmark of 0.97 after 60 trials.
   - **Result, C5-053:** fail at 0.48. Moving the anchor half a year older drops it from 0.72 to 0.48. The anchor
     position is a noisy knob, which suggests the 4–3-year window of C5-050/052 is partly lucky.
+- **Batch 29 (C5-054…055), data-mining phase:**
+  - **C5-054:** C5-052 with the value anchor moved half a year younger (3.5–2.5 years ago). This is the other side
+    of C5-053's sensitivity test.
+  - **C5-055:** C5-052 with the fast-ATR grid (240, 360, 480) and band grid (0.3, 0.4, 0.5) moved past the edges it
+    chose.
+  - Both selftests pass.
 
 ### Reproduce
 

@@ -408,6 +408,11 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - With C5-050's own window, the shared code reproduces C5-050 exactly.
   - The selftest passes.
   - **Result:** fail at 0.67, below C5-050's one-year window (0.72).
+- **Batch 28 (C5-052…053), data-mining phase:**
+  - **C5-052:** C5-050 with the normalisation scale fixed at 1/2, which removes the grid-composition noise seen in
+    C5-043/048.
+  - **C5-053:** C5-050 with the value anchor moved to 4.5–3.5 years ago, half a year closer to AMP's 4.5–5.5.
+  - Both selftests pass.
 
 ### Reproduce
 

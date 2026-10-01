@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 58 trials.** The best is C5-050 (value + dollar trend; value anchored on the average price 3–4 years ago), with OOS Sharpe 0.72, drawdown 2.2 % and WFE 1.93. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 59 trials.** The best is C5-050 (value + dollar trend; value anchored on the average price 3–4 years ago), with OOS Sharpe 0.72, drawdown 2.2 % and WFE 1.93. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -81,6 +81,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-048 | mining: C5-040 with the trend speed added to the grid | 0.55 | 1.88 | 2.3% | 879 | 0.0872 (56) | b |
 | C5-049 | mining: C5-040 with one portfolio-level variance scale | 0.47 | 1.24 | 1.9% | 840 | 0.0513 (57) | b |
 | C5-050 | mining: C5-040 with the value anchor averaged over 3-4 years ago | 0.72 | 1.93 | 2.2% | 622 | 0.2102 (58) | b |
+| C5-051 | mining: C5-050 with the value anchor widened to 4-2 years ago | 0.67 | 1.85 | 2.3% | 613 | 0.1625 (59) | b |
 
 ### Batch notes
 
@@ -406,6 +407,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   years ago, still centred on 3 years.
   - With C5-050's own window, the shared code reproduces C5-050 exactly.
   - The selftest passes.
+  - **Result:** fail at 0.67, below C5-050's one-year window (0.72).
 
 ### Reproduce
 

@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 57 trials.** The best is C5-040 (value + dollar trend, trend normalisation window chosen in the walk-forward), with OOS Sharpe 0.69, drawdown 2.2 % and WFE 1.86. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 58 trials.** The best is C5-050 (value + dollar trend; value anchored on the average price 3–4 years ago), with OOS Sharpe 0.72, drawdown 2.2 % and WFE 1.93. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -80,7 +80,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-047 | mining: C5-040 with the variance-scale clip widened to 0.1-10 | 0.69 | 1.87 | 2.2% | 808 | 0.1941 (55) | b |
 | C5-048 | mining: C5-040 with the trend speed added to the grid | 0.55 | 1.88 | 2.3% | 879 | 0.0872 (56) | b |
 | C5-049 | mining: C5-040 with one portfolio-level variance scale | 0.47 | 1.24 | 1.9% | 840 | 0.0513 (57) | b |
-| C5-050 | mining: C5-040 with the value anchor averaged over 3-4 years ago | registered, not run yet | | | | | |
+| C5-050 | mining: C5-040 with the value anchor averaged over 3-4 years ago | 0.72 | 1.93 | 2.2% | 622 | 0.2102 (58) | b |
 
 ### Batch notes
 
@@ -396,8 +396,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     point anchors.
   - Both selftests pass.
   - **Result, C5-049:** fail at 0.47. One portfolio-level scale is worse than per-pair scales (C5-040, 0.69).
-  - **C5-050:** pending. A container restart, then a background time limit, stopped the first runs before C5-050
-    finished; nothing from them was logged. It is re-running as a detached process.
+  - **Result, C5-050:** fail gate (b), but the best of cycle 5 at **0.72** (drawdown 2.2 %, WFE 1.93, 622 fills a
+    year).
+    - An averaged value anchor beats two point anchors by 0.03, which is within noise.
+    - The deflated Sharpe is 0.21, against a luck benchmark of 0.95 after 58 trials.
+    - A container restart, then a background time limit, stopped the first runs before C5-050 finished. Nothing from
+      them was logged, and the completed run is the only one recorded.
 
 ### Reproduce
 

@@ -683,3 +683,16 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'norm_scale': 0.5, 'fast_bars': 
 split 5    : OOS 2020-09-30..2022-12-30 params={'norm_scale': 0.5, 'fast_bars': 240} IS_sh=0.5744 OOS_sh=1.4907 OOS_dd=0.01171 OOS_tr/yr=670.85
 failure    : (b) OOS Sharpe 0.6713 < 1.5
 
+=== TRIAL 52 | 2026-10-01T15:39:57Z | hyp C5-052 | code 46da92efe610 | FAIL ===
+hypothesis : C5-052 C5-050 with the normalisation scale fixed at 1/2; fast ATR (60, 120, 240) and band (0.1, 0.2, 0.3) chosen in the walk-forward; data-mining phase.
+grid       : {"fast_bars": [60, 120, 240], "band": [0.1, 0.2, 0.3]}  fixed: {"norm_scale": 0.5}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=0.7452 is_sharpe_mean=0.3534 wfe=2.1084 oos_max_dd=0.02241 oos_trades_per_year=902.13 oos_total_return=0.10671 leak_test=PASS
+deflated   : dsr=0.2236 n_trials=60 benchmark_sharpe=0.9674 psr_vs_zero=0.9946
+split 1    : OOS 2011-10-02..2013-12-31 params={'fast_bars': 240, 'band': 0.1} IS_sh=0.1063 OOS_sh=-0.4101 OOS_dd=0.01973 OOS_tr/yr=1643.1
+split 2    : OOS 2013-12-31..2016-04-01 params={'fast_bars': 240, 'band': 0.1} IS_sh=-0.0592 OOS_sh=1.4997 OOS_dd=0.01138 OOS_tr/yr=830.45
+split 3    : OOS 2016-04-01..2018-07-01 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.4924 OOS_sh=0.6101 OOS_dd=0.01415 OOS_tr/yr=448.95
+split 4    : OOS 2018-07-01..2020-09-30 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.664 OOS_sh=0.0451 OOS_dd=0.02122 OOS_tr/yr=732.32
+split 5    : OOS 2020-09-30..2022-12-30 params={'fast_bars': 240, 'band': 0.3} IS_sh=0.5637 OOS_sh=1.8288 OOS_dd=0.00934 OOS_tr/yr=856.68
+failure    : (b) OOS Sharpe 0.7452 < 1.5
+

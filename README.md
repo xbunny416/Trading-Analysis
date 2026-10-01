@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 59 trials.** The best is C5-050 (value + dollar trend; value anchored on the average price 3–4 years ago), with OOS Sharpe 0.72, drawdown 2.2 % and WFE 1.93. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 60 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -82,6 +82,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-049 | mining: C5-040 with one portfolio-level variance scale | 0.47 | 1.24 | 1.9% | 840 | 0.0513 (57) | b |
 | C5-050 | mining: C5-040 with the value anchor averaged over 3-4 years ago | 0.72 | 1.93 | 2.2% | 622 | 0.2102 (58) | b |
 | C5-051 | mining: C5-050 with the value anchor widened to 4-2 years ago | 0.67 | 1.85 | 2.3% | 613 | 0.1625 (59) | b |
+| C5-052 | mining: C5-050 with the normalisation scale fixed at 1/2 | 0.75 | 2.11 | 2.2% | 902 | 0.2236 (60) | b |
+| C5-053 | mining: C5-050 with the value anchor at 4.5-3.5 years ago | registered, not run yet | | | | | |
 
 ### Batch notes
 
@@ -413,6 +415,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     C5-043/048.
   - **C5-053:** C5-050 with the value anchor moved to 4.5–3.5 years ago, half a year closer to AMP's 4.5–5.5.
   - Both selftests pass.
+  - **Result, C5-052:** fail gate (b), but the best of cycle 5 at **0.75** (drawdown 2.2 %, WFE 2.11). Fixing the
+    scale removes selection noise and adds 0.03 over C5-050, which is within noise. The deflated Sharpe is 0.22,
+    against a luck benchmark of 0.97 after 60 trials.
+  - **C5-053:** running.
 
 ### Reproduce
 

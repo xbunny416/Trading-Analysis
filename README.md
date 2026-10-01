@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 60 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 61 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -83,7 +83,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-050 | mining: C5-040 with the value anchor averaged over 3-4 years ago | 0.72 | 1.93 | 2.2% | 622 | 0.2102 (58) | b |
 | C5-051 | mining: C5-050 with the value anchor widened to 4-2 years ago | 0.67 | 1.85 | 2.3% | 613 | 0.1625 (59) | b |
 | C5-052 | mining: C5-050 with the normalisation scale fixed at 1/2 | 0.75 | 2.11 | 2.2% | 902 | 0.2236 (60) | b |
-| C5-053 | mining: C5-050 with the value anchor at 4.5-3.5 years ago | registered, not run yet | | | | | |
+| C5-053 | mining: C5-050 with the value anchor at 4.5-3.5 years ago | 0.48 | 1.17 | 2.8% | 617 | 0.0492 (61) | b |
 
 ### Batch notes
 
@@ -418,7 +418,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - **Result, C5-052:** fail gate (b), but the best of cycle 5 at **0.75** (drawdown 2.2 %, WFE 2.11). Fixing the
     scale removes selection noise and adds 0.03 over C5-050, which is within noise. The deflated Sharpe is 0.22,
     against a luck benchmark of 0.97 after 60 trials.
-  - **C5-053:** running.
+  - **Result, C5-053:** fail at 0.48. Moving the anchor half a year older drops it from 0.72 to 0.48. The anchor
+    position is a noisy knob, which suggests the 4–3-year window of C5-050/052 is partly lucky.
 
 ### Reproduce
 

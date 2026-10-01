@@ -78,6 +78,7 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-048": ("c5_048_speed_norm_grid", "mining: C5-040 with the trend speed added to the grid", "C5-040"),
     "C5-049": ("c5_049_portfolio_variance_scale", "mining: C5-040 with one portfolio-level variance scale", "C5-040"),
     "C5-050": ("c5_050_averaged_value_anchor", "mining: C5-040 with the value anchor averaged over 3-4 years ago", "C5-040"),
+    "C5-051": ("c5_051_wide_value_anchor", "mining: C5-050 with the value anchor widened to 4-2 years ago", "C5-050"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

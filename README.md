@@ -402,6 +402,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - The deflated Sharpe is 0.21, against a luck benchmark of 0.95 after 58 trials.
     - A container restart, then a background time limit, stopped the first runs before C5-050 finished. Nothing from
       them was logged, and the completed run is the only one recorded.
+- **Batch 27 (C5-051), data-mining phase:** C5-050 with the value anchor widened to the mean log price from 4 to 2
+  years ago, still centred on 3 years.
+  - With C5-050's own window, the shared code reproduces C5-050 exactly.
+  - The selftest passes.
 
 ### Reproduce
 

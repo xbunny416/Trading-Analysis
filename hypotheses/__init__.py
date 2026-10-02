@@ -86,8 +86,14 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     # after the holdout diagnostic (the user asked for other, better strategies)
     "C5-056": ("c5_056_excess_return_trend", "trend: dollar trend on excess-return (carry-inclusive) prices", "C5-041"),
     "C5-057": ("c5_057_trend_pullback", "trend: per-pair A3 with pullback entries, trend exits", "C5-001"),
+    # time-of-day signals approved by the user for this effect only (TIME_OF_DAY_ALLOWED)
+    "C5-058": ("c5_058_intraday_seasonality", "intraday seasonality: currencies fall in their home hours", ""),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
+# Trials allowed to use time-of-day signals. The cycle-5 rule bans calendar filters; after the 2023 holdout
+# diagnostic the user approved time-of-day signals for one documented effect, intraday FX seasonality
+# (Breedon & Ranaldo 2013). Every other trial keeps the ban (harness.calendar_ok).
+TIME_OF_DAY_ALLOWED: frozenset[str] = frozenset({"C5-058"})
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})
 BASE_FILE = Path(__file__).resolve().parent / "academic_base.py"
 

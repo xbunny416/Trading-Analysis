@@ -1214,17 +1214,23 @@ def rate_lag_tests(frames: dict[str, pd.DataFrame], rates: B.RateTable, p: S.Str
     return out
 
 
+def calendar_ok(hits: list[str], hid: str, allowed=None) -> bool:
+    """No calendar / time-of-day code, unless the user approved time-of-day signals for this trial ID
+    (hypotheses.TIME_OF_DAY_ALLOWED: intraday FX seasonality, a rule change made after the 2023 holdout diagnostic)."""
+    return not hits or hid in (H.TIME_OF_DAY_ALLOWED if allowed is None else allowed)
+
+
 def complexity_audit() -> dict:
     fields = [f.name for f in dataclasses.fields(S.StrategyParams)]
     src = "".join(f.read_text() for f in [H.path(HYP_ID), H.BASE_FILE] + H.depends(HYP_ID))
     hits = sorted({m.group(0) for m in CALENDAR_PATTERN.finditer(src)})
     grid_ok = set(S.PARAM_GRID) <= set(fields) and set(S.FEATURE_PARAMS) <= set(fields)
     overrides = [a for a in ("WFA_MAX_OOS_DAYS", "WFA_MIN_WFE") if HYP_ID in H.CYCLE5 and hasattr(S, a)]
-    ok = (len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and not hits and grid_ok
-          and not overrides)
+    ok = (len(fields) <= MAX_TUNABLE_PARAMS and len(S.INDICATORS) <= MAX_INDICATORS and calendar_ok(hits, HYP_ID)
+          and grid_ok and not overrides)
     return {"passed": bool(ok), "tunable_parameters": fields, "indicators": list(S.INDICATORS),
             "optimised_in_wfa": list(S.PARAM_GRID), "calendar_filter_hits": hits,
-            "protocol_overrides": overrides}
+            "time_of_day_allowed": HYP_ID in H.TIME_OF_DAY_ALLOWED, "protocol_overrides": overrides}
 
 
 # =============================================================================
@@ -1316,6 +1322,10 @@ def protocol_tests() -> dict:
     g = {w: _gate_failures({**base, "wfe": w}) for w in (0.5, 0.51, None)}
     out["gate_d_strict"] = {"passed": bool(g[0.5] and not g[0.51] and g[None]),
                             "wfe_0.50": g[0.5], "wfe_0.51": g[0.51]}
+    tod = {"no_calendar_code": calendar_ok([], "C5-001", frozenset()),
+           "calendar_code_refused": not calendar_ok([".hour"], "C5-001", frozenset({"C5-999"})),
+           "approved_id_allowed": calendar_ok([".hour"], "C5-999", frozenset({"C5-999"}))}
+    out["time_of_day_rule"] = {"passed": all(tod.values()), **tod}
     return out
 
 

@@ -476,6 +476,19 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Waiting for pullbacks leaves 22 fills a year (gate a), about +$17k before costs against $25k of financing.
     - The kill switch fired in split 4.
     - Neither new family beats the trend it modifies.
+- **Rule change (your decision after C5-057):** time-of-day signals are allowed for one documented effect only:
+  intraday FX seasonality (Breedon & Ranaldo 2013).
+  - The ban on calendar filters still applies to every other trial.
+  - The exception is a registry list, `hypotheses.TIME_OF_DAY_ALLOWED` (only C5-058). The complexity audit reports it
+    (`time_of_day_allowed`).
+  - A new protocol test checks the rule: calendar code is refused unless the trial ID is on the list.
+- **Batch 31 (C5-058), intraday seasonality:** a currency tends to depreciate during its home market's hours.
+  - Signal: s = in(quote) − in(base), with each centre's 08:00–17:00 local weekday session (Frankfurt, London,
+    New York, Toronto, Tokyo; DST handled). The hours are the market convention, not fitted.
+  - It is long the base currency while only the quote's market is open, and short it while only its own market is
+    open.
+  - USDCAD never trades (New York and Toronto share hours). The only tuning is the band.
+  - Status: draft. The full selftest suite is re-running on the changed harness.
 
 ### Reproduce
 

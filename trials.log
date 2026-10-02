@@ -763,3 +763,17 @@ failure    : (a) OOS fills/year 21.97 <= 100
 failure    : (b) OOS Sharpe -0.0146 < 1.5
 failure    : (d) WFE -0.04 <= 0.5 (OOS Sharpe -0.0146 / IS Sharpe 0.3649)
 
+=== TRIAL 58 | 2026-10-02T17:18:37Z | hyp C5-058 | code e2dfd8fe9148 | FAIL ===
+hypothesis : C5-058 intraday FX seasonality (Breedon-Ranaldo 2013): short a currency while only its home market is open (08:00-17:00 local, weekdays), long it while only the other currency's market is open.
+grid       : {"band": [0.2, 0.5]}  fixed: {}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.8369 is_sharpe_mean=-0.994 wfe=None oos_max_dd=0.10022 oos_trades_per_year=400.91 oos_total_return=-0.09581 leak_test=PASS
+deflated   : dsr=0.0 n_trials=66 benchmark_sharpe=1.0118 psr_vs_zero=0.0022
+split 1    : OOS 2011-10-02..2013-12-31 params={'band': 0.2} IS_sh=-1.352 OOS_sh=-1.8794 OOS_dd=0.10022 OOS_tr/yr=2006.25
+split 2    : OOS 2013-12-31..2016-04-01 params={'band': 0.2} IS_sh=-0.937 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 3    : OOS 2016-04-01..2018-07-01 params={'band': 0.2} IS_sh=-0.8359 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 4    : OOS 2018-07-01..2020-09-30 params={'band': 0.2} IS_sh=-1.0013 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+split 5    : OOS 2020-09-30..2022-12-30 params={'band': 0.2} IS_sh=-0.8437 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (b) OOS Sharpe -0.8369 < 1.5
+failure    : (d) WFE undefined: mean IS Sharpe -0.994 <= 0
+

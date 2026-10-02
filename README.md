@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 65 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). The leaderboard below is updated after every batch of trials.
+**Status: no pass after 66 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). Intraday seasonality (C5-058), tested under your time-of-day exception, has no edge before costs. The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -88,6 +88,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-055 | mining: C5-052 with the fast-ATR and band grids moved up | 0.70 | 1.65 | 2.2% | 391 | 0.1706 (63) | b |
 | C5-056 | trend: dollar trend on excess-return (carry-inclusive) prices | 0.40 | 1.62 | 5.3% | 318 | 0.0257 (64) | b |
 | C5-057 | trend: per-pair A3 with pullback entries, trend exits | -0.01 | -0.04 | 10.0% | 22 | 0.0004 (65) | a, b, d |
+| C5-058 | intraday seasonality: currencies fall in their home hours | -0.84 | n/a | 10.0% | 401 | 0.0 (66) | b, d |
 
 ### Batch notes
 
@@ -490,6 +491,12 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - USDCAD never trades (New York and Toronto share hours). The only tuning is the band.
   - Registered. All 58 cycle-5 selftests and `--check-data` pass on the changed harness. C5-058's parity, leak,
     fill-timing and breaker tests all exercise real trades.
+  - **Result:** fail at −0.84. The in-sample Sharpe is negative in every split (mean −0.99), and the kill switch
+    fired in the first OOS split (2011–13).
+    - The effect is worth about nothing before costs on these pairs (about −$3k). About 4,500 fills cost $92k of
+      spread.
+    - Per trade: EURUSD +0.8 pips, GBPUSD −3.1, EURJPY −1.7, USDJPY −5.2.
+    - Whatever the 2013 paper found does not survive retail costs here, and is not visible before costs either.
 
 ### Reproduce
 

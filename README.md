@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 63 trials.** The best is C5-052 (value + dollar trend; averaged value anchor; trend normalised over 32/126 days), with OOS Sharpe 0.75, drawdown 2.2 % and WFE 2.11. It passes every gate except (b), Sharpe ≥ 1.5. The leaderboard below is updated after every batch of trials.
+**Status: no pass after 63 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -444,6 +444,19 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - It is logged in `holdout.log` like any holdout look, so the holdout is used up for this fingerprint.
   - Its guard has its own tests: other code, no trial, a Stage-1 pass, a second look and archived IDs are all
     refused.
+  - **Result, holdout look 1: C5-052 loses in 2023.**
+
+    | | Stage 1 (2011–22 OOS) | 2023 holdout |
+    |---|---|---|
+    | Sharpe | +0.75 | **−1.67** |
+    | Return | +0.7 % a year | −2.2 % |
+    | Max drawdown | 2.2 % | 2.9 % |
+
+    - The parameters were chosen on 2017–22 (in-sample Sharpe 1.01).
+    - EURUSD, GBPUSD and USDCAD all lost: −12, −55 and −107 pips a trade.
+    - Every integrity test passes, and there were no order desyncs.
+    - One year is a weak test (Sharpe standard error about 1). Even so, −1.67 is about 2.4 standard errors below the
+      Stage-1 figure. That fits the deflated Sharpe's verdict that the 0.75 is mostly selection, not edge.
 
 ### Reproduce
 

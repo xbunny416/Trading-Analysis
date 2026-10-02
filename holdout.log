@@ -1,3 +1,13 @@
 # holdout.log - cycle 5, Stage 2 (locked holdout 2023-01-01 -> 2023-12-29). Once per code fingerprint, only after a
 # logged Stage-1 PASS. Every look is reported.
 
+=== HOLDOUT 1 | 2026-10-02T15:01:47Z | hyp C5-052 | code 46da92efe610 | FAIL ===
+hypothesis : C5-052 C5-050 with the normalisation scale fixed at 1/2; fast ATR (60, 120, 240) and band (0.1, 0.2, 0.3) chosen in the walk-forward; data-mining phase.
+grid       : {"fast_bars": [60, 120, 240], "band": [0.1, 0.2, 0.3]}  fixed: {"norm_scale": 0.5}
+data       : holdout 2023-01-02 -> 2023-12-29 (DIAGNOSTIC) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD 49bd0b1a21c404c7, frame_GBPUSD 89eb8bd9caae1aa8, frame_USDJPY 9ff0915059c779fc, frame_USDCAD 3917798d34ab3288, frame_EURJPY 70de8babdc7d8155
+metrics    : oos_sharpe=-1.6741 is_sharpe_mean=1.0124 wfe=-1.6536 oos_max_dd=0.02893 oos_trades_per_year=573.69 oos_total_return=-0.02229 leak_test=PASS
+split 1    : OOS 2023-01-02..2023-12-29 params={'fast_bars': 60, 'band': 0.3} IS_sh=1.0124 OOS_sh=-1.6741 OOS_dd=0.02893 OOS_tr/yr=573.69
+failure    : diagnostic: Stage 1 (trial 52) did not pass; this holdout look was requested as a diagnostic and can never count as a pass
+failure    : (b) OOS Sharpe -1.6741 < 1.5
+failure    : (d) WFE -1.6536 <= 0.5 (OOS Sharpe -1.6741 / IS Sharpe 1.0124)
+

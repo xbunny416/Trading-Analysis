@@ -83,6 +83,9 @@ CYCLE5_REGISTRY: dict[str, tuple[str, str, str]] = {
     "C5-053": ("c5_053_older_value_anchor", "mining: C5-050 with the value anchor at 4.5-3.5 years ago", "C5-050"),
     "C5-054": ("c5_054_younger_value_anchor", "mining: C5-052 with the value anchor at 3.5-2.5 years ago", "C5-052"),
     "C5-055": ("c5_055_slower_atr_wider_band", "mining: C5-052 with the fast-ATR and band grids moved up", "C5-052"),
+    # after the holdout diagnostic (the user asked for other, better strategies)
+    "C5-056": ("c5_056_excess_return_trend", "trend: dollar trend on excess-return (carry-inclusive) prices", "C5-041"),
+    "C5-057": ("c5_057_trend_pullback", "trend: per-pair A3 with pullback entries, trend exits", "C5-001"),
 }
 CYCLE5 = tuple(CYCLE5_REGISTRY)
 REGISTRY.update({k: v for k, v in CYCLE5_REGISTRY.items()})

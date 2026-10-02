@@ -457,6 +457,18 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Every integrity test passes, and there were no order desyncs.
     - One year is a weak test (Sharpe standard error about 1). Even so, −1.67 is about 2.4 standard errors below the
       Stage-1 figure. That fits the deflated Sharpe's verdict that the 0.75 is mostly selection, not edge.
+- **Batch 30 (C5-056…057): new families.** After the holdout diagnostic you asked for other, better strategies.
+  - **C5-056: trend on excess returns.** The published trend signals use futures, whose returns include carry; every
+    trend book here used spot. This is C5-041's dollar trend computed on a carry-inclusive price index
+    (ln C + accrued known carry).
+  - **C5-057: trend with pullback entries.** Enter with each pair's A3 trend only after the hourly z-score has
+    pulled back beyond z_in against it, and exit when the trend turns. It keeps C5-001's high-win-rate reversion
+    entries but only in the trend's direction.
+  - **Dropped before registration:** a yen safe-haven trade (long JPY while FX volatility is high).
+    - The harness's single-pair integrity tests run on EURUSD, which a yen-only strategy never trades, so they
+      could not check it.
+    - Adapting the harness for one weak-prior idea would change every fingerprint. Nothing was run.
+  - Both selftests pass, including the rate look-ahead canaries for C5-056.
 
 ### Reproduce
 

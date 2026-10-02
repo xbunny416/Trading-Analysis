@@ -488,7 +488,8 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
   - It is long the base currency while only the quote's market is open, and short it while only its own market is
     open.
   - USDCAD never trades (New York and Toronto share hours). The only tuning is the band.
-  - Status: draft. The full selftest suite is re-running on the changed harness.
+  - Registered. All 58 cycle-5 selftests and `--check-data` pass on the changed harness. C5-058's parity, leak,
+    fill-timing and breaker tests all exercise real trades.
 
 ### Reproduce
 

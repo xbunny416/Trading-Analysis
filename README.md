@@ -435,6 +435,15 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Trivial changes move results by ±0.25: a half-year shift of the value anchor gives 0.48 / 0.75 / 0.67, and
       the grid composition alone moves results by 0.15–0.2.
     - The deflated Sharpe of the best stays near 0.2, while the luck benchmark has risen to 0.97.
+- **Checkpoint 3 and holdout diagnostic:** after 63 trials you chose to run the best book, C5-052, once on the
+  untouched 2023 holdout as a diagnostic. It cannot be a pass, because C5-052 failed gate (b) in Stage 1.
+  - `scripts/holdout_diagnostic.py` uses the harness's own Stage-2 machinery and leaves `harness.py` unchanged, so
+    the code fingerprint (46da92efe610) is that of Stage-1 trial 52.
+  - It requires a logged Stage-1 trial of that exact code. Its report always carries a "diagnostic" failure, so its
+    status is FAIL whatever 2023 shows.
+  - It is logged in `holdout.log` like any holdout look, so the holdout is used up for this fingerprint.
+  - Its guard has its own tests: other code, no trial, a Stage-1 pass, a second look and archived IDs are all
+    refused.
 
 ### Reproduce
 

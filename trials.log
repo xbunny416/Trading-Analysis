@@ -748,3 +748,18 @@ split 4    : OOS 2018-07-01..2020-09-30 params={'norm_scale': 0.5, 'fast_bars': 
 split 5    : OOS 2020-09-30..2022-12-30 params={'norm_scale': 0.5, 'fast_bars': 120} IS_sh=-0.0038 OOS_sh=1.5873 OOS_dd=0.01588 OOS_tr/yr=201.39
 failure    : (b) OOS Sharpe 0.3984 < 1.5
 
+=== TRIAL 57 | 2026-10-02T15:55:35Z | hyp C5-057 | code 196807febfa2 | FAIL ===
+hypothesis : C5-057 trend with pullback entries: enter with each pair's A3 trend only when the hourly z-score has pulled back beyond z_in against it, exit when the trend turns; new family after the holdout diagnostic.
+grid       : {"n": [24, 72, 168], "z_in": [1.0, 1.5, 2.0]}  fixed: {"band": 0.2}
+data       : development 2005-01-02 -> 2022-12-30 (split geometry from 2006-07-02) | mt5_EURUSD bc4b9cfd06f8c3dc, mt5_GBPUSD 01e555bc13d01094, mt5_USDJPY 1af85499df842f9b, mt5_USDCAD 6f93d394bc220851, mt5_EURJPY 99467048dc35ee9f, rates_oecd_short_term bfac90a21a3d8a14, rates_policy_rates a6db1f84c1a4f5de, oanda_commit 7ba1d404aa8b, frame_EURUSD a44796505eb3e309, frame_GBPUSD facbbd724baca0f8, frame_USDJPY 290d38bf151e6ed2, frame_USDCAD 79a851f9aec35f49, frame_EURJPY b583721233caffb2
+metrics    : oos_sharpe=-0.0146 is_sharpe_mean=0.3649 wfe=-0.04 oos_max_dd=0.10041 oos_trades_per_year=21.97 oos_total_return=-0.01387 leak_test=PASS
+deflated   : dsr=0.0004 n_trials=65 benchmark_sharpe=0.9675 psr_vs_zero=0.4802
+split 1    : OOS 2011-10-02..2013-12-31 params={'n': 168, 'z_in': 1.0} IS_sh=0.6623 OOS_sh=0.2638 OOS_dd=0.08161 OOS_tr/yr=27.59
+split 2    : OOS 2013-12-31..2016-04-01 params={'n': 168, 'z_in': 2.0} IS_sh=0.311 OOS_sh=0.149 OOS_dd=0.05 OOS_tr/yr=22.23
+split 3    : OOS 2016-04-01..2018-07-01 params={'n': 168, 'z_in': 1.0} IS_sh=0.5534 OOS_sh=-0.2745 OOS_dd=0.09446 OOS_tr/yr=32.45
+split 4    : OOS 2018-07-01..2020-09-30 params={'n': 168, 'z_in': 1.0} IS_sh=0.4979 OOS_sh=-0.2215 OOS_dd=0.06208 OOS_tr/yr=27.57
+split 5    : OOS 2020-09-30..2022-12-30 params={'n': 168, 'z_in': 1.0} IS_sh=-0.2 OOS_sh=0.0 OOS_dd=-0.0 OOS_tr/yr=0.0
+failure    : (a) OOS fills/year 21.97 <= 100
+failure    : (b) OOS Sharpe -0.0146 < 1.5
+failure    : (d) WFE -0.04 <= 0.5 (OOS Sharpe -0.0146 / IS Sharpe 0.3649)
+

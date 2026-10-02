@@ -4,7 +4,7 @@ This repository just for my own coding trading workspace.
 
 ## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
 
-**Status: no pass after 64 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). The leaderboard below is updated after every batch of trials.
+**Status: no pass after 65 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). The leaderboard below is updated after every batch of trials.
 
 ### Protocol
 
@@ -87,7 +87,7 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
 | C5-054 | mining: C5-052 with the value anchor at 3.5-2.5 years ago | 0.67 | 1.66 | 2.5% | 497 | 0.1546 (62) | b |
 | C5-055 | mining: C5-052 with the fast-ATR and band grids moved up | 0.70 | 1.65 | 2.2% | 391 | 0.1706 (63) | b |
 | C5-056 | trend: dollar trend on excess-return (carry-inclusive) prices | 0.40 | 1.62 | 5.3% | 318 | 0.0257 (64) | b |
-| C5-057 | trend: per-pair A3 with pullback entries, trend exits | registered, not run yet | | | | | |
+| C5-057 | trend: per-pair A3 with pullback entries, trend exits | -0.01 | -0.04 | 10.0% | 22 | 0.0004 (65) | a, b, d |
 
 ### Batch notes
 
@@ -472,7 +472,10 @@ You asked for a search loop that runs until a strategy passes. It uses your 5 FX
     - Adapting the harness for one weak-prior idea would change every fingerprint. Nothing was run.
   - Both selftests pass, including the rate look-ahead canaries for C5-056.
   - **Result, C5-056:** fail at 0.40 (trend on spot, C5-041: 0.49; financing $-8k).
-  - **C5-057:** running.
+  - **Result, C5-057:** fail at −0.01.
+    - Waiting for pullbacks leaves 22 fills a year (gate a), about +$17k before costs against $25k of financing.
+    - The kill switch fired in split 4.
+    - Neither new family beats the trend it modifies.
 
 ### Reproduce
 

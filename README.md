@@ -2,9 +2,56 @@
 
 This repository just for my own coding trading workspace.
 
-## FX strategy search: cycle 5 (adaptive, fully logged, until a strategy passes)
+## FX strategy search: cycle 5 (adaptive, fully logged; closed with no pass)
 
-**Status: no pass after 66 trials.** The best Stage-1 book, C5-052 (value + dollar trend; OOS Sharpe 0.75, drawdown 2.2 %), failed gate (b). Run once on the 2023 holdout as a diagnostic, it lost (Sharpe −1.67). Intraday seasonality (C5-058), tested under your time-of-day exception, has no edge before costs. The leaderboard below is updated after every batch of trials.
+**Status: closed, no strategy passed.** You stopped the search after 66 logged trials (8 in cycle 4, 58 in cycle 5).
+The best development result, C5-052 (OOS Sharpe 0.75), lost on the untouched 2023 holdout (Sharpe −1.67). The batch
+notes below are the full log; this section is the summary.
+
+### Conclusion
+
+**Answer to the question.** On your 5 FX pairs, at retail costs and with the mandate's limits (≤ 3 indicators,
+≤ 4 parameters, event-driven fills at the next open), no strategy reached the 1.5 Sharpe gate. The evidence says none
+is close:
+- The best development Sharpe is 0.75 (median 0.43 across the 58 cycle-5 trials).
+- Its deflated Sharpe is 0.22, against a luck benchmark of 0.97 for the best of this many trials.
+- On new data (2023) it lost.
+
+**What each family showed** (OOS Sharpe on the stitched 2011–22 walk-forward, after every cost):
+
+| Family | Trials | Best (trial) | Verdict |
+|---|---|---|---|
+| Time-series trend: A1–A3, dollar consensus, volatility-managed, speeds, normalisation, excess returns, pullbacks, breakouts | 20 | 0.49 (C5-041) | The one real edge: about +$100–155k before costs over 11 years. It earns in 2014–16 and 2020–22 and loses in 2011–13 and 2018–20. |
+| Currency value (3–4-year cross-sectional reversal) | 3 | 0.28 (C5-022) | The second edge, nearly uncorrelated with trend. It needs smooth weights; rank weights churn it away. |
+| Value + trend blends (including the data-mining phase) | 30 | 0.75 (C5-052) | They reach about √(trend² + value²). Small arbitrary changes move them by ±0.25. Lost on the 2023 holdout. |
+| Carry: per pair, dollar, cross-sectional | 3 | −0.29 (C5-026) | Negative before costs on 2006–22: high yielders fell. |
+| Cross-sectional momentum (A5, smooth) | 2 | −0.17 (C5-024) | No edge on five currencies. |
+| Rate-differential momentum | 1 | −0.28 (C5-018) | Negative. |
+| Hourly mean reversion, relative value, shocks | 5 | −0.32 (C5-008) | Negative before costs (short-term reversal aside, which costs erase). |
+| Intraday seasonality (time-of-day exception) | 1 | −0.84 (C5-058) | No edge before costs; 4,500 fills cost $92k. |
+| Cycle-4 multifactor blend (A6) | 1 | −0.46 | Carry cancelled trend. |
+
+**Why no pass:**
+- Only two independent sources earn before costs on these pairs: trend (about 0.4–0.5 net) and value (about 0.3).
+- Combined, they top out near 0.5–0.75 in development, and part of that is selection.
+- A Sharpe of 1.5 from sources this size would need about nine independent ones. Five currencies don't offer that
+  many.
+
+**What would change the picture:**
+- **Breadth.** Cross-sectional FX factors (carry, value, momentum) are built on 10–40 currencies in the literature.
+  Five is too few for ranks and z-scores to diversify.
+- **Other data.** CPI for true PPP value (FRED and OECD are blocked by this environment's network policy),
+  positioning or flow data, and long-rate curves.
+- **Costs.** About $5–90k of spread and $10–30k of financing per 11 years took a large share of every edge. A lower
+  cost venue changes the margin, not the conclusion.
+- **A realistic target.** A net Sharpe of 0.4–0.6 on a diversified FX trend + value book is what the evidence
+  supports, and it would still need its own untouched holdout.
+
+**What is reusable:**
+- The harness: walk-forward, gates, deflated Sharpe, trial and holdout guards.
+- The event-driven NautilusTrader engine, with its parity, leak, rate-lag, fill-timing and breaker tests.
+- The 58 cycle-5 modules, every one of which passes the full selftest suite.
+- Any new idea can be registered as `C5-059`, or start a cycle 6 with a fresh holdout year.
 
 ### Protocol
 
@@ -507,6 +554,7 @@ python harness.py --check-data                     # splice + rate-table checks,
 python harness.py --hypothesis C5-001 --selftest   # synthetic integrity tests, ~1-2 min, never a trial
 python harness.py --hypothesis C5-001              # Stage 1; re-running logged code reproduces it, logs nothing
 python harness.py --hypothesis C5-001 --holdout    # Stage 2; refused unless C5-001 passed Stage 1
+python scripts/holdout_diagnostic.py C5-052        # the one diagnostic holdout look (already used; refuses again)
 python scripts/leaderboard.py                      # the leaderboard above, from results/cycle5/
 ```
 
@@ -531,7 +579,7 @@ cached in `data/spliced/`. A Stage-1 run takes 6–13 minutes on 4 cores.
   - About 1.5 % annualised volatility per position at full signal.
 - **Execution.**
   - The decision is taken at an hourly close; each pair fills at its own next open quote.
-  - A no-trade band sets rebalancing, with no calendar rule.
+  - A no-trade band sets rebalancing, with no calendar rule (C5-058's approved time-of-day exception aside).
   - Circuit breakers: 2.5 % daily loss → 24 h halt; 10 % drawdown → permanent halt.
 - **Walk-forward.**
   - Five rolling splits (70 % IS / 30 % OOS) after an 18-month warm-up.
@@ -557,7 +605,8 @@ cached in `data/spliced/`. A Stage-1 run takes 6–13 minutes on 4 cores.
 | `harness.py` | Stage 1 / Stage 2 walk-forward, gates, integrity tests, trial and holdout guards. |
 | `trials.log`, `holdout.log` | Cycle-5 Stage-1 and Stage-2 entries. |
 | `results/cycle5/` | JSON report per cycle-5 trial. |
-| `scripts/leaderboard.py` | Prints the leaderboard below from the reports. |
+| `scripts/leaderboard.py` | Prints the leaderboard above from the reports. |
+| `scripts/holdout_diagnostic.py` | One user-requested diagnostic holdout look for a Stage-1 FAIL; always reported as FAIL. |
 | `data/rates/` | OECD short-term rates and central-bank policy decisions. |
 | `research/cycle1..4/` | Earlier cycles: logs, reports and write-ups. |
 

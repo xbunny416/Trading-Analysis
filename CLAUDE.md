@@ -29,6 +29,8 @@ tables in `data/rates/` are committed. Cycle 5 is an adaptive search (README): e
 with an immutable ID registered in `hypotheses/__init__.py` (`CYCLE5_REGISTRY`) and committed before it runs; changed
 code needs a new ID; gate (d) is WFE > 0.5; reports carry a deflated Sharpe ratio; the holdout runs once per code
 fingerprint after a Stage-1 pass. Iterate with `--selftest`. Cycles 1-4 are archived in `research/`.
+Cycle 5 is closed (no pass after 66 trials; see the README conclusion); a new idea is a new registered ID or a
+new cycle with its own holdout. Run long jobs detached (`setsid nohup`): background tasks here time out after ~25 min.
 
 When you add a dependency file or test runner, record the exact install and test
 commands here, so that "run the tests" works on the first try.

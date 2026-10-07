@@ -554,9 +554,13 @@ python harness.py --check-data                     # splice + rate-table checks,
 python harness.py --hypothesis C5-001 --selftest   # synthetic integrity tests, ~1-2 min, never a trial
 python harness.py --hypothesis C5-001              # Stage 1; re-running logged code reproduces it, logs nothing
 python harness.py --hypothesis C5-001 --holdout    # Stage 2; refused unless C5-001 passed Stage 1
-python scripts/holdout_diagnostic.py C5-052        # the one diagnostic holdout look (already used; refuses again)
+python scripts/holdout_diagnostic.py C5-052        # the one diagnostic holdout look; used, so it is refused now
 python scripts/leaderboard.py                      # the leaderboard above, from results/cycle5/
 ```
+
+Every `harness.py` change alters all code fingerprints (they hash the harness too). To reproduce a logged trial
+exactly, check out the commit where its fingerprint was logged (`trials.log`, `code ...`); on later commits the
+trial guard refuses the ID as changed code.
 
 The OANDA history is fetched on first use (a sparse git checkout of `FutureSharks/financial-data` at `7ba1d40`) and
 cached in `data/spliced/`. A Stage-1 run takes 6–13 minutes on 4 cores.
